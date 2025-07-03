@@ -11,6 +11,9 @@
     "prepare": "simple-git-hooks",
     "play": "nr -C playground dev",
     "build": "nr -r --filter=./packages/* build",
+    "play:mp-weixin": "nr -C playground dev:mp-weixin",
+    "build:uni": "nr build && tsx scripts/build-uni.ts",
+    "build:play": "nr build:uni && nr -C playground build:h5",
     "release": "bumpp -r",
     "clean": "rimraf **/dist **/dist-resolver **/uni_modules --glob",
     "lint": "eslint --cache .",
@@ -21,18 +24,24 @@
     "lint:fix": "nr lint --fix",
     "stylelint:fix": "stylelint **/*.{css,scss,html,vue} --fix"
   },
-  "dependencies": {
-    "@antfu/nip": "^0.1.0"
-  },
   "devDependencies": {
     "@antfu/ni": "catalog:",
+    "@antfu/nip": "catalog:",
+    "@dcloudio/types": "catalog:",
+    "@mini-types/alipay": "catalog:",
+    "@types/fs-extra": "catalog:",
     "@xiaohe01/eslint-config": "catalog:",
     "@xiaohe01/tsconfig": "catalog:",
     "bumpp": "catalog:",
+    "chalk": "catalog:default",
+    "consola": "catalog:default",
     "eslint": "catalog:",
+    "fs-extra": "catalog:default",
     "lint-staged": "catalog:",
+    "rimraf": "catalog:",
     "simple-git-hooks": "catalog:",
     "stylelint": "catalog:",
+    "tsx": "catalog:",
     "typescript": "catalog:",
     "unbuild": "catalog:",
     "vite": "catalog:",
@@ -43,5 +52,9 @@
   },
   "lint-staged": {
     "*.{js,ts,tsx,vue}": "eslint --fix"
+  },
+  "dependencies": {
+    "miniprogram-api-typings": "catalog:default",
+    "@uni-helper/uni-app-types": "catalog:default"
   }
 }

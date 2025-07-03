@@ -1,16 +1,83 @@
 {
-  "name": "core",
+  "name": "uni-tree-list",
+  "type": "module",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "packageManager": "pnpm@10.11.0",
-  "dependencies": {
-    "vue": "^3.5.17"
+  "description": "一款适用于 uni-app 的树级选择列表(vue3)",
+  "author": "OFreshman <415561402@qq.com>",
+  "license": "MIT",
+  "homepage": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OFreshman/uni-tree-list"
+  },
+  "bugs": "https://github.com/OFreshman/uni-tree-list/issues",
+  "keywords": [
+    "tree",
+    "tree-list",
+    "uniapp tree"
+  ],
+  "sideEffects": [
+    "./src/components/**/*.vue"
+  ],
+  "exports": {
+    ".": {
+      "types": "./src/components/uni-echarts/uni-echarts.vue.d.ts",
+      "import": "./src/components/uni-echarts/uni-echarts.vue"
+    },
+    "./shared": {
+      "types": "./dist/index.d.ts",
+      "import": "./src/index.js"
+    },
+    "./resolver": {
+      "types": "./dist-resolver/index.d.ts",
+      "import": "./dist-resolver/index.mjs",
+      "require": "./dist-resolver/index.cjs"
+    },
+    "./global": "./src/global.d.ts",
+    "./*": "./src/*"
+  },
+  "files": [
+    "dist",
+    "dist-resolver",
+    "src"
+  ],
+  "scripts": {
+    "build": "nr clean:dist && unbuild && tsx scripts/post-build.ts",
+    "clean:dist": "rimraf ./dist ./dist-resolver"
+  },
+  "peerDependencies": {
+    "vue": ">=3.3.0"
+  },
+  "devDependencies": {
+    "@dcloudio/types": "catalog:",
+    "@dcloudio/uni-app": "catalog:",
+    "@dcloudio/uni-app-harmony": "catalog:",
+    "@dcloudio/uni-app-plus": "catalog:",
+    "@dcloudio/uni-automator": "catalog:",
+    "@dcloudio/uni-cli-shared": "catalog:",
+    "@dcloudio/uni-components": "catalog:",
+    "@dcloudio/uni-h5": "catalog:",
+    "@dcloudio/uni-mp-alipay": "catalog:",
+    "@dcloudio/uni-mp-baidu": "catalog:",
+    "@dcloudio/uni-mp-jd": "catalog:",
+    "@dcloudio/uni-mp-kuaishou": "catalog:",
+    "@dcloudio/uni-mp-lark": "catalog:",
+    "@dcloudio/uni-mp-qq": "catalog:",
+    "@dcloudio/uni-mp-toutiao": "catalog:",
+    "@dcloudio/uni-mp-weixin": "catalog:",
+    "@dcloudio/uni-mp-xhs": "catalog:",
+    "@dcloudio/uni-quickapp-webview": "catalog:",
+    "@dcloudio/uni-stacktracey": "catalog:",
+    "@dcloudio/vite-plugin-uni": "catalog:",
+    "@mini-types/alipay": "catalog:",
+    "@types/node": "catalog:",
+    "@uni-helper/uni-app-types": "catalog:",
+    "@uni-helper/unocss-preset-uni": "catalog:",
+    "@uni-helper/vite-plugin-uni-components": "catalog:",
+    "@uni-helper/vite-plugin-uni-manifest": "catalog:",
+    "@uni-helper/vite-plugin-uni-pages": "catalog:",
+    "@vue/runtime-core": "catalog:",
+    "vue": "catalog:"
   }
 }

@@ -1,0 +1,21 @@
+{
+  "globalStyle": {
+    "navigationBarTitleText": "Uni Tree List",
+    "navigationBarTextStyle": "black",
+    "navigationBarBackgroundColor": "#ffffff",
+    "mp-weixin": {
+      "handleWebviewPreload": "auto"
+    }
+  },
+  "pages": [
+    {
+      "path": "pages/examples/index",
+      "type": "home",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "Uni ECharts"
+      }
+    }
+  ],
+  "subPackages": []
+}
