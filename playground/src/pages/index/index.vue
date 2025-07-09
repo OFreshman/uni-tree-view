@@ -1,5 +1,5 @@
 <template>
-  <view>uni tree list examples page</view>>
+  <view>uni tree list <uni-tree-list></uni-tree-list></view>>
 </template>
 
 <script setup lang='ts'>

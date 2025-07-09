@@ -28,16 +28,21 @@
     "@antfu/ni": "catalog:",
     "@antfu/nip": "catalog:",
     "@dcloudio/types": "catalog:",
+    "@dcloudio/uni-app": "catalog:",
+    "@dcloudio/vite-plugin-uni": "catalog:",
     "@mini-types/alipay": "catalog:",
     "@types/fs-extra": "catalog:",
+    "@uni-helper/uni-app-types": "catalog:",
     "@xiaohe01/eslint-config": "catalog:",
     "@xiaohe01/tsconfig": "catalog:",
     "bumpp": "catalog:",
-    "chalk": "catalog:default",
-    "consola": "catalog:default",
+    "chalk": "catalog:",
+    "consola": "catalog:",
     "eslint": "catalog:",
-    "fs-extra": "catalog:default",
+    "eslint-plugin-pnpm": "catalog:",
+    "fs-extra": "catalog:",
     "lint-staged": "catalog:",
+    "miniprogram-api-typings": "catalog:",
     "rimraf": "catalog:",
     "simple-git-hooks": "catalog:",
     "stylelint": "catalog:",
@@ -52,9 +57,5 @@
   },
   "lint-staged": {
     "*.{js,ts,tsx,vue}": "eslint --fix"
-  },
-  "dependencies": {
-    "miniprogram-api-typings": "catalog:default",
-    "@uni-helper/uni-app-types": "catalog:default"
   }
 }

@@ -1,0 +1,7 @@
+# 生成文件
+types/auto-imports.d.ts
+types/components.d.ts
+types/uni-pages.d.ts
+
+# 制品文件
+uni_modules

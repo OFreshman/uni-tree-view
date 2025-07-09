@@ -2,7 +2,7 @@
   "extends": "@xiaohe01/tsconfig/tsconfig.lib.json",
   "include": [
     "scripts/**/*.ts",
-    "eslint.config.js",
+    "resolver/**/*.ts",
     "stylelint.config.js"
   ]
 }

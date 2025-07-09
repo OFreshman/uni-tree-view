@@ -1,11 +1,17 @@
 {
-  "extends": "@xiaohe01/tsconfig/tsconfig.lib-vue.json",
+  "extends": "@xiaohe01/tsconfig/tsconfig.app-vue.json",
   "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
     "types": [
+      "vite/client",
       "@dcloudio/types",
+      "@uni-helper/uni-app-types",
       "miniprogram-api-typings",
       "@mini-types/alipay",
-      "@uni-helper/uni-app-types"
+      "wot-design-uni/global"
     ]
   },
   "vueCompilerOptions": {

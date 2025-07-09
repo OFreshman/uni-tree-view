@@ -1,7 +1,7 @@
-import type { ComponentResolver } from "@uni-helper/vite-plugin-uni-components";
+import { ComponentResolver } from '@uni-helper/vite-plugin-uni-components';
 
 interface UniTreeListResolverOptions {
-  exclude?: RegExp;
+    exclude?: RegExp;
 }
 declare function UniTreeListResolver(options?: UniTreeListResolverOptions): ComponentResolver;
 

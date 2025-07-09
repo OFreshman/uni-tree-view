@@ -1,4 +1,9 @@
 {
+  "easycom": {
+    "custom": {
+      "^wd-(.*)": "wot-design-uni/components/wd-$1/wd-$1.vue"
+    }
+  },
   "globalStyle": {
     "navigationBarTitleText": "Uni Tree List",
     "navigationBarTextStyle": "black",
@@ -9,12 +14,12 @@
   },
   "pages": [
     {
+      "path": "pages/index/index",
+      "type": "home"
+    },
+    {
       "path": "pages/examples/index",
-      "type": "home",
-      "style": {
-        "navigationStyle": "custom",
-        "navigationBarTitleText": "Uni ECharts"
-      }
+      "type": "page"
     }
   ],
   "subPackages": []
