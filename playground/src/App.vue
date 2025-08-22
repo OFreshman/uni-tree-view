@@ -1,3 +1,6 @@
+<!--<template>-->
+<!--  <view>app: <uni-tree-list></uni-tree-list></view>-->
+<!--</template>-->
 <script lang="ts" setup>
 import { onHide, onLaunch, onShow } from "@dcloudio/uni-app";
 
@@ -18,8 +21,8 @@ onHide(() => {
 </script>
 
 <style lang="scss">
-@import "@/styles/rebot.scss";
-@import "@/styles/palette.scss";
+@use "@/styles/rebot.scss";
+@use "@/styles/palette.scss";
 // @import "@/styles/global.scss";
 // @import "@/styles/helpers.scss";
 </style>

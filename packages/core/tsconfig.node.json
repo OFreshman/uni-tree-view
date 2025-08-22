@@ -3,6 +3,6 @@
   "include": [
     "scripts/**/*.ts",
     "resolver/**/*.ts",
-    "stylelint.config.js"
+    "build.config.ts"
   ]
 }

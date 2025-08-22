@@ -22,8 +22,8 @@
   ],
   "exports": {
     ".": {
-      "types": "./src/components/uni-echarts/uni-echarts.vue.d.ts",
-      "import": "./src/components/uni-echarts/uni-echarts.vue"
+      "types": "./src/components/uni-tree-list/uni-tree-list.vue.d.ts",
+      "import": "./src/components/uni-tree-list/uni-tree-list.vue"
     },
     "./shared": {
       "types": "./dist/index.d.ts",
@@ -43,41 +43,41 @@
     "src"
   ],
   "scripts": {
-    "build": "nr clean:dist && unbuild && tsx scripts/post-build.ts",
+    "build": "nr clean:dist && unbuild && tsc scripts/post-build.ts",
     "clean:dist": "rimraf ./dist ./dist-resolver"
   },
   "peerDependencies": {
     "vue": ">=3.3.0"
   },
   "devDependencies": {
-    "@dcloudio/types": "catalog:",
-    "@dcloudio/uni-app": "catalog:",
-    "@dcloudio/uni-app-harmony": "catalog:",
-    "@dcloudio/uni-app-plus": "catalog:",
-    "@dcloudio/uni-automator": "catalog:",
-    "@dcloudio/uni-cli-shared": "catalog:",
-    "@dcloudio/uni-components": "catalog:",
-    "@dcloudio/uni-h5": "catalog:",
-    "@dcloudio/uni-mp-alipay": "catalog:",
-    "@dcloudio/uni-mp-baidu": "catalog:",
-    "@dcloudio/uni-mp-jd": "catalog:",
-    "@dcloudio/uni-mp-kuaishou": "catalog:",
-    "@dcloudio/uni-mp-lark": "catalog:",
-    "@dcloudio/uni-mp-qq": "catalog:",
-    "@dcloudio/uni-mp-toutiao": "catalog:",
-    "@dcloudio/uni-mp-weixin": "catalog:",
-    "@dcloudio/uni-mp-xhs": "catalog:",
-    "@dcloudio/uni-quickapp-webview": "catalog:",
-    "@dcloudio/uni-stacktracey": "catalog:",
-    "@dcloudio/vite-plugin-uni": "catalog:",
-    "@mini-types/alipay": "catalog:",
-    "@types/node": "catalog:",
-    "@uni-helper/uni-app-types": "catalog:",
-    "@uni-helper/unocss-preset-uni": "catalog:",
-    "@uni-helper/vite-plugin-uni-components": "catalog:",
-    "@uni-helper/vite-plugin-uni-manifest": "catalog:",
-    "@uni-helper/vite-plugin-uni-pages": "catalog:",
-    "@vue/runtime-core": "catalog:",
-    "vue": "catalog:"
+    "@dcloudio/types": "catalog:dev",
+    "@dcloudio/uni-app": "catalog:prod",
+    "@dcloudio/uni-app-harmony": "catalog:prod",
+    "@dcloudio/uni-app-plus": "catalog:prod",
+    "@dcloudio/uni-automator": "catalog:dev",
+    "@dcloudio/uni-cli-shared": "catalog:dev",
+    "@dcloudio/uni-components": "catalog:prod",
+    "@dcloudio/uni-h5": "catalog:prod",
+    "@dcloudio/uni-mp-alipay": "catalog:prod",
+    "@dcloudio/uni-mp-baidu": "catalog:prod",
+    "@dcloudio/uni-mp-jd": "catalog:prod",
+    "@dcloudio/uni-mp-kuaishou": "catalog:prod",
+    "@dcloudio/uni-mp-lark": "catalog:prod",
+    "@dcloudio/uni-mp-qq": "catalog:prod",
+    "@dcloudio/uni-mp-toutiao": "catalog:prod",
+    "@dcloudio/uni-mp-weixin": "catalog:prod",
+    "@dcloudio/uni-mp-xhs": "catalog:prod",
+    "@dcloudio/uni-quickapp-webview": "catalog:prod",
+    "@dcloudio/uni-stacktracey": "catalog:dev",
+    "@dcloudio/vite-plugin-uni": "catalog:build",
+    "@mini-types/alipay": "catalog:dev",
+    "@types/node": "catalog:types",
+    "@uni-helper/uni-app-types": "catalog:dev",
+    "@uni-helper/unocss-preset-uni": "catalog:style",
+    "@uni-helper/vite-plugin-uni-components": "catalog:build",
+    "@uni-helper/vite-plugin-uni-manifest": "catalog:build",
+    "@uni-helper/vite-plugin-uni-pages": "catalog:build",
+    "@vue/runtime-core": "catalog:dev",
+    "vue": "catalog:frontend"
   }
 }

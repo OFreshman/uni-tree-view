@@ -15,7 +15,10 @@
   "pages": [
     {
       "path": "pages/index/index",
-      "type": "home"
+      "type": "home",
+      "style": {
+        "navigationBarTitleText": "Uni Tree List"
+      }
     },
     {
       "path": "pages/examples/index",

@@ -44,7 +44,7 @@ function buildPlugins(): PluginOption[] {
         }
       ],
       dirs: [
-        "src/composables",
+        "src/composable",
         "src/utils"
       ],
       vueTemplate: true
@@ -67,6 +67,7 @@ function buildPlugins(): PluginOption[] {
       ]
     }),
     UniPolyfill(),
+    // @ts-expect-error whatever
     Uni.default({
       vueOptions: {
         template: {
