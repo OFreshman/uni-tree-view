@@ -1,9 +1,14 @@
 <template>
-  <!-- <view> -->
-  <!--  212121 -->
-  <!-- </view> -->
-  <!-- <app-page> -->
-  <view>playground/src/pages/index/index.vue <uni-tree-list :data="[]"></uni-tree-list></view>
+  <view>
+    <text>playground/src/pages/index/index.vue</text>
+    <uni-tree-list
+      :data="treeMockData"
+      :tree-props="{
+        id: 'adcode',
+        label: 'name',
+        children: 'districts'
+      }"></uni-tree-list>
+  </view>
 
   <!-- </app-page> -->
 </template>
@@ -12,8 +17,7 @@
 import UniTreeList from "uni-tree-list";
 import { onBeforeMount, onMounted } from "vue";
 
-// const refVal = ref(0);
-// const state = reactive({});
+const treeMockData = ref([]);
 onBeforeMount(() => {});
 onMounted(() => {});
 </script>

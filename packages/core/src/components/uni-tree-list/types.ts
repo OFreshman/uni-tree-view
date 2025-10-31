@@ -1,14 +1,43 @@
+import type { CHECK_STATUS_MAP } from "./constants/index";
+
+export type CheckStatus = typeof CHECK_STATUS_MAP[keyof typeof CHECK_STATUS_MAP]; // 选中状态
+
+export interface TreeNode {
+  id: string | number;
+  pid?: string | number;
+  label?: string;
+  check?: CheckStatus;
+  disabled: boolean;
+  children?: TreeNode[];
+  [key: string]: any;
+}
+
 export interface TreeProps {
   id: string;
   label: string;
   children: string;
-  disabled?: boolean;
+  disabled?: string;
 }
 
 export interface UniTreeListProps {
-  data: Array<any>;
+  // 树数据 树级结构
+  data: Array<TreeNode>;
+  // 树节点的属性配置
   treeProps?: TreeProps;
+  // 是否支持悬着
+  selectable?: boolean;
+  // 默认选中的节点id列表
+  defaultCheckedIdList?: string[];
 }
+
+// export interface UniTreeProps {
+//   // 树节点的属性配置
+//   treeProps?: TreeProps;
+//   // 是否支持悬着
+//   selectable?: boolean;
+//   // 默认选中的节点id列表
+//   defaultCheckedIdList?: string[];
+// }
 
 type MouseEventName =
   | "click"
@@ -53,7 +82,7 @@ type OtherEventName =
   | "goChild";
 
 type MouseEmits = {
-  [key in MouseEventName]: (params: ECElementEvent) => void;
+  [key in MouseEventName]: (params: any) => void;
 };
 
 type OtherEmits = {

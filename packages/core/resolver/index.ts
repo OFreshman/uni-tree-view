@@ -20,7 +20,7 @@ export interface UniTreeListResolverOptions {
 export function UniTreeListResolver(options: UniTreeListResolverOptions = {}): ComponentResolver {
   return {
     type: "component",
-    resolve(name) {
+    resolve(name: any) {
       if (options.exclude && name.match(options.exclude)) {
         return;
       }
