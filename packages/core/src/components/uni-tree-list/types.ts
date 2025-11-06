@@ -9,6 +9,8 @@ export interface TreeNode {
   check?: CheckStatus;
   disabled: boolean;
   children?: TreeNode[];
+  expanded?: boolean; // 是否展开（非叶子节点有效）
+  visible?: boolean; // 自身是否显示, 默认仅展示第一级
   [key: string]: any;
 }
 
