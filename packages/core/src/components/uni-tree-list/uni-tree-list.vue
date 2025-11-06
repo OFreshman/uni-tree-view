@@ -87,15 +87,7 @@ const childrenMap = ref<Map<string | number, TreeNode[]>>(new Map());
 const nodeMap = ref<Map<string | number, TreeNode>>(new Map());
 const { id: idKey, label: labelKey, children: childrenKey } = props.treeProps;
 
-// const mergedTreeProps = computed(() => {
-//   return {
-//     ...defaultTreeProps,
-//     ...props.treeProps
-//   };
-// });
-
 initTreeData(toRaw(treeData.value));
-
 function initTreeData(treeData: TreeNode[] = []) {
   treeList.value = [];
   console.log("treeData--", treeData, props.treeProps);
@@ -146,35 +138,47 @@ function _flatTreeData(
   });
 
   _buildFlatListMap(treeList.value);
-  _updateDescendants(defaultCheckedIdList, CHECK_STATUS_MAP.checked);
+  _updateSelfAndDescendants(defaultCheckedIdList, CHECK_STATUS_MAP.checked);
   _updateParentStatus();
   console.log("flat result: ", treeList.value);
 }
 
-// 递归更新子节点状态
-function _updateDescendants(
+// 更新自身&递归更新子节点状态
+function _updateSelfAndDescendants(
   targetIds: string | number | (string | number)[],
   newStatus: Exclude<CheckStatus, "indeterminate"> // 不允许直接给子节点设半选
 ) {
   if (Array.isArray(targetIds)) {
     for (const targetId of targetIds) {
+      const node = nodeMap.value.get(targetId);
+      if (!node) {
+        continue;
+      } else {
+        node.checked = newStatus;
+      }
+
       const children = childrenMap.value.get(targetId);
       if (!children || !children.length) {
         return;
       }
       for (const child of children) {
         child.checked = newStatus;
-        _updateDescendants(child.id, newStatus);
+        _updateSelfAndDescendants(child.id, newStatus);
       }
     }
   } else {
+    const node = nodeMap.value.get(targetIds);
+    if (node) {
+      node.checked = newStatus;
+    }
+
     const children = childrenMap.value.get(targetIds);
     if (!children || !children.length) {
       return;
     }
     for (const child of children) {
       child.checked = newStatus;
-      _updateDescendants(child.id, newStatus);
+      _updateSelfAndDescendants(child.id, newStatus);
     }
   }
 }
@@ -219,64 +223,15 @@ function _buildFlatListMap(flatList: TreeNode[]) {
   nodeMap.value = node_map;
 }
 
-
-// TODO: 调整一下
-function treeNodeChange() {
-//   const { id: idKey, label: labelKey, children: childrenKey } = this.TreeProps;
-//   if (item.isLeaf === true) {
-//     //点击最后一级时触发事件
-//     this.treeList[index].checked = !this.treeList[index].checked
-//     this._fixMultiple(index)
-//     return;
-//   }
-//   let list = this.treeList;
-//   let id = item.id;
-//   item.showChild = !item.showChild;
-//   item.open = item.showChild ? true : !item.open;
-//
-//   console.log("_treeItemTap  item", item);
-//   list.forEach((childItem, i) => {
-//     if (item.showChild === false) {
-//       //隐藏所有子级
-//       if (!childItem.parentId.includes(id)) {
-//         return;
-//       }
-//       if (!this.foldAll) {
-//         if (childItem.isLeaf !== true && !childItem.open) {
-//           childItem.showChild = false;
-//         }
-//         // 为隐藏的内容添加一个标记
-//         if (childItem.show) {
-//           childItem.hideArr[item.level] = id
-//         }
-//       } else {
-//         if (childItem.isLeaf !== true) {
-//           childItem.showChild = false;
-//         }
-//       }
-//       childItem.show = false;
-//     } else {
-//       // 打开子集
-//       if (childItem.parentId[childItem.parentId.length - 1] === id) {
-//         childItem.show = true;
-//       }
-//       // 打开被隐藏的子集
-//       if (childItem.parentId.includes(id) && !this.foldAll) {
-//         // console.log(childItem.hideArr)
-//         if (childItem.hideArr[item.level] === id) {
-//           childItem.show = true;
-//           if (childItem.open && childItem.showChild) {
-//             childItem.showChild = true
-//           } else {
-//             childItem.showChild = false
-//           }
-//           childItem.hideArr[item.level] = null
-//         }
-//         // console.log(childItem.hideArr)
-//       }
-//     }
-//   })
-//   // console.log(this.treeList)
+function treeNodeChange(node: TreeNode, index: number) {
+  console.log("treeNodeChange--", node, index);
+  const isCheck = node.checked === CHECK_STATUS_MAP.checked;
+  if (isCheck) { // 反选
+    _updateSelfAndDescendants(node.id, CHECK_STATUS_MAP.unchecked);
+  } else { // 选中
+    _updateSelfAndDescendants(node.id, CHECK_STATUS_MAP.checked);
+  }
+  _updateParentStatus();
 }
 
 // 生成大数据量的树结构
