@@ -2,11 +2,11 @@
   <view>
     <text>playground/src/pages/index/index.vue</text>
     <uni-tree-list
-      :data="treeMockData"
+      :data="treeData"
       :tree-props="{
-        id: 'adcode',
+        id: 'code',
         label: 'name',
-        children: 'districts'
+        children: 'children'
       }"></uni-tree-list>
   </view>
 
@@ -16,13 +16,22 @@
 <script setup lang='ts'>
 import UniTreeList from "uni-tree-list";
 import { onBeforeMount, onMounted } from "vue";
+// import districtsData from "@/mockData/districts.json";
+import districtsData from "@/mockData/districts-mini.json";
 
-const treeMockData = ref([]);
+const treeData = ref([districtsData[0]]);
 onBeforeMount(() => {});
-onMounted(() => {});
+onMounted(() => {
+  console.log("playground treeData", treeData.value);
+});
 </script>
 
 <style scoped lang='scss'>
+:deep() {
+  .utl-tree-item {
+    // background-color: red;
+  }
+}
 </style>
 
 <route type="home">

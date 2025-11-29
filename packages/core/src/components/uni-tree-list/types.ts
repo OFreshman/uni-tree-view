@@ -15,21 +15,30 @@ export interface TreeNode {
 }
 
 export interface TreeProps {
-  id: string;
+  id: string; // 每个节点的唯一标识
   label: string;
   children: string;
   disabled?: string;
+  class?: string;
 }
 
 export interface UniTreeListProps {
   // 树数据 树级结构
   data: Array<TreeNode>;
+  // 默认选中的节点key数组
+  defaultCheckedKeys?: string[];
   // 树节点的属性配置
   treeProps?: TreeProps;
-  // 是否支持悬着
-  selectable?: boolean;
-  // 默认选中的节点id列表
-  defaultCheckedIdList?: string[];
+  // 默认是否展开所有节点
+  defaultExpandAll?: boolean;
+  // 是否节点选中
+  showCheckbox?: boolean;
+  // 是否支持多选
+  multiple?: boolean;
+  // 是否严格遵循父子关系选中状态
+  checkStrictly?: boolean;
+  // 是否自动展开父节点(默认展开时)
+  autoExpandParent?: boolean;
 }
 
 // export interface UniTreeProps {

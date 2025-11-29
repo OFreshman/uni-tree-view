@@ -10,5 +10,6 @@ export const defaultTreeProps: TreeProps = {
   id: "id",
   label: "label",
   children: "children",
-  disabled: "disabled"
+  disabled: "disabled",
+  class: "uni-tree-list-node"
 };
