@@ -1,7 +1,7 @@
 {
   "name": "@uni-tree-list/monorepo",
   "type": "module",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "packageManager": "pnpm@10.11.0",
   "description": "适用于uniapp + vue3 的树级列表选择组件",
   "author": "OFreshman",
