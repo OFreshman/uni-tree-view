@@ -1,7 +1,7 @@
 {
   "name": "uni-tree-list",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "packageManager": "pnpm@10.11.0",
   "description": "一款适用于 uni-app 的树级选择列表(vue3)",
   "author": "OFreshman <415561402@qq.com>",
