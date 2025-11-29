@@ -8,7 +8,7 @@
   "keywords": [],
   "main": "index.js",
   "scripts": {
-    "prepare": "simple-git-hooks",
+    "prepare": "simple-git-hooks && sh scripts/patch-git-hook.sh",
     "play": "nr -C playground dev",
     "build": "nr -r --filter=./packages/* build",
     "play:mp-weixin": "nr -C playground dev:mp-weixin",
@@ -23,6 +23,9 @@
     "test:coverage": "vitest run --coverage",
     "lint:fix": "nr lint --fix",
     "stylelint:fix": "stylelint **/*.{css,scss,html,vue} --fix"
+  },
+  "dependencies": {
+    "wot-design-uni": "catalog:prod"
   },
   "devDependencies": {
     "@antfu/ni": "catalog:dev",

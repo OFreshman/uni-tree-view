@@ -59,8 +59,7 @@
     "lodash-es": "catalog:utils",
     "pinia": "catalog:frontend",
     "uni-tree-list": "workspace:*",
-    "vue": "catalog:frontend",
-    "wot-design-uni": "catalog:prod"
+    "vue": "catalog:frontend"
   },
   "devDependencies": {
     "@dcloudio/types": "catalog:dev",

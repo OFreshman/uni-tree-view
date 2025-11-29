@@ -7,7 +7,7 @@ export default defineBuildConfig([
       "src/index.js"
     ],
     outDir: "dist",
-    clean: false,
+    clean: true,
     declaration: true,
     externals: [
       "vue"
@@ -20,7 +20,7 @@ export default defineBuildConfig([
       "resolver/index.ts"
     ],
     outDir: "dist-resolver",
-    clean: false,
+    clean: true,
     declaration: true,
     externals: [
       "@uni-helper/vite-plugin-uni-components"
