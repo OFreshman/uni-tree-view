@@ -1,0 +1,29 @@
+{
+  "easycom": {
+    "custom": {
+      "^wd-(.*)": "wot-design-uni/components/wd-$1/wd-$1.vue"
+    }
+  },
+  "globalStyle": {
+    "navigationBarTitleText": "Uni Tree List",
+    "navigationBarTextStyle": "black",
+    "navigationBarBackgroundColor": "#ffffff",
+    "mp-weixin": {
+      "handleWebviewPreload": "auto"
+    }
+  },
+  "pages": [
+    {
+      "path": "pages/index/index",
+      "type": "home",
+      "style": {
+        "navigationBarTitleText": "Uni Tree List"
+      }
+    },
+    {
+      "path": "pages/examples/index",
+      "type": "page"
+    }
+  ],
+  "subPackages": []
+}

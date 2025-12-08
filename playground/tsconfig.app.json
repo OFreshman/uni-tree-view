@@ -1,0 +1,30 @@
+{
+  "extends": [
+    "@xiaohe01/tsconfig/tsconfig.basic.json",
+    "@xiaohe01/tsconfig/tsconfig.vue.json"
+  ],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "types": [
+      "vite/client",
+      "@dcloudio/types",
+      "@uni-helper/uni-app-types",
+      "miniprogram-api-typings",
+      "@mini-types/alipay",
+      "wot-design-uni/global"
+    ],
+    "allowJs": true
+  },
+  "vueCompilerOptions": {
+    "plugins": [
+      "@uni-helper/uni-app-types/volar-plugin"
+    ]
+  },
+  "include": [
+    "src/**/*",
+    "types/**/*"
+  ]
+}
