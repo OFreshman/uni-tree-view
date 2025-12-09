@@ -14,6 +14,8 @@
 </template>
 
 <script setup lang='ts'>
+/* eslint-disable no-console */
+
 import UniTreeView from "uni-tree-view";
 import { onBeforeMount, onMounted } from "vue";
 // import districtsData from "@/mockData/districts.json";

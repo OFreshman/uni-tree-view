@@ -43,6 +43,7 @@
 </template>
 
 <script lang="ts" setup>
+/* eslint-disable no-console */
 import { computed, ref, toRaw, watch } from "vue";
 import { CHECK_STATUS_MAP, DefaultTreeProps } from "./constants";
 import type {
