@@ -9,6 +9,7 @@ export default defineConfig({
   },
   ignores: [
     "**/*.md",
+    "./**/*.min.js",
     "**/dist-resolver",
     "playground/src/uni_modules",
     "packages/core/scripts/*.js"
