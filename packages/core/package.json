@@ -14,8 +14,10 @@
   "bugs": "https://github.com/OFreshman/uni-tree-view/issues",
   "keywords": [
     "tree",
-    "tree-list",
-    "uniapp tree"
+    "tree-view",
+    "tree select",
+    "uniapp tree",
+    "uni-tree-view"
   ],
   "sideEffects": [
     "./src/components/**/*.vue"
