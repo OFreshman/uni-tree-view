@@ -1,0 +1,62 @@
+{
+  "name": "uni-tree-view",
+  "type": "module",
+  "version": "0.0.1",
+  "packageManager": "pnpm@10.11.0",
+  "description": "一个基于 Vue3 / uni-app 的跨平台树形列表/选择组件，兼容小程序 (dCloud 插件市场) 和 H5",
+  "author": "OFreshman <415561402@qq.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/OFreshman/uni-tree-view#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OFreshman/uni-tree-view"
+  },
+  "bugs": "https://github.com/OFreshman/uni-tree-view/issues",
+  "keywords": [
+    "tree",
+    "tree-list",
+    "uniapp tree"
+  ],
+  "sideEffects": [
+    "./src/components/**/*.vue"
+  ],
+  "exports": {
+    ".": {
+      "types": "./src/components/uni-tree-view/uni-tree-view.vue.d.ts",
+      "import": "./src/components/uni-tree-view/uni-tree-view.vue"
+    },
+    "./shared": {
+      "types": "./dist/index.d.ts",
+      "import": "./src/index.js"
+    },
+    "./resolver": {
+      "types": "./dist-resolver/resolver/index.d.ts",
+      "import": "./dist-resolver/resolver/index.mjs",
+      "require": "./dist-resolver/resolver/index.cjs"
+    },
+    "./global": "./src/global.d.ts",
+    "./*": "./src/*"
+  },
+  "files": [
+    "dist",
+    "dist-resolver",
+    "src"
+  ],
+  "scripts": {
+    "build": "nr clean:dist && unbuild && tsc scripts/post-build.ts",
+    "clean:dist": "rimraf ./dist ./dist-resolver"
+  },
+  "peerDependencies": {
+    "vue": ">=3.3.0"
+  },
+  "dependencies": {
+    "@types/lodash-es": "catalog:types"
+  },
+  "devDependencies": {
+    "@uni-helper/vite-plugin-uni-components": "catalog:build",
+    "@uni-helper/vite-plugin-uni-pages": "catalog:build",
+    "@vue/runtime-core": "catalog:dev",
+    "lodash-es": "catalog:utils",
+    "vue": "catalog:frontend"
+  }
+}

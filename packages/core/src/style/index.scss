@@ -1,0 +1,101 @@
+.utv-tree-item {
+  display: flex;
+  align-items: center;
+
+  &__arrow--icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32rpx;
+    height: 32rpx;
+    &::after {
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+      /* stylelint-disable-next-line font-family-no-missing-generic-family-keyword */
+      font-family: "uni-tree-iconfont" !important;
+      font-size: 32rpx;
+      font-style: normal;
+      color: #999999;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    &.is-right::after {
+      content: '\e604';
+      transform: rotate(-90deg);
+    }
+
+    &.is-expand::after {
+      transform: rotate(0deg);
+    }
+
+    &.is-loading {
+      animation: IconLoading 1s linear 0s infinite;
+
+      &::after {
+        content: '\e7f1';
+      }
+    }
+  }
+
+  &__checkbox {
+    width: 40rpx;
+    height: 40rpx;
+    overflow: hidden;
+
+    &--icon {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40rpx;
+      height: 40rpx;
+
+      &::after {
+        position: relative;
+        top: 0;
+        left: 0;
+        z-index: 1;
+        overflow: hidden;
+        /* stylelint-disable-next-line font-family-no-missing-generic-family-keyword */
+        font-family: "uni-tree-iconfont" !important;
+        font-size: 32rpx;
+        font-style: normal;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      &.utv-tree-checkbox-outline::after {
+        color: #bbb;
+        content: "\ead5";
+      }
+
+      &.utv-tree-checkbox-checked::after {
+        color: var(--theme-color,#007aff);
+        content: "\ead4";
+      }
+
+      &.utv-tree-checkbox-indeterminate::after {
+        color: var(--theme-color,#007aff);
+        content: "\ebce";
+      }
+
+      &.utv-tree-radio-outline::after {
+        color: #bbb;
+        content: "\ecc5";
+      }
+
+      &.utv-tree-radio-checked::after {
+        color: var(--theme-color,#007aff);
+        content: "\ecc4";
+      }
+
+      &.utv-tree-radio-indeterminate::after {
+        color: var(--theme-color,#007aff);
+        content: "\ea4f";
+      }
+    }
+  }
+}
