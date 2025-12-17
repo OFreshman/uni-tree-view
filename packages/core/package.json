@@ -1,7 +1,7 @@
 {
   "name": "uni-tree-view",
   "type": "module",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "packageManager": "pnpm@10.11.0",
   "description": "一个基于 Vue3 / uni-app 的跨平台树形列表/选择组件，兼容小程序 (dCloud 插件市场) 和 H5",
   "author": "OFreshman <415561402@qq.com>",
