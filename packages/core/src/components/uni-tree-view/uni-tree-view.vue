@@ -12,13 +12,12 @@
           'visible': node.visible,
           'is-leaf': node.isLeaf,
           'is-expanded': node.expanded
-        }"
-        @click.stop="handleNodeClick(node)">
+        }">
         <view
           v-if="!node.isLeaf && hasChildren(node.id)"
           class="utv-tree-item__arrow--icon is-right"
           :class="{ 'is-expand': node.expanded }"
-          @click="handleToggleExpand(node)"></view>
+          @click.stop="handleToggleExpand(node)"></view>
 
         <view
           v-if="props.showCheckbox"
@@ -96,19 +95,14 @@ function initializeTree(treeData: TreeNode[] = []) {
   updateParentNodesStatus();
 }
 
-// 节点点击
-function handleNodeClick(node: TreeNode) {
+// 下拉箭头点击
+function handleToggleExpand(node: TreeNode) {
   if (node.isLeaf) {
     return;
   }
+
   node.expanded = !node.expanded;
-
   toggleChildrenExpand(node, node.expanded);
-}
-
-// 下拉箭头点击
-function handleToggleExpand(node: TreeNode) {
-  console.log("handleToggleExpand", node);
 }
 
 // 复选框点击
