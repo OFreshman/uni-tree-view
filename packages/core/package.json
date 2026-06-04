@@ -32,9 +32,9 @@
       "import": "./src/index.js"
     },
     "./resolver": {
-      "types": "./dist-resolver/resolver/index.d.ts",
-      "import": "./dist-resolver/resolver/index.mjs",
-      "require": "./dist-resolver/resolver/index.cjs"
+      "types": "./dist-resolver/index.d.ts",
+      "import": "./dist-resolver/index.mjs",
+      "require": "./dist-resolver/index.cjs"
     },
     "./global": "./src/global.d.ts",
     "./*": "./src/*"
@@ -45,7 +45,7 @@
     "src"
   ],
   "scripts": {
-    "build": "nr clean:dist && unbuild && tsc scripts/post-build.ts",
+    "build": "nr clean:dist && unbuild && tsx scripts/post-build.ts",
     "clean:dist": "rimraf ./dist ./dist-resolver"
   },
   "peerDependencies": {
@@ -59,6 +59,7 @@
     "@uni-helper/vite-plugin-uni-pages": "catalog:build",
     "@vue/runtime-core": "catalog:dev",
     "lodash-es": "catalog:utils",
+    "tsx": "catalog:script",
     "vue": "catalog:frontend"
   }
 }

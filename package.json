@@ -15,7 +15,7 @@
   ],
   "main": "index.js",
   "scripts": {
-    "prepare": "simple-git-hooks && sh scripts/patch-git-hook.sh",
+    "prepare": "simple-git-hooks",
     "play": "nr -C playground dev:h5",
     "build": "nr -r --filter=./packages/* build",
     "play:mp-weixin": "nr -C playground dev:mp-weixin",
