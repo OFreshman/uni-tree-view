@@ -1,15 +1,39 @@
 <template>
-  <view>uni tree list examples page</view>>
+  <view class="page">
+    <uni-tree-view
+      show-checkbox
+      :data="treeData"
+      :default-checked-keys="[11]"
+      :tree-props="treeProps"></uni-tree-view>
+  </view>
 </template>
 
 <script setup lang='ts'>
-import { onBeforeMount, onMounted } from "vue";
+import UniTreeView from "uni-tree-view";
 
-// const refVal = ref(0);
-// const state = reactive({});
-onBeforeMount(() => {});
-onMounted(() => {});
+const treeProps = {
+  id: "id",
+  label: "label",
+  children: "children",
+  disabled: "disabled"
+};
+
+const treeData = [
+  {
+    id: 1,
+    label: "默认字段",
+    children: [
+      { id: 11, label: "单选节点" },
+      { id: 12, label: "禁用节点", disabled: true }
+    ]
+  }
+];
 </script>
 
 <style scoped lang='scss'>
+.page {
+  min-height: 100vh;
+  padding-top: 24rpx;
+  background: #f6f7fb;
+}
 </style>
