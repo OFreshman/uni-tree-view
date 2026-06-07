@@ -1,4 +1,4 @@
-# uni-tree-list
+# uni-tree-view
 
 适用于 uni-app + Vue 3 的树形列表选择组件，支持展开收起、单选/多选、禁用节点和自定义字段名。
 
