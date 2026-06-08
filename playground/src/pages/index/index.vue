@@ -10,15 +10,38 @@
     </view>
 
     <uni-tree-view
+      v-model="checkedValue"
       show-checkbox
       :data="treeData"
-      :default-checked-keys="['floor-a-2']"
-      :tree-props="treeProps"></uni-tree-view>
+      :default-expanded-keys="['building-a']"
+      expand-checked
+      :tree-props="treeProps"
+      @change="handleChange"
+      @expand-change="handleExpandChange"></uni-tree-view>
+
+    <view class="page__panel">
+      <text class="page__panel-title">
+        当前选中
+      </text>
+      <text class="page__panel-value">
+        {{ checkedValue.join(", ") || "暂无" }}
+      </text>
+      <text class="page__panel-title page__panel-title--gap">
+        最近事件
+      </text>
+      <text class="page__panel-value">
+        {{ latestAction }}
+      </text>
+    </view>
   </view>
 </template>
 
 <script setup lang='ts'>
 import UniTreeView from "uni-tree-view";
+import { ref } from "vue";
+
+const checkedValue = ref<Array<string | number>>(["floor-a-2"]);
+const latestAction = ref("等待操作");
 
 const treeProps = {
   id: "id",
@@ -59,6 +82,14 @@ const treeData = [
     ]
   }
 ];
+
+function handleChange(payload: any) {
+  latestAction.value = `change: ${payload.keys.join(", ") || "none"}`;
+}
+
+function handleExpandChange(payload: any) {
+  latestAction.value = `${payload.expanded ? "expand" : "collapse"}: ${payload.node.id}`;
+}
 </script>
 
 <style scoped lang='scss'>
@@ -86,5 +117,32 @@ const treeData = [
   margin-top: 12rpx;
   color: #667085;
   font-size: 26rpx;
+}
+
+.page__panel {
+  margin: 32rpx;
+  padding: 24rpx;
+  background: #ffffff;
+  border-radius: 8rpx;
+}
+
+.page__panel-title,
+.page__panel-value {
+  display: block;
+}
+
+.page__panel-title {
+  color: #667085;
+  font-size: 24rpx;
+}
+
+.page__panel-title--gap {
+  margin-top: 20rpx;
+}
+
+.page__panel-value {
+  margin-top: 8rpx;
+  color: #111827;
+  font-size: 28rpx;
 }
 </style>
