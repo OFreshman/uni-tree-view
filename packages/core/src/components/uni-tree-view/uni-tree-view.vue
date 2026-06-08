@@ -1,40 +1,52 @@
 <template>
-  <view class="uni-tree-view-container">
-    <scroll-view class="scroll-view-container" scroll-y="true">
+  <view
+    class="uni-tree-view-container"
+    :style="{ '--theme-color': props.themeColor }">
+    <scroll-view class="scroll-view-container" :scroll-y="true">
+      <view v-if="visibleTreeList.length === 0" class="utv-tree-empty">
+        {{ props.emptyText }}
+      </view>
       <view
         v-for="node in visibleTreeList"
-        :key="node[idKey]"
+        :key="node.id"
         :style="[{
-          paddingLeft: `${node.level * 16}px`
+          paddingLeft: `${node.level * props.indent}rpx`
         }]"
         class="utv-tree-item"
         :class="{
-          'visible': node.visible,
           'is-leaf': node.isLeaf,
-          'is-expanded': node.expanded
+          'is-expanded': node.expanded,
+          'is-disabled': node.disabled
         }">
         <view
           v-if="!node.isLeaf && hasChildren(node.id)"
           class="utv-tree-item__arrow--icon is-right"
           :class="{ 'is-expand': node.expanded }"
           @click.stop="handleToggleExpand(node)"></view>
+        <view v-else class="utv-tree-item__arrow--placeholder"></view>
 
         <view
-          v-if="props.showCheckbox"
+          v-if="showSelectionControl && props.checkboxPlacement === 'left'"
           class="utv-tree-item__checkbox"
           :class="{ 'is--disabled': node.disabled }"
           @click.stop="handleCheckChange(node)">
           <view
-            v-if="node.checked === CHECK_STATUS_MAP.checked"
-            class="utv-tree-item__checkbox--icon utv-tree-checkbox-checked"></view>
-          <view
-            v-else-if="node.checked === CHECK_STATUS_MAP.indeterminate"
-            class="utv-tree-item__checkbox--icon utv-tree-checkbox-indeterminate"></view>
-          <view v-else class="utv-tree-item__checkbox--icon utv-tree-checkbox-outline"></view>
+            class="utv-tree-item__checkbox--icon"
+            :class="getSelectionIconClass(node)"></view>
         </view>
 
         <view class="utv-tree-node-label">
           {{ node.label }}
+        </view>
+
+        <view
+          v-if="showSelectionControl && props.checkboxPlacement === 'right'"
+          class="utv-tree-item__checkbox"
+          :class="{ 'is--disabled': node.disabled }"
+          @click.stop="handleCheckChange(node)">
+          <view
+            class="utv-tree-item__checkbox--icon"
+            :class="getSelectionIconClass(node)"></view>
         </view>
       </view>
     </scroll-view>
@@ -42,12 +54,16 @@
 </template>
 
 <script lang="ts" setup>
-/* eslint-disable no-console */
 import { computed, ref, toRaw, watch } from "vue";
 import { CHECK_STATUS_MAP, DefaultTreeProps } from "./constants";
 import type {
   CheckStatus,
+  TreeChangePayload,
+  TreeDataItem,
+  TreeKey,
   TreeNode,
+  TreeProps,
+  UniTreeListEmits,
   UniTreeListProps
 } from "./types";
 
@@ -61,95 +77,153 @@ defineOptions({
 });
 
 const props = withDefaults(defineProps<UniTreeListProps>(), {
+  modelValue: undefined,
   data: () => [],
   treeProps: () => DefaultTreeProps,
-  showCheckbox: true, // 节点是否可选
-  multiple: true, // TODO（是否支持多选）
-  checkStrictly: false, // TODO（是否严格遵循父子不互相关联）
-  defaultExpandAll: false, // TODO（展开全部）
-  autoExpandParent: false, // TODO（展开子节点的时候是否自动展开父节点）
-  defaultCheckedKeys: () => []
+  themeColor: "#007aff",
+  showCheckbox: false,
+  showRadioIcon: true,
+  multiple: false,
+  checkStrictly: false,
+  onlyRadioLeaf: false,
+  defaultExpandAll: false,
+  defaultExpandedKeys: () => [],
+  defaultExpandedIds: () => [],
+  expandChecked: false,
+  defaultCheckedKeys: () => [],
+  indent: 40,
+  checkboxPlacement: "left",
+  emptyText: "暂无数据"
 });
+
+const emit = defineEmits<UniTreeListEmits>();
 
 const treeList = ref<TreeNode[]>([]);
 const childrenMap = ref<Map<string | number, TreeNode[]>>(new Map());
 const nodeMap = ref<Map<string | number, TreeNode>>(new Map());
-const { id: idKey, label: labelKey, children: childrenKey } = props.treeProps;
 
-watch(() => props.data, (newTreeData) => {
-  initializeTree(newTreeData);
+const resolvedTreeProps = computed<TreeProps>(() => ({
+  ...DefaultTreeProps,
+  ...props.treeProps
+}));
+
+const isMultiple = computed(() => props.multiple || props.showCheckbox);
+
+const showSelectionControl = computed(() => {
+  return isMultiple.value ? props.showCheckbox || props.multiple : props.showRadioIcon;
 });
 
 const visibleTreeList = computed(() => {
   return treeList.value.filter((item) => item.visible);
 });
 
-initializeTree(toRaw(props.data));
+watch(
+  () => [
+    props.data,
+    getTreePropsSignature()
+  ] as const,
+  () => {
+    initializeTree(toRaw(props.data));
+  },
+  {
+    immediate: true
+  }
+);
 
-function initializeTree(treeData: TreeNode[] = []) {
+watch(
+  () => getExpansionConfigSignature(),
+  () => {
+    applyExpandedState();
+  }
+);
+
+watch(
+  () => getCheckedConfigSignature(),
+  () => {
+    applyCheckedState(getInitialCheckedKeys());
+  }
+);
+
+function initializeTree(treeData: TreeDataItem[] = []) {
   treeList.value = [];
+  childrenMap.value = new Map();
+  nodeMap.value = new Map();
   flattenTree(treeData);
-  console.log("flattenTree result", treeList.value, nodeMap.value, childrenMap.value);
-  // buildTreeMaps(treeList.value);
-  updateNodeAndDescendantsStatus(props.defaultCheckedKeys, CHECK_STATUS_MAP.checked);
-  updateParentNodesStatus();
+  applyCheckedState(getInitialCheckedKeys());
+  applyExpandedState();
 }
 
-// 下拉箭头点击
 function handleToggleExpand(node: TreeNode) {
   if (node.isLeaf) {
     return;
   }
 
   node.expanded = !node.expanded;
-  toggleChildrenExpand(node, node.expanded);
+  updateVisibility();
+  emit("goChild", { id: node.id, node });
+  emit("expand", node.expanded, node);
+  emit("expand-change", {
+    expanded: node.expanded,
+    node
+  });
 }
 
-// 复选框点击
 function handleCheckChange(node: TreeNode) {
-  if (node.disabled) {
+  if (!canSelectNode(node)) {
     return;
   }
-  const isChecked = node.checked === CHECK_STATUS_MAP.checked;
-  const newStatus = isChecked ? CHECK_STATUS_MAP.unchecked : CHECK_STATUS_MAP.checked;
-  updateNodeAndDescendantsStatus(node.id, newStatus);
-  updateParentNodesStatus();
+
+  if (isMultiple.value) {
+    const newStatus = node.checked === CHECK_STATUS_MAP.checked
+      ? CHECK_STATUS_MAP.unchecked
+      : CHECK_STATUS_MAP.checked;
+    if (props.checkStrictly) {
+      node.checked = newStatus;
+    } else {
+      updateNodeAndDescendantsStatus(node.id, newStatus);
+      updateParentNodesStatus();
+    }
+  } else {
+    const newStatus = node.checked === CHECK_STATUS_MAP.checked
+      ? CHECK_STATUS_MAP.unchecked
+      : CHECK_STATUS_MAP.checked;
+    clearCheckedStatus();
+    if (newStatus === CHECK_STATUS_MAP.checked) {
+      node.checked = CHECK_STATUS_MAP.checked;
+    }
+  }
+
+  commitSelectionChange(node);
 }
 
-// 扁平树结构，构建nodeMap和childrenMap
 function flattenTree(
-  list: TreeNode[] = [],
+  list: TreeDataItem[] = [],
   level = 0,
-  parentIds: (string | number)[] = [],
-  parents: TreeNode[] = []
+  parentIds: TreeKey[] = [],
+  parents: TreeDataItem[] = []
 ) {
-  const { defaultCheckedKeys } = props;
+  const { id: idKey, label: labelKey, children: childrenKey, disabled: disabledKey = "disabled" } = resolvedTreeProps.value;
   list.forEach((item) => {
-    Object.freeze(item);
-    const checked =
-      (defaultCheckedKeys.includes(item[idKey]) || !!item.check)
-        ? CHECK_STATUS_MAP.checked
-        : CHECK_STATUS_MAP.unchecked;
+    const id = item[idKey] as TreeKey;
+    const children = item[childrenKey];
 
     const treeNode: TreeNode = {
-      id: item[idKey],
-      label: item[labelKey],
+      id,
+      label: String(item[labelKey] ?? ""),
       source: item,
+      parentId: parentIds[parentIds.length - 1],
       parentIds,
       parents,
       level,
-      showChild: false,
       expanded: false,
       visible: level === 0,
-      hideArr: [],
-      disabled: item.disabled || false,
-      checked,
-      isLeaf: false
+      disabled: Boolean(item[disabledKey]),
+      checked: CHECK_STATUS_MAP.unchecked,
+      isLeaf: !(Array.isArray(children) && children.length > 0)
     };
     treeList.value.push(treeNode);
 
-    // 构建Map start
-    nodeMap.value.set(item[idKey], treeNode);
+    nodeMap.value.set(id, treeNode);
     const parentId = parentIds.slice(-1)[0];
     if (parentId !== undefined) {
       if (!childrenMap.value.has(parentId)) {
@@ -157,93 +231,115 @@ function flattenTree(
       }
       childrenMap.value.get(parentId)!.push(treeNode);
     }
-    // 构建Map end
 
-    const children = item[childrenKey];
     if (Array.isArray(children) && children.length > 0) {
-      const parentIdList: (string | number)[] = [...parentIds, item[idKey]];
-      const parentArr: any[] = [...parents, {
-        [idKey]: item[idKey],
-        [labelKey]: item[labelKey]
-      }];
+      const parentIdList: TreeKey[] = [...parentIds, id];
+      const parentArr: TreeDataItem[] = [...parents, item];
       flattenTree(children, level + 1, parentIdList, parentArr);
-    } else {
-      treeNode.isLeaf = true;
     }
   });
-
-  // console.log("flattenTree", treeList.value, nodeMap.value, childrenMap.value);
 }
 
-// 已被优化至flattenTree, 避免二次遍历构建map
-// function buildTreeMaps(flatList: TreeNode[]) {
-//   const newChildrenMap = new Map<string | number, TreeNode[]>();
-//   const newNodeMap = new Map<string | number, TreeNode>();
-//
-//   for (const node of flatList) {
-//     newNodeMap.set(node.id, node);
-//     const parentId = node.parentIds.at(-1);
-//     if (parentId !== undefined) {
-//       if (!newChildrenMap.has(parentId)) {
-//         newChildrenMap.set(parentId, []);
-//       }
-//       newChildrenMap.get(parentId)!.push(node);
-//     }
-//   }
-//   childrenMap.value = newChildrenMap;
-//   nodeMap.value = newNodeMap;
-//
-//   console.log("map: ", childrenMap.value, nodeMap.value);
-// }
-
-function toggleChildrenExpand(node: TreeNode, expand: boolean) {
-  const children = childrenMap.value.get(node.id);
-  if (!children || children.length === 0) {
+function applyCheckedState(keys: TreeKey[]) {
+  clearCheckedStatus();
+  if (keys.length === 0) {
     return;
   }
-  if (expand) {
-    for (const child of children) {
-      // child.expanded = expand;
-      child.visible = true;
+
+  if (isMultiple.value) {
+    if (props.checkStrictly) {
+      for (const key of keys) {
+        const node = nodeMap.value.get(key);
+        if (node) {
+          node.checked = CHECK_STATUS_MAP.checked;
+        }
+      }
+      return;
     }
-  } else { // 是否收起全部子节点
-    for (const child of children) {
-      child.expanded = expand;
-      child.visible = false;
-      const childrenOfChild = childrenMap.value.get(child.id);
-      if (childrenOfChild && childrenOfChild.length > 0) {
-        toggleChildrenExpand(child, expand);
+
+    updateNodeAndDescendantsStatus(keys, CHECK_STATUS_MAP.checked, true);
+    updateParentNodesStatus();
+    return;
+  }
+
+  const firstSelectableKey = keys.find((key) => {
+    const node = nodeMap.value.get(key);
+    return node && (!props.onlyRadioLeaf || node.isLeaf);
+  });
+  if (firstSelectableKey !== undefined) {
+    const node = nodeMap.value.get(firstSelectableKey);
+    if (node) {
+      node.checked = CHECK_STATUS_MAP.checked;
+    }
+  }
+}
+
+function applyExpandedState() {
+  const defaultExpandedKeys = normalizeKeys(props.defaultExpandedKeys);
+  const defaultExpandedIds = normalizeKeys(props.defaultExpandedIds);
+  const expandedKeySet = new Set<TreeKey>([
+    ...defaultExpandedKeys,
+    ...defaultExpandedIds
+  ]);
+
+  for (const node of treeList.value) {
+    node.expanded = props.defaultExpandAll || expandedKeySet.has(node.id);
+  }
+
+  applyExpandCheckedState();
+
+  updateVisibility();
+}
+
+function applyExpandCheckedState() {
+  if (!props.expandChecked) {
+    return;
+  }
+
+  for (const node of getCheckedNodes()) {
+    for (const parentId of node.parentIds) {
+      const parent = nodeMap.value.get(parentId);
+      if (parent) {
+        parent.expanded = true;
       }
     }
   }
+
+  updateVisibility();
 }
 
 function updateNodeAndDescendantsStatus(
-  targetIds: string | number | (string | number)[],
-  newStatus: Exclude<CheckStatus, "indeterminate"> // 不允许直接给子节点设半选
+  targetIds: TreeKey | TreeKey[],
+  newStatus: Exclude<CheckStatus, "indeterminate">,
+  includeDisabled = false
 ) {
   const ids = Array.isArray(targetIds) ? targetIds : [targetIds];
 
   for (const targetId of ids) {
     const node = nodeMap.value.get(targetId);
-    if (node) {
-      node.checked = newStatus;
-      const children = childrenMap.value.get(targetId);
-      if (children && children.length > 0) {
-        const childIds = children.map((child) => child.id);
-        updateNodeAndDescendantsStatus(childIds, newStatus);
-      }
+    if (!node || (node.disabled && !includeDisabled)) {
+      continue;
+    }
+
+    node.checked = newStatus;
+    const children = childrenMap.value.get(targetId);
+    if (children && children.length > 0) {
+      const childIds = children.map((child) => child.id);
+      updateNodeAndDescendantsStatus(childIds, newStatus, includeDisabled);
     }
   }
 }
 
-
-function hasChildren(nodeId: string | number) {
+function hasChildren(nodeId: TreeKey) {
   const children = childrenMap.value.get(nodeId);
   return Array.isArray(children) && children.length > 0;
 }
 
 function updateParentNodesStatus() {
+  if (props.checkStrictly || !isMultiple.value) {
+    return;
+  }
+
   const reversed = [...treeList.value].reverse();
   for (const node of reversed) {
     const children = childrenMap.value.get(node.id);
@@ -263,6 +359,255 @@ function updateParentNodesStatus() {
     }
   }
 }
+
+function updateVisibility() {
+  for (const node of treeList.value) {
+    node.visible = node.level === 0 || node.parentIds.every((parentId) => {
+      return nodeMap.value.get(parentId)?.expanded;
+    });
+  }
+}
+
+function canSelectNode(node: TreeNode) {
+  if (node.disabled) {
+    return false;
+  }
+
+  if (!isMultiple.value && props.onlyRadioLeaf && !node.isLeaf) {
+    return false;
+  }
+
+  return true;
+}
+
+function clearCheckedStatus() {
+  for (const node of treeList.value) {
+    node.checked = CHECK_STATUS_MAP.unchecked;
+  }
+}
+
+function normalizeKeys(value: TreeKey | TreeKey[] | null | undefined): TreeKey[] {
+  if (value === null || value === undefined) {
+    return [];
+  }
+
+  return Array.isArray(value) ? value : [value];
+}
+
+function getTreePropsSignature() {
+  return JSON.stringify(resolvedTreeProps.value);
+}
+
+function getExpansionConfigSignature() {
+  return JSON.stringify({
+    defaultExpandAll: props.defaultExpandAll,
+    defaultExpandedKeys: normalizeKeys(props.defaultExpandedKeys),
+    defaultExpandedIds: normalizeKeys(props.defaultExpandedIds),
+    expandChecked: props.expandChecked
+  });
+}
+
+function getCheckedConfigSignature() {
+  return JSON.stringify({
+    modelValue: props.modelValue,
+    defaultCheckedKeys: props.defaultCheckedKeys,
+    multiple: props.multiple,
+    showCheckbox: props.showCheckbox,
+    checkStrictly: props.checkStrictly,
+    onlyRadioLeaf: props.onlyRadioLeaf
+  });
+}
+
+function getInitialCheckedKeys() {
+  if (props.modelValue !== undefined) {
+    return normalizeKeys(props.modelValue);
+  }
+
+  return normalizeKeys(props.defaultCheckedKeys);
+}
+
+function getSelectionIconClass(node: TreeNode) {
+  if (isMultiple.value) {
+    if (node.checked === CHECK_STATUS_MAP.checked) {
+      return "utv-tree-checkbox-checked";
+    }
+    if (node.checked === CHECK_STATUS_MAP.indeterminate) {
+      return "utv-tree-checkbox-indeterminate";
+    }
+    return "utv-tree-checkbox-outline";
+  }
+
+  if (node.checked === CHECK_STATUS_MAP.checked) {
+    return "utv-tree-radio-checked";
+  }
+
+  return "utv-tree-radio-outline";
+}
+
+function getCheckedKeys() {
+  return getCheckedNodes().map((node) => node.id);
+}
+
+function getHalfCheckedKeys() {
+  return getHalfCheckedNodes().map((node) => node.id);
+}
+
+function getUncheckedKeys() {
+  return getUncheckedNodes().map((node) => node.id);
+}
+
+function getCheckedNodes() {
+  return treeList.value.filter((node) => node.checked === CHECK_STATUS_MAP.checked);
+}
+
+function getHalfCheckedNodes() {
+  return treeList.value.filter((node) => node.checked === CHECK_STATUS_MAP.indeterminate);
+}
+
+function getUncheckedNodes() {
+  return treeList.value.filter((node) => node.checked === CHECK_STATUS_MAP.unchecked);
+}
+
+function getExpandedKeys() {
+  return getExpandedNodes().map((node) => node.id);
+}
+
+function getUnexpandedKeys() {
+  return getUnexpandedNodes().map((node) => node.id);
+}
+
+function getExpandedNodes() {
+  return treeList.value.filter((node) => !node.isLeaf && node.expanded);
+}
+
+function getUnexpandedNodes() {
+  return treeList.value.filter((node) => !node.isLeaf && !node.expanded);
+}
+
+function getModelValue() {
+  if (isMultiple.value) {
+    return getCheckedKeys();
+  }
+
+  return getCheckedKeys()[0] ?? null;
+}
+
+function buildChangePayload(node: TreeNode): TreeChangePayload {
+  return {
+    value: getModelValue(),
+    keys: getCheckedKeys(),
+    nodes: getCheckedNodes(),
+    node
+  };
+}
+
+function commitSelectionChange(node: TreeNode) {
+  const payload = buildChangePayload(node);
+  emit("update:modelValue", payload.value);
+  emit("change", payload);
+  emit("checked", payload);
+  emit("check-change", payload);
+  emit("updated", payload);
+}
+
+function setCheckedKeys(keys: TreeKey | TreeKey[], checked = true) {
+  const normalizedKeys = normalizeKeys(keys);
+  const changedNode = normalizedKeys
+    .map((key) => nodeMap.value.get(key))
+    .find((node): node is TreeNode => Boolean(node));
+  if (!changedNode) {
+    return;
+  }
+
+  if (!checked) {
+    if (isMultiple.value) {
+      if (props.checkStrictly) {
+        for (const key of normalizedKeys) {
+          const node = nodeMap.value.get(key);
+          if (node) {
+            node.checked = CHECK_STATUS_MAP.unchecked;
+          }
+        }
+      } else {
+        updateNodeAndDescendantsStatus(normalizedKeys, CHECK_STATUS_MAP.unchecked, true);
+        updateParentNodesStatus();
+      }
+    } else {
+      for (const key of normalizedKeys) {
+        const node = nodeMap.value.get(key);
+        if (node) {
+          node.checked = CHECK_STATUS_MAP.unchecked;
+        }
+      }
+    }
+    commitSelectionChange(changedNode);
+    return;
+  }
+
+  if (isMultiple.value) {
+    if (props.checkStrictly) {
+      for (const key of normalizedKeys) {
+        const node = nodeMap.value.get(key);
+        if (node) {
+          node.checked = CHECK_STATUS_MAP.checked;
+        }
+      }
+    } else {
+      updateNodeAndDescendantsStatus(normalizedKeys, CHECK_STATUS_MAP.checked, true);
+      updateParentNodesStatus();
+    }
+  } else {
+    clearCheckedStatus();
+    changedNode.checked = CHECK_STATUS_MAP.checked;
+  }
+
+  commitSelectionChange(changedNode);
+}
+
+function setExpandedKeys(keys: TreeKey[] | "all", expanded = true) {
+  if (keys === "all") {
+    for (const node of treeList.value) {
+      if (!node.isLeaf) {
+        node.expanded = expanded;
+      }
+    }
+    updateVisibility();
+    return;
+  }
+
+  for (const key of keys) {
+    const node = nodeMap.value.get(key);
+    if (node && !node.isLeaf) {
+      node.expanded = expanded;
+    }
+  }
+  updateVisibility();
+}
+
+function expandAll() {
+  setExpandedKeys("all", true);
+}
+
+function collapseAll() {
+  setExpandedKeys("all", false);
+}
+
+defineExpose({
+  setCheckedKeys,
+  getCheckedKeys,
+  getHalfCheckedKeys,
+  getUncheckedKeys,
+  getCheckedNodes,
+  getHalfCheckedNodes,
+  getUncheckedNodes,
+  setExpandedKeys,
+  getExpandedKeys,
+  getUnexpandedKeys,
+  getExpandedNodes,
+  getUnexpandedNodes,
+  expandAll,
+  collapseAll
+});
 </script>
 
 <style lang="scss">
