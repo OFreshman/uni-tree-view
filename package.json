@@ -60,7 +60,8 @@
     "typescript": "catalog:dev",
     "unbuild": "catalog:build",
     "vite": "catalog:build",
-    "vitest": "catalog:test"
+    "vitest": "catalog:test",
+    "vue": "catalog:frontend"
   },
   "simple-git-hooks": {
     "pre-commit": "npx lint-staged"

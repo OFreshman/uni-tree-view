@@ -34,11 +34,18 @@
 
 ## 组件约定
 
-- 主组件：`packages/core/src/components/uni-tree-list/uni-tree-list.vue`。
-- 对外类型：`packages/core/src/components/uni-tree-list/types.d.ts`。
+- 主组件：`packages/core/src/components/uni-tree-view/uni-tree-view.vue`。
+- 对外类型：`packages/core/src/components/uni-tree-view/types.ts` 和 `packages/core/src/components/uni-tree-view/uni-tree-view.vue.d.ts`。
 - 当前基础能力：展开/收起、单选、多选、禁用节点、`v-model`、`checked`、`goChild` 和 `updated`。
 - `treeProps` 用于映射 `id`、`label`、`children`、`disabled` 字段名。
 - 修改组件能力时，要保持运行时 props/emits 和 `.d.ts` 类型同步。
+
+## 测试约定
+
+- 在继续 P1/P2 功能前，优先补齐轻量的业务逻辑测试，覆盖当前已有能力，避免交互回归。
+- 测试用例可以参考 Element Plus Tree 和 uView UI Tree 的组织方式：按展开、选中、半选、禁用、受控值、默认值、公开方法和事件 payload 分组。
+- 测试保持轻量，优先抽离可测试的纯逻辑或使用最小组件场景；不要为了单个逻辑用例引入沉重的跨平台 E2E 依赖。
+- 每次功能开发完成后，先跑业务逻辑测试，再跑构建验证。测试失败时先修测试覆盖的业务行为，不要直接跳到构建。
 
 ## 构建产物
 
@@ -60,6 +67,7 @@
 ```bash
 pnpm lint
 pnpm lint:type
+pnpm test
 pnpm build:play
 git diff --check
 ```
