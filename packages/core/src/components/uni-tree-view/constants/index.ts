@@ -11,5 +11,8 @@ export const DefaultTreeProps: TreeProps = {
   label: "label",
   children: "children",
   disabled: "disabled",
+  leaf: "leaf",
+  append: "append",
+  icon: "icon",
   class: "uni-tree-view-node"
 };

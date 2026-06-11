@@ -1,10 +1,24 @@
 export default {
   /**
+   * 当前选中值
+   */
+  modelValue: {
+    type: [Array, String, Number, null],
+    default: undefined
+  },
+  /**
    * 树的数据
    */
   data: {
     type: Array,
     default: () => []
+  },
+  /**
+   * 字段映射
+   */
+  treeProps: {
+    type: Object,
+    default: undefined
   },
   /**
    * 主题色
@@ -21,11 +35,18 @@ export default {
     default: false
   },
   /**
+   * 是否多选
+   */
+  multiple: {
+    type: Boolean,
+    default: false
+  },
+  /**
    * 默认选中的节点，注意单选时为单个key，多选时为key的数组
    */
   defaultCheckedKeys: {
     type: [Array, String, Number],
-    default: null
+    default: () => []
   },
   /**
    * 是否默认展开全部
@@ -39,7 +60,14 @@ export default {
    */
   defaultExpandedKeys: {
     type: Array,
-    default: null
+    default: () => []
+  },
+  /**
+   * 默认展开节点的兼容别名
+   */
+  defaultExpandedIds: {
+    type: Array,
+    default: () => []
   },
   /**
    * 筛选关键词
@@ -52,6 +80,13 @@ export default {
    * 是否自动展开到选中的节点，默认不展开
    */
   expandChecked: {
+    type: Boolean,
+    default: false
+  },
+  /**
+   * 数据刷新时是否保留运行时展开状态
+   */
+  cacheExpandedKeys: {
     type: Boolean,
     default: false
   },
@@ -76,7 +111,7 @@ export default {
    */
   valueField: {
     type: String,
-    default: "value"
+    default: "id"
   },
   /**
    * 下级字段(新，拆分了)
@@ -98,6 +133,13 @@ export default {
   leafField: {
     type: String,
     default: "leaf"
+  },
+  /**
+   * 节点图标字段
+   */
+  iconField: {
+    type: String,
+    default: "icon"
   },
   /**
    * 副标签字段(新，拆分了)
@@ -157,7 +199,7 @@ export default {
    */
   loadApi: {
     type: Function,
-    default: null
+    default: undefined
   },
   /**
    * 是否总在首次的时候加载一下内容，来比对是否一致
@@ -193,5 +235,26 @@ export default {
   indent: {
     type: Number,
     default: 40
+  },
+  /**
+   * 空状态文本
+   */
+  emptyText: {
+    type: String,
+    default: "暂无数据"
+  },
+  /**
+   * 是否显示节点路径
+   */
+  showPath: {
+    type: Boolean,
+    default: false
+  },
+  /**
+   * 节点路径分隔符
+   */
+  pathSeparator: {
+    type: String,
+    default: " / "
   }
 };

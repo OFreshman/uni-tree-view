@@ -13,6 +13,9 @@ export interface TreeDataItem {
 export interface TreeNode {
   id: TreeKey;
   label: string;
+  append: string;
+  icon: string;
+  path: string[];
   source: TreeDataItem;
   parentId?: TreeKey;
   parentIds: TreeKey[];
@@ -23,6 +26,8 @@ export interface TreeNode {
   expanded: boolean;
   visible: boolean;
   isLeaf: boolean;
+  loaded: boolean;
+  loading: boolean;
 }
 
 export interface TreeProps {
@@ -30,6 +35,9 @@ export interface TreeProps {
   label: string;
   children: string;
   disabled?: string;
+  leaf?: string;
+  append?: string;
+  icon?: string;
   class?: string;
 }
 
@@ -40,9 +48,38 @@ export interface TreeChangePayload {
   node: TreeNode;
 }
 
+export interface TreeLoadPayload {
+  node: TreeNode;
+  children: TreeDataItem[];
+}
+
 export interface TreeExpandPayload {
   expanded: boolean;
   node: TreeNode;
+}
+
+export interface TreeNodeClickPayload {
+  id: TreeKey;
+  node: TreeNode;
+  path: TreeNode[];
+}
+
+export interface TreeFilterPayload {
+  value: string;
+  keys: TreeKey[];
+  nodes: TreeNode[];
+}
+
+export interface TreeLegacyField {
+  id?: string;
+  key?: string;
+  value?: string;
+  label?: string;
+  children?: string;
+  disabled?: string;
+  leaf?: string;
+  append?: string;
+  icon?: string;
 }
 
 export interface UniTreeListProps {
@@ -50,10 +87,28 @@ export interface UniTreeListProps {
   modelValue?: TreeModelValue;
   /** Tree data. */
   data: TreeDataItem[];
+  /** Filter keyword. Matching nodes and their related branch stay visible. */
+  filterValue?: string;
   /** Default checked keys for uncontrolled initial state. */
   defaultCheckedKeys?: TreeKey | TreeKey[];
   /** Field mapping for id, label, children and disabled. */
   treeProps?: Partial<TreeProps>;
+  /** Legacy field mapping, compatible with popular uni tree components. */
+  field?: TreeLegacyField | null;
+  /** Legacy label field. */
+  labelField?: string;
+  /** Legacy value field. */
+  valueField?: string;
+  /** Legacy children field. */
+  childrenField?: string;
+  /** Legacy disabled field. */
+  disabledField?: string;
+  /** Legacy leaf field. */
+  leafField?: string;
+  /** Legacy append field. */
+  appendField?: string;
+  /** Legacy icon field. */
+  iconField?: string;
   /** Theme color for active checkbox/radio. */
   themeColor?: string;
   /** Whether to show checkbox UI. */
@@ -74,12 +129,30 @@ export interface UniTreeListProps {
   defaultExpandedIds?: TreeKey[];
   /** Expand ancestors of checked nodes initially. */
   expandChecked?: boolean;
+  /** Preserve runtime expanded state when tree data is rebuilt. */
+  cacheExpandedKeys?: boolean;
+  /** Lazy load mode. Nodes can be expanded before children exist. */
+  loadMode?: boolean;
+  /** Lazy load function. */
+  loadApi?: (node: TreeNode) => TreeDataItem[] | Promise<TreeDataItem[]>;
+  /** Custom leaf resolver. */
+  isLeafFn?: (item: TreeDataItem, node: TreeNode) => boolean;
+  /** Load once on first expand even when static children exist. */
+  alwaysFirstLoad?: boolean;
+  /** Whether disabled nodes can be checked by user/method operations. */
+  checkedDisabled?: boolean;
+  /** Whether checked disabled nodes are included in returned keys/nodes. */
+  packDisabledkey?: boolean;
   /** Tree item indent in rpx. */
   indent?: number;
   /** Checkbox/radio placement. */
   checkboxPlacement?: "left" | "right";
   /** Empty text shown when data is empty. */
   emptyText?: string;
+  /** Show label path under the node label. */
+  showPath?: boolean;
+  /** Separator used by the built-in path display. */
+  pathSeparator?: string;
 }
 
 export interface UniTreeListExposed {
@@ -93,10 +166,15 @@ export interface UniTreeListExposed {
   setExpandedKeys: (keys: TreeKey[] | "all", expanded?: boolean) => void;
   getExpandedKeys: () => TreeKey[];
   getUnexpandedKeys: () => TreeKey[];
+  getVisibleKeys: () => TreeKey[];
   getExpandedNodes: () => TreeNode[];
   getUnexpandedNodes: () => TreeNode[];
+  getVisibleNodes: () => TreeNode[];
+  getNode: (key: TreeKey) => TreeNode | undefined;
+  getNodePath: (keyOrNode: TreeKey | TreeNode) => TreeNode[];
   expandAll: () => void;
   collapseAll: () => void;
+  loadNode: (node: TreeNode) => Promise<TreeDataItem[]>;
 }
 
 export interface UniTreeListEmits {
@@ -107,5 +185,8 @@ export interface UniTreeListEmits {
   "check-change": (payload: TreeChangePayload) => void;
   expand: (expanded: boolean, node: TreeNode) => void;
   "expand-change": (payload: TreeExpandPayload) => void;
+  load: (payload: TreeLoadPayload) => void;
+  "node-click": (payload: TreeNodeClickPayload) => void;
+  "filter-change": (payload: TreeFilterPayload) => void;
   goChild: (params: { id: TreeKey; node: TreeNode }) => void;
 }

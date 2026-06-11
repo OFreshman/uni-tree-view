@@ -5,6 +5,7 @@ import type {
   TreeChangePayload,
   TreeDataItem,
   TreeKey,
+  TreeLegacyField,
   TreeModelValue,
   TreeNode,
   TreeProps
@@ -13,6 +14,15 @@ import type {
 export interface TreeViewStateProps {
   data?: TreeDataItem[];
   treeProps?: Partial<TreeProps>;
+  field?: TreeLegacyField | null;
+  labelField?: string;
+  valueField?: string;
+  childrenField?: string;
+  disabledField?: string;
+  leafField?: string;
+  appendField?: string;
+  iconField?: string;
+  filterValue?: string;
   modelValue?: TreeModelValue;
   defaultCheckedKeys?: TreeKey | TreeKey[] | null;
   showCheckbox?: boolean;
@@ -23,17 +33,35 @@ export interface TreeViewStateProps {
   defaultExpandedKeys?: TreeKey[] | null;
   defaultExpandedIds?: TreeKey[] | null;
   expandChecked?: boolean;
+  cacheExpandedKeys?: boolean;
+  loadMode?: boolean;
+  loadApi?: (node: TreeNode) => TreeDataItem[] | Promise<TreeDataItem[]>;
+  isLeafFn?: (item: TreeDataItem, node: TreeNode) => boolean;
+  alwaysFirstLoad?: boolean;
+  checkedDisabled?: boolean;
+  packDisabledkey?: boolean;
 }
 
 export function useTreeViewState(props: TreeViewStateProps) {
   const treeList = ref<TreeNode[]>([]);
   const childrenMap = ref<Map<TreeKey, TreeNode[]>>(new Map());
   const nodeMap = ref<Map<TreeKey, TreeNode>>(new Map());
+  const cachedExpandedKeys = ref<Set<TreeKey>>(new Set());
 
-  const resolvedTreeProps = computed<TreeProps>(() => ({
-    ...DefaultTreeProps,
-    ...props.treeProps
-  }));
+  const resolvedTreeProps = computed<TreeProps>(() => {
+    const field = props.field ?? {};
+    return {
+      ...DefaultTreeProps,
+      id: props.treeProps?.id ?? field.id ?? field.key ?? field.value ?? props.valueField ?? DefaultTreeProps.id,
+      label: props.treeProps?.label ?? field.label ?? props.labelField ?? DefaultTreeProps.label,
+      children: props.treeProps?.children ?? field.children ?? props.childrenField ?? DefaultTreeProps.children,
+      disabled: props.treeProps?.disabled ?? field.disabled ?? props.disabledField ?? DefaultTreeProps.disabled,
+      leaf: props.treeProps?.leaf ?? field.leaf ?? props.leafField ?? DefaultTreeProps.leaf,
+      append: props.treeProps?.append ?? field.append ?? props.appendField ?? DefaultTreeProps.append,
+      icon: props.treeProps?.icon ?? field.icon ?? props.iconField ?? DefaultTreeProps.icon,
+      class: props.treeProps?.class ?? DefaultTreeProps.class
+    };
+  });
 
   const isMultiple = computed(() => Boolean(props.multiple || props.showCheckbox));
 
@@ -44,7 +72,8 @@ export function useTreeViewState(props: TreeViewStateProps) {
   watch(
     () => [
       props.data,
-      getTreePropsSignature()
+      getTreeConfigSignature(),
+      props.isLeafFn
     ] as const,
     () => {
       initializeTree(toRaw(props.data ?? []));
@@ -68,21 +97,35 @@ export function useTreeViewState(props: TreeViewStateProps) {
     }
   );
 
+  watch(
+    () => props.filterValue,
+    () => {
+      updateVisibility();
+    }
+  );
+
   function initializeTree(treeData: TreeDataItem[] = []) {
-    treeList.value = [];
+    syncCachedExpandedKeys();
     childrenMap.value = new Map();
     nodeMap.value = new Map();
-    flattenTree(treeData);
+    treeList.value = flattenTree(treeData);
     applyCheckedState(getInitialCheckedKeys());
     applyExpandedState();
   }
 
   function toggleExpand(node: TreeNode) {
-    if (node.isLeaf) {
+    if (!isExpandable(node)) {
       return null;
     }
 
     node.expanded = !node.expanded;
+    if (props.cacheExpandedKeys) {
+      if (node.expanded) {
+        cachedExpandedKeys.value.add(node.id);
+      } else {
+        cachedExpandedKeys.value.delete(node.id);
+      }
+    }
     updateVisibility();
     return {
       expanded: node.expanded,
@@ -124,14 +167,26 @@ export function useTreeViewState(props: TreeViewStateProps) {
     parentIds: TreeKey[] = [],
     parents: TreeDataItem[] = []
   ) {
-    const { id: idKey, label: labelKey, children: childrenKey, disabled: disabledKey = "disabled" } = resolvedTreeProps.value;
+    const nodes: TreeNode[] = [];
+    const {
+      id: idKey,
+      label: labelKey,
+      children: childrenKey,
+      disabled: disabledKey = "disabled",
+      append: appendKey = "append",
+      icon: iconKey = "icon"
+    } = resolvedTreeProps.value;
     list.forEach((item) => {
       const id = item[idKey] as TreeKey;
       const children = item[childrenKey];
+      const label = String(item[labelKey] ?? "");
 
       const treeNode: TreeNode = {
         id,
-        label: String(item[labelKey] ?? ""),
+        label,
+        append: String(item[appendKey] ?? ""),
+        icon: String(item[iconKey] ?? ""),
+        path: [...parents.map((parent) => String(parent[labelKey] ?? "")), label],
         source: item,
         parentId: parentIds[parentIds.length - 1],
         parentIds,
@@ -141,9 +196,13 @@ export function useTreeViewState(props: TreeViewStateProps) {
         visible: level === 0,
         disabled: Boolean(item[disabledKey]),
         checked: CHECK_STATUS_MAP.unchecked,
-        isLeaf: !(Array.isArray(children) && children.length > 0)
+        isLeaf: false,
+        loaded: false,
+        loading: false
       };
-      treeList.value.push(treeNode);
+      treeNode.isLeaf = resolveIsLeaf(item, treeNode);
+      treeNode.loaded = treeNode.isLeaf || !props.loadMode || (Array.isArray(children) && children.length > 0 && !props.alwaysFirstLoad);
+      nodes.push(treeNode);
 
       nodeMap.value.set(id, treeNode);
       const parentId = parentIds.slice(-1)[0];
@@ -155,9 +214,11 @@ export function useTreeViewState(props: TreeViewStateProps) {
       }
 
       if (Array.isArray(children) && children.length > 0) {
-        flattenTree(children, level + 1, [...parentIds, id], [...parents, item]);
+        nodes.push(...flattenTree(children, level + 1, [...parentIds, id], [...parents, item]));
       }
     });
+
+    return nodes;
   }
 
   function applyCheckedState(keys: TreeKey[]) {
@@ -203,7 +264,9 @@ export function useTreeViewState(props: TreeViewStateProps) {
     ]);
 
     for (const node of treeList.value) {
-      node.expanded = Boolean(props.defaultExpandAll) || expandedKeySet.has(node.id);
+      node.expanded = Boolean(props.defaultExpandAll)
+        || expandedKeySet.has(node.id)
+        || (Boolean(props.cacheExpandedKeys) && cachedExpandedKeys.value.has(node.id));
     }
 
     applyExpandCheckedState();
@@ -237,7 +300,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
 
     for (const targetId of ids) {
       const node = nodeMap.value.get(targetId);
-      if (!node || (node.disabled && !includeDisabled)) {
+      if (!node || (node.disabled && !includeDisabled && !props.checkedDisabled)) {
         continue;
       }
 
@@ -252,6 +315,10 @@ export function useTreeViewState(props: TreeViewStateProps) {
   function hasChildren(nodeId: TreeKey) {
     const children = childrenMap.value.get(nodeId);
     return Array.isArray(children) && children.length > 0;
+  }
+
+  function isExpandable(node: TreeNode) {
+    return !node.isLeaf && (hasChildren(node.id) || Boolean(props.loadMode));
   }
 
   function updateParentNodesStatus() {
@@ -280,15 +347,61 @@ export function useTreeViewState(props: TreeViewStateProps) {
   }
 
   function updateVisibility() {
+    const filterValue = String(props.filterValue ?? "").trim().toLowerCase();
+    if (filterValue) {
+      const visibleKeySet = new Set<TreeKey>();
+      for (const node of treeList.value) {
+        if (!node.label.toLowerCase().includes(filterValue)) {
+          continue;
+        }
+
+        visibleKeySet.add(node.id);
+        for (const parentId of node.parentIds) {
+          visibleKeySet.add(parentId);
+        }
+        addDescendantVisibleKeys(node.id, visibleKeySet);
+      }
+
+      for (const node of treeList.value) {
+        node.visible = visibleKeySet.has(node.id);
+      }
+      return buildFilterPayload();
+    }
+
     for (const node of treeList.value) {
       node.visible = node.level === 0 || node.parentIds.every((parentId) => {
         return nodeMap.value.get(parentId)?.expanded;
       });
     }
+
+    return buildFilterPayload();
+  }
+
+  function buildFilterPayload() {
+    const nodes = getVisibleNodes();
+    return {
+      value: String(props.filterValue ?? ""),
+      keys: nodes.map((node) => node.id),
+      nodes
+    };
+  }
+
+  function syncCachedExpandedKeys() {
+    if (!props.cacheExpandedKeys) {
+      return;
+    }
+
+    for (const node of treeList.value) {
+      if (node.expanded) {
+        cachedExpandedKeys.value.add(node.id);
+      } else {
+        cachedExpandedKeys.value.delete(node.id);
+      }
+    }
   }
 
   function canSelectNode(node: TreeNode) {
-    if (node.disabled) {
+    if (node.disabled && !props.checkedDisabled) {
       return false;
     }
 
@@ -313,8 +426,12 @@ export function useTreeViewState(props: TreeViewStateProps) {
     return Array.isArray(value) ? value : [value];
   }
 
-  function getTreePropsSignature() {
-    return JSON.stringify(resolvedTreeProps.value);
+  function getTreeConfigSignature() {
+    return JSON.stringify({
+      treeProps: resolvedTreeProps.value,
+      loadMode: props.loadMode,
+      alwaysFirstLoad: props.alwaysFirstLoad
+    });
   }
 
   function getExpansionConfigSignature() {
@@ -322,7 +439,8 @@ export function useTreeViewState(props: TreeViewStateProps) {
       defaultExpandAll: props.defaultExpandAll,
       defaultExpandedKeys: normalizeKeys(props.defaultExpandedKeys),
       defaultExpandedIds: normalizeKeys(props.defaultExpandedIds),
-      expandChecked: props.expandChecked
+      expandChecked: props.expandChecked,
+      cacheExpandedKeys: props.cacheExpandedKeys
     });
   }
 
@@ -333,7 +451,9 @@ export function useTreeViewState(props: TreeViewStateProps) {
       multiple: props.multiple,
       showCheckbox: props.showCheckbox,
       checkStrictly: props.checkStrictly,
-      onlyRadioLeaf: props.onlyRadioLeaf
+      onlyRadioLeaf: props.onlyRadioLeaf,
+      checkedDisabled: props.checkedDisabled,
+      packDisabledkey: props.packDisabledkey
     });
   }
 
@@ -376,7 +496,12 @@ export function useTreeViewState(props: TreeViewStateProps) {
   }
 
   function getCheckedNodes() {
-    return treeList.value.filter((node) => node.checked === CHECK_STATUS_MAP.checked);
+    return treeList.value.filter((node) => {
+      if (node.checked !== CHECK_STATUS_MAP.checked) {
+        return false;
+      }
+      return props.packDisabledkey !== false || !node.disabled;
+    });
   }
 
   function getHalfCheckedNodes() {
@@ -395,12 +520,35 @@ export function useTreeViewState(props: TreeViewStateProps) {
     return getUnexpandedNodes().map((node) => node.id);
   }
 
+  function getVisibleKeys() {
+    return getVisibleNodes().map((node) => node.id);
+  }
+
   function getExpandedNodes() {
     return treeList.value.filter((node) => !node.isLeaf && node.expanded);
   }
 
   function getUnexpandedNodes() {
     return treeList.value.filter((node) => !node.isLeaf && !node.expanded);
+  }
+
+  function getVisibleNodes() {
+    return treeList.value.filter((node) => node.visible);
+  }
+
+  function getNode(key: TreeKey) {
+    return nodeMap.value.get(key);
+  }
+
+  function getNodePath(keyOrNode: TreeKey | TreeNode) {
+    const targetNode = typeof keyOrNode === "object" ? keyOrNode : nodeMap.value.get(keyOrNode);
+    if (!targetNode) {
+      return [];
+    }
+
+    return [...targetNode.parentIds, targetNode.id]
+      .map((key) => nodeMap.value.get(key))
+      .filter((node): node is TreeNode => Boolean(node));
   }
 
   function getModelValue() {
@@ -424,7 +572,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
     const normalizedKeys = normalizeKeys(keys);
     const changedNode = normalizedKeys
       .map((key) => nodeMap.value.get(key))
-      .find((node): node is TreeNode => Boolean(node));
+      .find((node): node is TreeNode => Boolean(node) && (!node.disabled || Boolean(props.checkedDisabled)));
     if (!changedNode) {
       return null;
     }
@@ -434,18 +582,18 @@ export function useTreeViewState(props: TreeViewStateProps) {
         if (props.checkStrictly) {
           for (const key of normalizedKeys) {
             const node = nodeMap.value.get(key);
-            if (node) {
+            if (node && (!node.disabled || props.checkedDisabled)) {
               node.checked = CHECK_STATUS_MAP.unchecked;
             }
           }
         } else {
-          updateNodeAndDescendantsStatus(normalizedKeys, CHECK_STATUS_MAP.unchecked, true);
+          updateNodeAndDescendantsStatus(normalizedKeys, CHECK_STATUS_MAP.unchecked, Boolean(props.checkedDisabled));
           updateParentNodesStatus();
         }
       } else {
         for (const key of normalizedKeys) {
           const node = nodeMap.value.get(key);
-          if (node) {
+          if (node && (!node.disabled || props.checkedDisabled)) {
             node.checked = CHECK_STATUS_MAP.unchecked;
           }
         }
@@ -457,12 +605,12 @@ export function useTreeViewState(props: TreeViewStateProps) {
       if (props.checkStrictly) {
         for (const key of normalizedKeys) {
           const node = nodeMap.value.get(key);
-          if (node) {
+          if (node && (!node.disabled || props.checkedDisabled)) {
             node.checked = CHECK_STATUS_MAP.checked;
           }
         }
       } else {
-        updateNodeAndDescendantsStatus(normalizedKeys, CHECK_STATUS_MAP.checked, true);
+        updateNodeAndDescendantsStatus(normalizedKeys, CHECK_STATUS_MAP.checked, Boolean(props.checkedDisabled));
         updateParentNodesStatus();
       }
     } else {
@@ -478,6 +626,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
       for (const node of treeList.value) {
         if (!node.isLeaf) {
           node.expanded = expanded;
+          syncExpandedCacheForNode(node);
         }
       }
       updateVisibility();
@@ -488,9 +637,22 @@ export function useTreeViewState(props: TreeViewStateProps) {
       const node = nodeMap.value.get(key);
       if (node && !node.isLeaf) {
         node.expanded = expanded;
+        syncExpandedCacheForNode(node);
       }
     }
     updateVisibility();
+  }
+
+  function syncExpandedCacheForNode(node: TreeNode) {
+    if (!props.cacheExpandedKeys) {
+      return;
+    }
+
+    if (node.expanded) {
+      cachedExpandedKeys.value.add(node.id);
+    } else {
+      cachedExpandedKeys.value.delete(node.id);
+    }
   }
 
   function expandAll() {
@@ -499,6 +661,106 @@ export function useTreeViewState(props: TreeViewStateProps) {
 
   function collapseAll() {
     setExpandedKeys("all", false);
+  }
+
+  function resolveIsLeaf(item: TreeDataItem, node: TreeNode) {
+    if (props.isLeafFn) {
+      return props.isLeafFn(item, node);
+    }
+
+    const { children: childrenKey, leaf: leafKey = "leaf" } = resolvedTreeProps.value;
+    const children = item[childrenKey];
+    if (props.loadMode && item[leafKey] !== undefined) {
+      return Boolean(item[leafKey]);
+    }
+
+    if (props.loadMode) {
+      return false;
+    }
+
+    return !(Array.isArray(children) && children.length > 0);
+  }
+
+  function addDescendantVisibleKeys(nodeId: TreeKey, visibleKeySet: Set<TreeKey>) {
+    const children = childrenMap.value.get(nodeId);
+    if (!children?.length) {
+      return;
+    }
+
+    for (const child of children) {
+      visibleKeySet.add(child.id);
+      addDescendantVisibleKeys(child.id, visibleKeySet);
+    }
+  }
+
+  function removeDescendants(nodeId: TreeKey) {
+    const children = childrenMap.value.get(nodeId) ?? [];
+    const descendantIds = new Set<TreeKey>();
+    for (const child of children) {
+      collectDescendantIds(child.id, descendantIds);
+    }
+
+    if (descendantIds.size === 0) {
+      return;
+    }
+
+    treeList.value = treeList.value.filter((node) => !descendantIds.has(node.id));
+    for (const id of descendantIds) {
+      nodeMap.value.delete(id);
+      childrenMap.value.delete(id);
+    }
+    childrenMap.value.delete(nodeId);
+  }
+
+  function collectDescendantIds(nodeId: TreeKey, ids: Set<TreeKey>) {
+    ids.add(nodeId);
+    const children = childrenMap.value.get(nodeId);
+    if (!children?.length) {
+      return;
+    }
+
+    for (const child of children) {
+      collectDescendantIds(child.id, ids);
+    }
+  }
+
+  function replaceNodeChildren(node: TreeNode, children: TreeDataItem[]) {
+    const shouldInheritChecked = isMultiple.value
+      && !props.checkStrictly
+      && node.checked === CHECK_STATUS_MAP.checked;
+    removeDescendants(node.id);
+
+    const childNodes = flattenTree(children, node.level + 1, [...node.parentIds, node.id], [...node.parents, node.source]);
+    const nodeIndex = treeList.value.findIndex((item) => item.id === node.id);
+    if (nodeIndex === -1) {
+      treeList.value.push(...childNodes);
+    } else {
+      treeList.value.splice(nodeIndex + 1, 0, ...childNodes);
+    }
+
+    node.isLeaf = children.length === 0 && Boolean(props.loadMode);
+    node.loaded = true;
+    if (shouldInheritChecked) {
+      updateNodeAndDescendantsStatus(childNodes.map((child) => child.id), CHECK_STATUS_MAP.checked);
+    }
+    updateParentNodesStatus();
+    updateVisibility();
+  }
+
+  async function loadNode(node: TreeNode) {
+    if (!props.loadMode || !props.loadApi || node.isLeaf || node.loading || node.loaded) {
+      return [];
+    }
+
+    node.loading = true;
+    try {
+      const children = await props.loadApi(node);
+      const normalizedChildren = Array.isArray(children) ? children : [];
+      replaceNodeChildren(node, normalizedChildren);
+      return normalizedChildren;
+    } finally {
+      node.loading = false;
+    }
   }
 
   return {
@@ -514,6 +776,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
     applyCheckedState,
     applyExpandedState,
     hasChildren,
+    isExpandable,
     getSelectionIconClass,
     setCheckedKeys,
     getCheckedKeys,
@@ -525,9 +788,14 @@ export function useTreeViewState(props: TreeViewStateProps) {
     setExpandedKeys,
     getExpandedKeys,
     getUnexpandedKeys,
+    getVisibleKeys,
     getExpandedNodes,
     getUnexpandedNodes,
+    getVisibleNodes,
+    getNode,
+    getNodePath,
     expandAll,
-    collapseAll
+    collapseAll,
+    loadNode
   };
 }
