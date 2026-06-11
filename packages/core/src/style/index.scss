@@ -130,6 +130,51 @@
   white-space: nowrap;
 }
 
+.utv-tree-node-content {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-width: 0;
+}
+
+.utv-tree-node-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.utv-tree-node-icon {
+  flex: 0 0 auto;
+  padding-left: 16rpx;
+  font-size: 28rpx;
+  line-height: 40rpx;
+}
+
+.utv-tree-node-icon + .utv-tree-node-main .utv-tree-node-label {
+  padding-left: 8rpx;
+}
+
+.utv-tree-node-append {
+  flex: 0 0 auto;
+  max-width: 40%;
+  padding-left: 16rpx;
+  overflow: hidden;
+  color: #667085;
+  font-size: 24rpx;
+  line-height: 36rpx;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.utv-tree-node-path {
+  padding: 0 16rpx;
+  overflow: hidden;
+  color: #98a2b3;
+  font-size: 22rpx;
+  line-height: 32rpx;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .utv-tree-empty {
   padding: 48rpx 24rpx;
   color: #98a2b3;

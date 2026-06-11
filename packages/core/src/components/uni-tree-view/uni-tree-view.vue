@@ -17,11 +17,12 @@
           'is-leaf': node.isLeaf,
           'is-expanded': node.expanded,
           'is-disabled': node.disabled
-        }">
+        }"
+        @click="handleNodeClick(node)">
         <view
-          v-if="!node.isLeaf && hasChildren(node.id)"
+          v-if="isExpandable(node)"
           class="utv-tree-item__arrow--icon is-right"
-          :class="{ 'is-expand': node.expanded }"
+          :class="{ 'is-expand': node.expanded, 'is-loading': node.loading }"
           @click.stop="handleToggleExpand(node)"></view>
         <view v-else class="utv-tree-item__arrow--placeholder"></view>
 
@@ -35,8 +36,45 @@
             :class="getSelectionIconClass(node)"></view>
         </view>
 
-        <view class="utv-tree-node-label">
-          {{ node.label }}
+        <view class="utv-tree-node-content">
+          <slot
+            name="default"
+            :node="node"
+            :data="node.source"
+            :path="getNodePath(node)">
+            <view v-if="node.icon || slots.icon" class="utv-tree-node-icon">
+              <slot
+                name="icon"
+                :node="node"
+                :data="node.source"
+                :path="getNodePath(node)">
+                {{ node.icon }}
+              </slot>
+            </view>
+            <view class="utv-tree-node-main">
+              <view class="utv-tree-node-label">
+                <slot
+                  name="label"
+                  :node="node"
+                  :data="node.source"
+                  :path="getNodePath(node)">
+                  {{ node.label }}
+                </slot>
+              </view>
+              <view v-if="props.showPath" class="utv-tree-node-path">
+                {{ node.path.join(props.pathSeparator) }}
+              </view>
+            </view>
+            <view v-if="node.append || slots.append" class="utv-tree-node-append">
+              <slot
+                name="append"
+                :node="node"
+                :data="node.source"
+                :path="getNodePath(node)">
+                {{ node.append }}
+              </slot>
+            </view>
+          </slot>
         </view>
 
         <view
@@ -54,8 +92,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed } from "vue";
-import { DefaultTreeProps } from "./constants";
+import { computed, useSlots, watch } from "vue";
 import type {
   TreeChangePayload,
   TreeKey,
@@ -77,7 +114,16 @@ defineOptions({
 const props = withDefaults(defineProps<UniTreeListProps>(), {
   modelValue: undefined,
   data: () => [],
-  treeProps: () => DefaultTreeProps,
+  treeProps: undefined,
+  field: null,
+  filterValue: "",
+  labelField: "label",
+  valueField: "id",
+  childrenField: "children",
+  disabledField: "disabled",
+  leafField: "leaf",
+  appendField: "append",
+  iconField: "icon",
   themeColor: "#007aff",
   showCheckbox: false,
   showRadioIcon: true,
@@ -88,21 +134,32 @@ const props = withDefaults(defineProps<UniTreeListProps>(), {
   defaultExpandedKeys: () => [],
   defaultExpandedIds: () => [],
   expandChecked: false,
+  cacheExpandedKeys: false,
   defaultCheckedKeys: () => [],
+  loadMode: false,
+  loadApi: undefined,
+  isLeafFn: undefined,
+  alwaysFirstLoad: false,
+  checkedDisabled: false,
+  packDisabledkey: true,
   indent: 40,
   checkboxPlacement: "left",
-  emptyText: "暂无数据"
+  emptyText: "暂无数据",
+  showPath: false,
+  pathSeparator: " / "
 });
 
 const emit = defineEmits<UniTreeListEmits>();
+const slots = useSlots();
 
 const {
   isMultiple,
   visibleTreeList,
   toggleExpand,
   checkNode,
-  hasChildren,
+  isExpandable,
   getSelectionIconClass,
+  loadNode,
   setCheckedKeys: setStateCheckedKeys,
   getCheckedKeys,
   getHalfCheckedKeys,
@@ -113,8 +170,12 @@ const {
   setExpandedKeys,
   getExpandedKeys,
   getUnexpandedKeys,
+  getVisibleKeys,
   getExpandedNodes,
   getUnexpandedNodes,
+  getVisibleNodes,
+  getNode,
+  getNodePath,
   expandAll,
   collapseAll
 } = useTreeViewState(props);
@@ -123,7 +184,8 @@ const showSelectionControl = computed(() => {
   return isMultiple.value ? props.showCheckbox || props.multiple : props.showRadioIcon;
 });
 
-function handleToggleExpand(node: TreeNode) {
+async function handleToggleExpand(node: TreeNode) {
+  const shouldLoad = !node.loaded;
   const payload = toggleExpand(node);
   if (!payload) {
     return;
@@ -132,7 +194,38 @@ function handleToggleExpand(node: TreeNode) {
   emit("goChild", { id: node.id, node });
   emit("expand", payload.expanded, node);
   emit("expand-change", payload);
+
+  if (payload.expanded && shouldLoad) {
+    const children = await loadNode(node);
+    if (node.loaded) {
+      emit("load", { node, children });
+    }
+  }
 }
+
+function handleNodeClick(node: TreeNode) {
+  emit("node-click", {
+    id: node.id,
+    node,
+    path: getNodePath(node)
+  });
+}
+
+function emitFilterChange() {
+  emit("filter-change", {
+    value: props.filterValue,
+    keys: getVisibleKeys(),
+    nodes: getVisibleNodes()
+  });
+}
+
+watch(
+  () => props.filterValue,
+  () => {
+    emitFilterChange();
+  },
+  { flush: "post" }
+);
 
 function handleCheckChange(node: TreeNode) {
   const payload = checkNode(node);
@@ -171,10 +264,15 @@ defineExpose({
   setExpandedKeys,
   getExpandedKeys,
   getUnexpandedKeys,
+  getVisibleKeys,
   getExpandedNodes,
   getUnexpandedNodes,
+  getVisibleNodes,
+  getNode,
+  getNodePath,
   expandAll,
-  collapseAll
+  collapseAll,
+  loadNode
 });
 </script>
 
