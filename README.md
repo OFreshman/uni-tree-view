@@ -95,6 +95,10 @@ function handleExpandChange(payload) {
 | `emptyText` | `string` | `暂无数据` | 空状态文本 |
 | `showPath` | `boolean` | `false` | 是否在默认节点内容中显示路径 |
 | `pathSeparator` | `string` | ` / ` | 默认路径展示分隔符 |
+| `virtual` | `boolean` | `false` | 是否启用固定行高虚拟渲染，适合大量可见节点 |
+| `virtualItemHeight` | `number` | `36` | 虚拟渲染单行高度，单位 `px` |
+| `virtualHeight` | `number` | `400` | 虚拟渲染滚动容器高度，单位 `px` |
+| `virtualOverscan` | `number` | `8` | 虚拟渲染视口上下额外渲染行数 |
 
 ## Events
 
@@ -206,6 +210,23 @@ function handleLoad(payload) {
   console.log(payload.node, payload.children);
 }
 </script>
+```
+
+## Large Data
+
+当树可能展开到数千或上万可见节点时，可以开启固定行高虚拟渲染。虚拟模式只渲染当前视口和少量缓冲节点，适合“中国-省-市-区/县-镇”这类层级数据；如果节点使用自定义 slot 且高度不固定，建议先保持普通渲染或统一节点高度。
+
+```vue
+<template>
+  <uni-tree-list
+    v-model="checkedKeys"
+    show-checkbox
+    virtual
+    :virtual-height="560"
+    :virtual-item-height="36"
+    :data="districtTree"
+  />
+</template>
 ```
 
 ## Resolver

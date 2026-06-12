@@ -256,5 +256,33 @@ export default {
   pathSeparator: {
     type: String,
     default: " / "
+  },
+  /**
+   * 是否启用固定行高虚拟渲染，适合大数据量场景
+   */
+  virtual: {
+    type: Boolean,
+    default: false
+  },
+  /**
+   * 虚拟渲染单行高度，单位 px
+   */
+  virtualItemHeight: {
+    type: Number,
+    default: 36
+  },
+  /**
+   * 虚拟渲染滚动容器高度，单位 px
+   */
+  virtualHeight: {
+    type: Number,
+    default: 400
+  },
+  /**
+   * 虚拟渲染视口上下额外渲染行数
+   */
+  virtualOverscan: {
+    type: Number,
+    default: 8
   }
 };
