@@ -153,6 +153,14 @@ export interface UniTreeListProps {
   showPath?: boolean;
   /** Separator used by the built-in path display. */
   pathSeparator?: string;
+  /** Enable fixed-height virtual rendering for very large visible node lists. */
+  virtual?: boolean;
+  /** Row height in px when virtual rendering is enabled. */
+  virtualItemHeight?: number;
+  /** Scroll container height in px when virtual rendering is enabled. */
+  virtualHeight?: number;
+  /** Extra rows rendered before and after the viewport in virtual mode. */
+  virtualOverscan?: number;
 }
 
 export interface UniTreeListExposed {

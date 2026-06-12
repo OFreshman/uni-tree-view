@@ -2,76 +2,84 @@
   <view
     class="uni-tree-view-container"
     :style="{ '--theme-color': props.themeColor }">
-    <scroll-view class="scroll-view-container" :scroll-y="true">
+    <scroll-view
+      class="scroll-view-container"
+      :scroll-y="true"
+      :style="scrollViewStyle"
+      @scroll="handleVirtualScroll">
       <view v-if="visibleTreeList.length === 0" class="utv-tree-empty">
         {{ props.emptyText }}
       </view>
       <view
-        v-for="node in visibleTreeList"
-        :key="node.id"
+        v-if="virtualEnabled && virtualTopPadding > 0"
+        class="utv-tree-virtual-spacer"
+        :style="{ height: `${virtualTopPadding}px` }"></view>
+      <view
+        v-for="item in renderedTreeList"
+        :key="item.node.id"
         :style="[{
-          paddingLeft: `${node.level * props.indent}rpx`
+          paddingLeft: `${item.node.level * props.indent}rpx`
         }]"
         class="utv-tree-item"
         :class="{
-          'is-leaf': node.isLeaf,
-          'is-expanded': node.expanded,
-          'is-disabled': node.disabled
+          'is-leaf': item.node.isLeaf,
+          'is-expanded': item.node.expanded,
+          'is-disabled': item.node.disabled
         }"
-        @click="handleNodeClick(node)">
+        @click="handleNodeClick(item.node)">
         <view
-          v-if="isExpandable(node)"
+          v-if="isExpandable(item.node)"
           class="utv-tree-item__arrow--icon is-right"
-          :class="{ 'is-expand': node.expanded, 'is-loading': node.loading }"
-          @click.stop="handleToggleExpand(node)"></view>
+          :class="{ 'is-expand': item.node.expanded, 'is-loading': item.node.loading }"
+          @click.stop="handleToggleExpand(item.node)"></view>
         <view v-else class="utv-tree-item__arrow--placeholder"></view>
 
         <view
           v-if="showSelectionControl && props.checkboxPlacement === 'left'"
           class="utv-tree-item__checkbox"
-          :class="{ 'is--disabled': node.disabled }"
-          @click.stop="handleCheckChange(node)">
+          :class="{ 'is--disabled': item.node.disabled }"
+          @click.stop="handleCheckChange(item.node)">
           <view
             class="utv-tree-item__checkbox--icon"
-            :class="getSelectionIconClass(node)"></view>
+            :class="getSelectionIconClass(item.node)"></view>
         </view>
 
         <view class="utv-tree-node-content">
           <slot
             name="default"
-            :node="node"
-            :data="node.source"
-            :path="getNodePath(node)">
-            <view v-if="node.icon || slots.icon" class="utv-tree-node-icon">
+            :node="item.node"
+            :data="item.node.source"
+            :path="item.path">
+            <view v-if="item.node.icon || slots.icon" class="utv-tree-node-icon">
               <slot
                 name="icon"
-                :node="node"
-                :data="node.source"
-                :path="getNodePath(node)">
-                {{ node.icon }}
+                :node="item.node"
+                :data="item.node.source"
+                :path="item.path">
+                {{ item.node.icon }}
               </slot>
             </view>
             <view class="utv-tree-node-main">
               <view class="utv-tree-node-label">
                 <slot
                   name="label"
-                  :node="node"
-                  :data="node.source"
-                  :path="getNodePath(node)">
-                  {{ node.label }}
+                  :node="item.node"
+                  :data="item.node.source"
+                  :path="item.path">
+                  {{ item.node.label }}
                 </slot>
               </view>
               <view v-if="props.showPath" class="utv-tree-node-path">
-                {{ node.path.join(props.pathSeparator) }}
+                {{ item.node.path.join(props.pathSeparator) }}
               </view>
             </view>
-            <view v-if="node.append || slots.append" class="utv-tree-node-append">
+            <view v-if="item.node.append || slots.append" class="utv-tree-node-append">
               <slot
                 name="append"
-                :node="node"
-                :data="node.source"
-                :path="getNodePath(node)">
-                {{ node.append }}
+                :node="item.node"
+                :data="item.node.source"
+                :path="item.path">
+                {{ item.node.append }}
               </slot>
             </view>
           </slot>
@@ -80,19 +88,23 @@
         <view
           v-if="showSelectionControl && props.checkboxPlacement === 'right'"
           class="utv-tree-item__checkbox"
-          :class="{ 'is--disabled': node.disabled }"
-          @click.stop="handleCheckChange(node)">
+          :class="{ 'is--disabled': item.node.disabled }"
+          @click.stop="handleCheckChange(item.node)">
           <view
             class="utv-tree-item__checkbox--icon"
-            :class="getSelectionIconClass(node)"></view>
+            :class="getSelectionIconClass(item.node)"></view>
         </view>
       </view>
+      <view
+        v-if="virtualEnabled && virtualBottomPadding > 0"
+        class="utv-tree-virtual-spacer"
+        :style="{ height: `${virtualBottomPadding}px` }"></view>
     </scroll-view>
   </view>
 </template>
 
 <script lang="ts" setup>
-import { computed, useSlots, watch } from "vue";
+import { computed, shallowRef, useSlots, watch } from "vue";
 import type {
   TreeChangePayload,
   TreeKey,
@@ -146,7 +158,11 @@ const props = withDefaults(defineProps<UniTreeListProps>(), {
   checkboxPlacement: "left",
   emptyText: "暂无数据",
   showPath: false,
-  pathSeparator: " / "
+  pathSeparator: " / ",
+  virtual: false,
+  virtualItemHeight: 36,
+  virtualHeight: 400,
+  virtualOverscan: 8
 });
 
 const emit = defineEmits<UniTreeListEmits>();
@@ -183,6 +199,84 @@ const {
 const showSelectionControl = computed(() => {
   return isMultiple.value ? props.showCheckbox || props.multiple : props.showRadioIcon;
 });
+
+const virtualScrollTop = shallowRef(0);
+
+const virtualEnabled = computed(() => {
+  return Boolean(props.virtual && props.virtualItemHeight > 0 && props.virtualHeight > 0);
+});
+
+const scrollViewStyle = computed(() => {
+  if (!virtualEnabled.value) {
+    return undefined;
+  }
+
+  return {
+    height: `${props.virtualHeight}px`
+  };
+});
+
+const virtualOverscan = computed(() => Math.max(0, Math.floor(props.virtualOverscan)));
+
+const virtualStartIndex = computed(() => {
+  if (!virtualEnabled.value || visibleTreeList.value.length === 0) {
+    return 0;
+  }
+
+  const rawStart = Math.floor(virtualScrollTop.value / props.virtualItemHeight) - virtualOverscan.value;
+  return Math.min(Math.max(0, rawStart), visibleTreeList.value.length - 1);
+});
+
+const virtualEndIndex = computed(() => {
+  if (!virtualEnabled.value) {
+    return visibleTreeList.value.length;
+  }
+
+  const visibleCount = Math.ceil(props.virtualHeight / props.virtualItemHeight) + virtualOverscan.value * 2;
+  return Math.min(visibleTreeList.value.length, virtualStartIndex.value + visibleCount);
+});
+
+interface RenderedTreeItem {
+  node: TreeNode;
+  path: TreeNode[];
+}
+
+const renderedTreeList = computed(() => {
+  const nodes = virtualEnabled.value
+    ? visibleTreeList.value.slice(virtualStartIndex.value, virtualEndIndex.value)
+    : visibleTreeList.value;
+
+  return nodes.map((node): RenderedTreeItem => ({
+    node,
+    path: getNodePath(node)
+  }));
+});
+
+const virtualTopPadding = computed(() => {
+  return virtualEnabled.value ? virtualStartIndex.value * props.virtualItemHeight : 0;
+});
+
+const virtualBottomPadding = computed(() => {
+  if (!virtualEnabled.value) {
+    return 0;
+  }
+
+  return Math.max(0, (visibleTreeList.value.length - virtualEndIndex.value) * props.virtualItemHeight);
+});
+
+interface UniTreeScrollEvent {
+  detail?: {
+    scrollTop?: number;
+  };
+}
+
+function handleVirtualScroll(event: UniTreeScrollEvent) {
+  if (!virtualEnabled.value) {
+    return;
+  }
+
+  virtualScrollTop.value = Math.max(0, Number(event.detail?.scrollTop ?? 0));
+}
 
 async function handleToggleExpand(node: TreeNode) {
   const shouldLoad = !node.loaded;
