@@ -5,8 +5,8 @@
 ## 项目边界
 
 - 这是一个 pnpm `10.11.0` workspace，用于开发 uni-app + Vue 3 组件包。
-- `packages/core` 是实际发布的 `uni-tree-list` 包；根目录 package 仅用于 workspace 脚本，并保持 `private: true`。
-- `playground` 是本地 uni-app H5 演示项目，当前 demo 直接从 `uni-tree-list` 导入 `UniTreeList`。
+- `packages/core` 是实际发布的 `uni-tree-view` 包；根目录 package 仅用于 workspace 脚本，并保持 `private: true`。
+- `playground` 是本地 uni-app H5 演示项目，当前 demo 直接从 `uni-tree-view` 导入组件。
 
 ## 常用命令
 
@@ -53,8 +53,8 @@
 
 ## 参考资料
 
-- 如需大量查询 uni-app API 或平台差异，可单独安装/使用社区 skill：`https://www.skills.sh/teachingai/full-stack-skills/uniapp-project`。
-- 不要把该 skill vendoring 或复制进仓库；本仓库规则以当前 `AGENTS.md` 为准。
+- 本环境已全局安装 `uni-app` skill；如需查询 uni-app API、平台差异、条件编译、`pages.json` 或 `manifest.json` 配置，优先使用该 skill。
+- 不要把 skill vendoring 或复制进仓库；本仓库规则以当前 `AGENTS.md` 为准。
 
 ## 交付前验证
 
