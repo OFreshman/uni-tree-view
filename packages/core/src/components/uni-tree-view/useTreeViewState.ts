@@ -44,6 +44,7 @@ export interface TreeViewStateProps {
 
 export function useTreeViewState(props: TreeViewStateProps) {
   const treeList = ref<TreeNode[]>([]);
+  const visibleTreeList = ref<TreeNode[]>([]);
   const childrenMap = ref<Map<TreeKey, TreeNode[]>>(new Map());
   const nodeMap = ref<Map<TreeKey, TreeNode>>(new Map());
   const cachedExpandedKeys = ref<Set<TreeKey>>(new Set());
@@ -64,10 +65,6 @@ export function useTreeViewState(props: TreeViewStateProps) {
   });
 
   const isMultiple = computed(() => Boolean(props.multiple || props.showCheckbox));
-
-  const visibleTreeList = computed(() => {
-    return treeList.value.filter((item) => item.visible);
-  });
 
   watch(
     () => [
@@ -146,7 +143,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
         node.checked = newStatus;
       } else {
         updateNodeAndDescendantsStatus(node.id, newStatus);
-        updateParentNodesStatus();
+        updateParentNodesStatus(node.id);
       }
     } else {
       const newStatus = node.checked === CHECK_STATUS_MAP.checked
@@ -239,7 +236,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
       }
 
       updateNodeAndDescendantsStatus(keys, CHECK_STATUS_MAP.checked, true);
-      updateParentNodesStatus();
+      updateParentNodesStatus(keys);
       return;
     }
 
@@ -296,9 +293,14 @@ export function useTreeViewState(props: TreeViewStateProps) {
     newStatus: Exclude<CheckStatus, "indeterminate">,
     includeDisabled = false
   ) {
-    const ids = Array.isArray(targetIds) ? targetIds : [targetIds];
+    const pendingIds = [...(Array.isArray(targetIds) ? targetIds : [targetIds])];
 
-    for (const targetId of ids) {
+    while (pendingIds.length > 0) {
+      const targetId = pendingIds.pop();
+      if (targetId === undefined) {
+        continue;
+      }
+
       const node = nodeMap.value.get(targetId);
       if (!node || (node.disabled && !includeDisabled && !props.checkedDisabled)) {
         continue;
@@ -307,7 +309,9 @@ export function useTreeViewState(props: TreeViewStateProps) {
       node.checked = newStatus;
       const children = childrenMap.value.get(targetId);
       if (children && children.length > 0) {
-        updateNodeAndDescendantsStatus(children.map((child) => child.id), newStatus, includeDisabled);
+        for (const child of children) {
+          pendingIds.push(child.id);
+        }
       }
     }
   }
@@ -321,33 +325,63 @@ export function useTreeViewState(props: TreeViewStateProps) {
     return !node.isLeaf && (hasChildren(node.id) || Boolean(props.loadMode));
   }
 
-  function updateParentNodesStatus() {
+  function updateParentNodesStatus(targetIds?: TreeKey | TreeKey[]) {
     if (props.checkStrictly || !isMultiple.value) {
       return;
     }
 
-    const reversed = [...treeList.value].reverse();
-    for (const node of reversed) {
-      const children = childrenMap.value.get(node.id);
-      if (!children?.length) {
+    if (targetIds === undefined) {
+      for (let index = treeList.value.length - 1; index >= 0; index -= 1) {
+        updateNodeFromChildren(treeList.value[index]);
+      }
+      return;
+    }
+
+    const affectedNodes = new Map<TreeKey, TreeNode>();
+    const ids = Array.isArray(targetIds) ? targetIds : [targetIds];
+    for (const id of ids) {
+      const node = nodeMap.value.get(id);
+      if (!node) {
         continue;
       }
-
-      const allChecked = children.every((c) => c.checked === CHECK_STATUS_MAP.checked);
-      const allUnchecked = children.every((c) => c.checked === CHECK_STATUS_MAP.unchecked);
-
-      if (allChecked) {
-        node.checked = CHECK_STATUS_MAP.checked;
-      } else if (allUnchecked) {
-        node.checked = CHECK_STATUS_MAP.unchecked;
-      } else {
-        node.checked = CHECK_STATUS_MAP.indeterminate;
+      if (hasChildren(node.id)) {
+        affectedNodes.set(node.id, node);
       }
+      for (const parentId of node.parentIds) {
+        const parent = nodeMap.value.get(parentId);
+        if (parent) {
+          affectedNodes.set(parent.id, parent);
+        }
+      }
+    }
+
+    [...affectedNodes.values()]
+      .sort((a, b) => b.level - a.level)
+      .forEach(updateNodeFromChildren);
+  }
+
+  function updateNodeFromChildren(node: TreeNode) {
+    const children = childrenMap.value.get(node.id);
+    if (!children?.length) {
+      return;
+    }
+
+    const allChecked = children.every((child) => child.checked === CHECK_STATUS_MAP.checked);
+    const allUnchecked = children.every((child) => child.checked === CHECK_STATUS_MAP.unchecked);
+
+    if (allChecked) {
+      node.checked = CHECK_STATUS_MAP.checked;
+    } else if (allUnchecked) {
+      node.checked = CHECK_STATUS_MAP.unchecked;
+    } else {
+      node.checked = CHECK_STATUS_MAP.indeterminate;
     }
   }
 
   function updateVisibility() {
     const filterValue = String(props.filterValue ?? "").trim().toLowerCase();
+    const visibleNodes: TreeNode[] = [];
+
     if (filterValue) {
       const visibleKeySet = new Set<TreeKey>();
       for (const node of treeList.value) {
@@ -364,21 +398,28 @@ export function useTreeViewState(props: TreeViewStateProps) {
 
       for (const node of treeList.value) {
         node.visible = visibleKeySet.has(node.id);
+        if (node.visible) {
+          visibleNodes.push(node);
+        }
       }
-      return buildFilterPayload();
+      visibleTreeList.value = visibleNodes;
+      return buildFilterPayload(visibleNodes);
     }
 
+    // treeList is pre-order flattened, so parent visibility is already resolved here.
     for (const node of treeList.value) {
-      node.visible = node.level === 0 || node.parentIds.every((parentId) => {
-        return nodeMap.value.get(parentId)?.expanded;
-      });
+      const parent = node.parentId === undefined ? undefined : nodeMap.value.get(node.parentId);
+      node.visible = node.level === 0 || Boolean(parent?.visible && parent.expanded);
+      if (node.visible) {
+        visibleNodes.push(node);
+      }
     }
 
-    return buildFilterPayload();
+    visibleTreeList.value = visibleNodes;
+    return buildFilterPayload(visibleNodes);
   }
 
-  function buildFilterPayload() {
-    const nodes = getVisibleNodes();
+  function buildFilterPayload(nodes = visibleTreeList.value) {
     return {
       value: String(props.filterValue ?? ""),
       keys: nodes.map((node) => node.id),
@@ -533,7 +574,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
   }
 
   function getVisibleNodes() {
-    return treeList.value.filter((node) => node.visible);
+    return visibleTreeList.value;
   }
 
   function getNode(key: TreeKey) {
@@ -588,7 +629,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
           }
         } else {
           updateNodeAndDescendantsStatus(normalizedKeys, CHECK_STATUS_MAP.unchecked, Boolean(props.checkedDisabled));
-          updateParentNodesStatus();
+          updateParentNodesStatus(normalizedKeys);
         }
       } else {
         for (const key of normalizedKeys) {
@@ -611,7 +652,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
         }
       } else {
         updateNodeAndDescendantsStatus(normalizedKeys, CHECK_STATUS_MAP.checked, Boolean(props.checkedDisabled));
-        updateParentNodesStatus();
+        updateParentNodesStatus(normalizedKeys);
       }
     } else {
       clearCheckedStatus();
@@ -682,14 +723,14 @@ export function useTreeViewState(props: TreeViewStateProps) {
   }
 
   function addDescendantVisibleKeys(nodeId: TreeKey, visibleKeySet: Set<TreeKey>) {
-    const children = childrenMap.value.get(nodeId);
-    if (!children?.length) {
-      return;
-    }
-
-    for (const child of children) {
+    const pendingNodes = [...(childrenMap.value.get(nodeId) ?? [])];
+    while (pendingNodes.length > 0) {
+      const child = pendingNodes.pop();
+      if (!child) {
+        continue;
+      }
       visibleKeySet.add(child.id);
-      addDescendantVisibleKeys(child.id, visibleKeySet);
+      pendingNodes.push(...(childrenMap.value.get(child.id) ?? []));
     }
   }
 
@@ -743,7 +784,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
     if (shouldInheritChecked) {
       updateNodeAndDescendantsStatus(childNodes.map((child) => child.id), CHECK_STATUS_MAP.checked);
     }
-    updateParentNodesStatus();
+    updateParentNodesStatus(node.id);
     updateVisibility();
   }
 

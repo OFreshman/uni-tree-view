@@ -87,6 +87,21 @@ function createLazyTreeData(): TreeDataItem[] {
   ];
 }
 
+function createLargeTreeData(rootCount = 25, childCount = 20, leafCount = 20): TreeDataItem[] {
+  return Array.from({ length: rootCount }, (_, rootIndex) => ({
+    id: `province-${rootIndex}`,
+    label: `Province ${rootIndex}`,
+    children: Array.from({ length: childCount }, (_, childIndex) => ({
+      id: `city-${rootIndex}-${childIndex}`,
+      label: `City ${rootIndex}-${childIndex}`,
+      children: Array.from({ length: leafCount }, (_, leafIndex) => ({
+        id: `town-${rootIndex}-${childIndex}-${leafIndex}`,
+        label: `Town ${rootIndex}-${childIndex}-${leafIndex}`
+      }))
+    }))
+  }));
+}
+
 function node(state: ReturnType<typeof useTreeViewState>, key: TreeKey) {
   const target = state.nodeMap.value.get(key);
   if (!target) {
@@ -508,5 +523,29 @@ describe("useTreeViewState", () => {
     ];
     await nextTick();
     expect(visibleKeys(state)).toEqual(["building-a", "floor-a-1", "floor-a-2", "building-b", "building-c"]);
+  });
+
+  it("keeps visible node cache and linked selection correct with large trees", () => {
+    const { state } = createState({
+      data: createLargeTreeData(),
+      showCheckbox: true
+    });
+
+    expect(state.treeList.value).toHaveLength(10_525);
+    expect(visibleKeys(state)).toHaveLength(25);
+
+    state.expandAll();
+    expect(state.visibleTreeList.value).toHaveLength(10_525);
+    expect(state.getVisibleNodes()).toBe(state.visibleTreeList.value);
+
+    const payload = state.checkNode(node(state, "province-0"));
+    expect(payload?.keys).toHaveLength(421);
+    expect(node(state, "province-0").checked).toBe(CHECK_STATUS_MAP.checked);
+    expect(node(state, "city-0-0").checked).toBe(CHECK_STATUS_MAP.checked);
+    expect(node(state, "town-0-0-0").checked).toBe(CHECK_STATUS_MAP.checked);
+
+    state.checkNode(node(state, "town-0-0-0"));
+    expect(node(state, "province-0").checked).toBe(CHECK_STATUS_MAP.indeterminate);
+    expect(node(state, "city-0-0").checked).toBe(CHECK_STATUS_MAP.indeterminate);
   });
 });
