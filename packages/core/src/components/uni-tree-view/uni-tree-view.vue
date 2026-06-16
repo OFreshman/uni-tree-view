@@ -104,7 +104,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, shallowRef, useSlots, watch } from "vue";
+import { computed, useSlots, watch } from "vue";
 import type {
   TreeChangePayload,
   TreeKey,
@@ -113,9 +113,10 @@ import type {
   UniTreeListProps
 } from "./types";
 import { useTreeViewState } from "./useTreeViewState";
+import { useVirtualTreeList } from "./useVirtualTreeList";
 
 defineOptions({
-  name: "UniTreeList",
+  name: "UniTreeView",
   options: {
     // #ifdef MP-WEIXIN || MP-ALIPAY
     virtualHost: true
@@ -200,40 +201,19 @@ const showSelectionControl = computed(() => {
   return isMultiple.value ? props.showCheckbox || props.multiple : props.showRadioIcon;
 });
 
-const virtualScrollTop = shallowRef(0);
-
-const virtualEnabled = computed(() => {
-  return Boolean(props.virtual && props.virtualItemHeight > 0 && props.virtualHeight > 0);
-});
-
-const scrollViewStyle = computed(() => {
-  if (!virtualEnabled.value) {
-    return undefined;
-  }
-
-  return {
-    height: `${props.virtualHeight}px`
-  };
-});
-
-const virtualOverscan = computed(() => Math.max(0, Math.floor(props.virtualOverscan)));
-
-const virtualStartIndex = computed(() => {
-  if (!virtualEnabled.value || visibleTreeList.value.length === 0) {
-    return 0;
-  }
-
-  const rawStart = Math.floor(virtualScrollTop.value / props.virtualItemHeight) - virtualOverscan.value;
-  return Math.min(Math.max(0, rawStart), visibleTreeList.value.length - 1);
-});
-
-const virtualEndIndex = computed(() => {
-  if (!virtualEnabled.value) {
-    return visibleTreeList.value.length;
-  }
-
-  const visibleCount = Math.ceil(props.virtualHeight / props.virtualItemHeight) + virtualOverscan.value * 2;
-  return Math.min(visibleTreeList.value.length, virtualStartIndex.value + visibleCount);
+const {
+  virtualEnabled,
+  renderedItems: virtualRenderedTreeList,
+  topPadding: virtualTopPadding,
+  bottomPadding: virtualBottomPadding,
+  scrollViewStyle,
+  handleScroll: handleVirtualScroll
+} = useVirtualTreeList({
+  items: visibleTreeList,
+  virtual: () => props.virtual,
+  itemHeight: () => props.virtualItemHeight,
+  height: () => props.virtualHeight,
+  overscan: () => props.virtualOverscan
 });
 
 interface RenderedTreeItem {
@@ -242,41 +222,11 @@ interface RenderedTreeItem {
 }
 
 const renderedTreeList = computed(() => {
-  const nodes = virtualEnabled.value
-    ? visibleTreeList.value.slice(virtualStartIndex.value, virtualEndIndex.value)
-    : visibleTreeList.value;
-
-  return nodes.map((node): RenderedTreeItem => ({
+  return virtualRenderedTreeList.value.map((node): RenderedTreeItem => ({
     node,
     path: getNodePath(node)
   }));
 });
-
-const virtualTopPadding = computed(() => {
-  return virtualEnabled.value ? virtualStartIndex.value * props.virtualItemHeight : 0;
-});
-
-const virtualBottomPadding = computed(() => {
-  if (!virtualEnabled.value) {
-    return 0;
-  }
-
-  return Math.max(0, (visibleTreeList.value.length - virtualEndIndex.value) * props.virtualItemHeight);
-});
-
-interface UniTreeScrollEvent {
-  detail?: {
-    scrollTop?: number;
-  };
-}
-
-function handleVirtualScroll(event: UniTreeScrollEvent) {
-  if (!virtualEnabled.value) {
-    return;
-  }
-
-  virtualScrollTop.value = Math.max(0, Number(event.detail?.scrollTop ?? 0));
-}
 
 async function handleToggleExpand(node: TreeNode) {
   const shouldLoad = !node.loaded;
