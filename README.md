@@ -17,7 +17,7 @@ pnpm build
 
 ```vue
 <template>
-  <uni-tree-list
+  <uni-tree-view
     v-model="checkedValue"
     multiple
     show-checkbox
@@ -31,7 +31,7 @@ pnpm build
 </template>
 
 <script setup lang="ts">
-import UniTreeList from "uni-tree-list";
+import UniTreeView from "uni-tree-view";
 import { ref } from "vue";
 
 const checkedValue = ref<Array<string | number>>(["floor-a-2"]);
@@ -155,7 +155,7 @@ function handleExpandChange(payload) {
 
 ```vue
 <template>
-  <uni-tree-list
+  <uni-tree-view
     :data="treeData"
     show-path
     @node-click="handleNodeClick"
@@ -169,7 +169,7 @@ function handleExpandChange(payload) {
     <template #append="{ node }">
       <text>{{ node.append }}</text>
     </template>
-  </uni-tree-list>
+  </uni-tree-view>
 </template>
 
 <script setup>
@@ -187,7 +187,7 @@ function handleNodeClick(payload) {
 
 ```vue
 <template>
-  <uni-tree-list
+  <uni-tree-view
     load-mode
     :data="treeData"
     :load-api="loadChildren"
@@ -218,7 +218,7 @@ function handleLoad(payload) {
 
 ```vue
 <template>
-  <uni-tree-list
+  <uni-tree-view
     v-model="checkedKeys"
     show-checkbox
     virtual
@@ -231,15 +231,17 @@ function handleLoad(payload) {
 
 ## Resolver
 
+`UniTreeViewResolver` 是推荐名称；历史项目里的 `UniTreeListResolver` 和 `UniTreeList` 组件名仍保留兼容。
+
 ```ts
 import UniComponents from "@uni-helper/vite-plugin-uni-components";
-import { UniTreeListResolver } from "uni-tree-list/resolver";
+import { UniTreeViewResolver } from "uni-tree-view/resolver";
 
 export default {
   plugins: [
     UniComponents({
       resolvers: [
-        UniTreeListResolver()
+        UniTreeViewResolver()
       ]
     })
   ]
