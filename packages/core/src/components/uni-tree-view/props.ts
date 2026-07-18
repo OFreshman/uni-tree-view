@@ -176,20 +176,6 @@ export default {
     type: String,
     default: "append"
   },
-  /**
-   * 排序字段(新，拆分了)
-   */
-  sortField: {
-    type: String,
-    default: "sort"
-  },
-  /**
-   * Api数据返回后的结果路径，支持嵌套如`data.list`
-   */
-  resultField: {
-    type: String,
-    default: ""
-  },
   isLeafFn: {
     type: Function,
     default: null

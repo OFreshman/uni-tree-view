@@ -49,6 +49,8 @@ export function useTreeViewState(props: TreeViewStateProps) {
   const childrenMap = ref<Map<TreeKey, TreeNode[]>>(new Map());
   const nodeMap = ref<Map<TreeKey, TreeNode>>(new Map());
   const cachedExpandedKeys = ref<Set<TreeKey>>(new Set());
+  let pendingCheckedKeys = new Set<TreeKey>();
+  let initialized = false;
 
   const resolvedTreeProps = computed<TreeProps>(() => {
     const field = props.field ?? {};
@@ -90,7 +92,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
   watch(
     () => getCheckedConfigSignature(),
     () => {
-      applyCheckedState(getInitialCheckedKeys());
+      applyConfiguredCheckedState(getInitialCheckedKeys());
     }
   );
 
@@ -102,11 +104,20 @@ export function useTreeViewState(props: TreeViewStateProps) {
   );
 
   function initializeTree(treeData: TreeDataItem[] = []) {
+    const preserveRuntimeChecked = initialized && props.modelValue === undefined;
+    const checkedKeys = props.modelValue !== undefined
+      ? getInitialCheckedKeys()
+      : preserveRuntimeChecked
+        ? [...getRawCheckedKeys(), ...pendingCheckedKeys]
+        : getInitialCheckedKeys();
+    const pendingKeys = preserveRuntimeChecked ? [...pendingCheckedKeys] : checkedKeys;
     syncCachedExpandedKeys();
     childrenMap.value = new Map();
     nodeMap.value = new Map();
     treeList.value = flattenTree(treeData);
-    applyCheckedState(getInitialCheckedKeys());
+    initialized = true;
+    applyCheckedState(checkedKeys);
+    pendingCheckedKeys = new Set(pendingKeys.filter((key) => !nodeMap.value.has(key)));
     applyExpandedState();
   }
 
@@ -250,6 +261,45 @@ export function useTreeViewState(props: TreeViewStateProps) {
       if (node) {
         node.checked = CHECK_STATUS_MAP.checked;
       }
+    }
+  }
+
+  function applyConfiguredCheckedState(keys: TreeKey[]) {
+    applyCheckedState(keys);
+    pendingCheckedKeys = new Set(keys.filter((key) => !nodeMap.value.has(key)));
+  }
+
+  function applyPendingCheckedState() {
+    const resolvedKeys = [...pendingCheckedKeys].filter((key) => nodeMap.value.has(key));
+    if (resolvedKeys.length === 0) {
+      return;
+    }
+
+    for (const key of resolvedKeys) {
+      pendingCheckedKeys.delete(key);
+    }
+
+    if (isMultiple.value) {
+      if (props.checkStrictly) {
+        for (const key of resolvedKeys) {
+          const node = nodeMap.value.get(key);
+          if (node) {
+            node.checked = CHECK_STATUS_MAP.checked;
+          }
+        }
+      } else {
+        updateNodeAndDescendantsStatus(resolvedKeys, CHECK_STATUS_MAP.checked, true);
+        updateParentNodesStatus(resolvedKeys);
+      }
+      return;
+    }
+
+    const node = resolvedKeys
+      .map((key) => nodeMap.value.get(key))
+      .find((item): item is TreeNode => Boolean(item) && (!props.onlyRadioLeaf || item.isLeaf));
+    if (node) {
+      clearCheckedStatus();
+      node.checked = CHECK_STATUS_MAP.checked;
     }
   }
 
@@ -462,6 +512,12 @@ export function useTreeViewState(props: TreeViewStateProps) {
     for (const node of treeList.value) {
       node.checked = CHECK_STATUS_MAP.unchecked;
     }
+  }
+
+  function getRawCheckedKeys() {
+    return treeList.value
+      .filter((node) => node.checked === CHECK_STATUS_MAP.checked)
+      .map((node) => node.id);
   }
 
   function normalizeKeys(value: TreeKey | TreeKey[] | null | undefined): TreeKey[] {
@@ -788,6 +844,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
     if (shouldInheritChecked) {
       updateNodeAndDescendantsStatus(childNodes.map((child) => child.id), CHECK_STATUS_MAP.checked);
     }
+    applyPendingCheckedState();
     updateParentNodesStatus(node.id);
     updateVisibility();
   }
@@ -802,9 +859,15 @@ export function useTreeViewState(props: TreeViewStateProps) {
     try {
       const children = await props.loadApi(node);
       const normalizedChildren = Array.isArray(children) ? children : [];
+      if (nodeMap.value.get(node.id) !== node) {
+        return normalizedChildren;
+      }
       replaceNodeChildren(node, normalizedChildren);
       return normalizedChildren;
     } catch (error) {
+      if (nodeMap.value.get(node.id) !== node) {
+        return [];
+      }
       node.loadError = error;
       throw error;
     } finally {

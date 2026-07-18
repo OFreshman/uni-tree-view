@@ -308,10 +308,6 @@ importers:
         version: 3.4.38(typescript@5.8.3)
 
   packages/core:
-    dependencies:
-      '@types/lodash-es':
-        specifier: catalog:types
-        version: 4.17.12
     devDependencies:
       '@uni-helper/vite-plugin-uni-components':
         specifier: catalog:build
@@ -322,9 +318,6 @@ importers:
       '@vue/runtime-core':
         specifier: catalog:dev
         version: 3.4.38
-      lodash-es:
-        specifier: catalog:utils
-        version: 4.17.21
       tsx:
         specifier: catalog:script
         version: 4.20.4

@@ -22,15 +22,18 @@
         v-for="item in renderedTreeList"
         :id="item.domId"
         :key="item.node.id"
-        :style="[{
-          paddingLeft: `${item.node.level * props.indent}rpx`
-        }]"
+        :style="{
+          paddingLeft: `${item.node.level * props.indent}rpx`,
+          height: virtualEnabled ? `${props.virtualItemHeight}px` : undefined,
+          minHeight: virtualEnabled ? `${props.virtualItemHeight}px` : undefined
+        }"
         class="utv-tree-item"
         :class="{
           'is-leaf': item.node.isLeaf,
           'is-expanded': item.node.expanded,
           'is-disabled': item.node.disabled,
-          'is-checked': props.showCheckbox && item.node.checked === 'checked'
+          'is-checked': props.showCheckbox && item.node.checked === 'checked',
+          'is-virtual': virtualEnabled
         }"
         :hover-class="item.node.disabled ? 'none' : 'utv-tree-item--hover'"
         :hover-stay-time="80"
