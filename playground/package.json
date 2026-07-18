@@ -5,7 +5,7 @@
   "packageManager": "pnpm@10.11.0",
   "description": "uni-tree-view playground",
   "author": "OFreshman <415561402@qq.com>",
-  "license": "ISC",
+  "license": "MIT",
   "keywords": [
     "uni-tree-view",
     "playground"
@@ -59,6 +59,7 @@
     "@dcloudio/uni-mp-xhs": "catalog:prod",
     "@dcloudio/uni-quickapp-webview": "catalog:prod",
     "@vueuse/core": "catalog:utils",
+    "@wot-ui/ui": "catalog:prod",
     "lodash-es": "catalog:utils",
     "pinia": "catalog:frontend",
     "uni-tree-view": "workspace:*",

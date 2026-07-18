@@ -64,12 +64,12 @@ catalogs:
     '@dcloudio/uni-mp-weixin': 3.0.0-4070620250821001
     '@dcloudio/uni-mp-xhs': 3.0.0-4070620250821001
     '@dcloudio/uni-quickapp-webview': 3.0.0-4070620250821001
-    wot-design-uni: ^1.11.1
+    '@wot-ui/ui': ^2.2.0
   script:
     tsx: ^4.20.4
   style:
     '@uni-helper/unocss-preset-uni': ^0.2.11
-    sass: ~1.78.0
+    sass: ^1.98.0
     unocss: ~66.0.0
     unocss-applet: ^0.10.0
   test:

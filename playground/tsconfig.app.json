@@ -14,7 +14,7 @@
       "@uni-helper/uni-app-types",
       "miniprogram-api-typings",
       "@mini-types/alipay",
-      "wot-design-uni/global"
+      "@wot-ui/ui/global"
     ],
     "allowJs": true
   },

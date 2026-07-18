@@ -32,9 +32,6 @@
     "lint:fix": "nr lint --fix",
     "stylelint:fix": "stylelint **/*.{css,scss,html,vue} --fix"
   },
-  "dependencies": {
-    "wot-design-uni": "catalog:prod"
-  },
   "devDependencies": {
     "@antfu/ni": "catalog:dev",
     "@antfu/nip": "catalog:cli",

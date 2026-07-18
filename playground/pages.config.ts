@@ -3,7 +3,7 @@ import { defineUniPages } from "@uni-helper/vite-plugin-uni-pages";
 export default defineUniPages({
   easycom: {
     custom: {
-      "^wd-(.*)": "wot-design-uni/components/wd-$1/wd-$1.vue"
+      "^wd-(.*)": "@wot-ui/ui/components/wd-$1/wd-$1.vue"
     }
   },
   globalStyle: {

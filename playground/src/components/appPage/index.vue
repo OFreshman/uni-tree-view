@@ -4,7 +4,7 @@
 
     <wd-toast></wd-toast>
     <wd-notify></wd-notify>
-    <wd-message-box></wd-message-box>
+    <wd-dialog></wd-dialog>
   </wd-config-provider>
 </template>
 
