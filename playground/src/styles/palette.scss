@@ -31,20 +31,14 @@ page {
   --opacity-disabled: 0.5;
 }
 
+// wot-ui v2 采用 Design Token 三层变量体系：
+// 品牌色通过覆盖语义变量 --wot-primary-N 生效（6 为主色，5 hover，7 active）
 page {
-  --wot-color-theme: rgb(var(--color-primary));
+  --wot-primary-5: #34a973;
+  --wot-primary-6: rgb(var(--color-primary));
+  --wot-primary-7: #1f7a4f;
 
-  --wot-color-success: rgb(var(--color-success));
-  --wot-color-warning: rgb(var(--color-warning));
-  --wot-color-danger: rgb(var(--color-danger));
-  --wot-color-info: rgb(var(--color-info));
-
-  --wot-color-title: rgb(var(--color-t1));
-  --wot-color-content: rgb(var(--color-t2));
-  --wot-color-secondary: rgb(var(--color-t3));
-  --wot-color-aid: rgb(var(--color-t4));
-  --wot-color-tip: rgb(var(--color-t5));
-  --wot-color-bg: rgb(var(--color-b2));
-  --wot-color-border: rgb(var(--color-d1));
-  --wot-color-border-light: rgb(var(--color-d2));
+  --wot-success-main: rgb(var(--color-success));
+  --wot-warning-main: rgb(var(--color-warning));
+  --wot-danger-main: rgb(var(--color-danger));
 }

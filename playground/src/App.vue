@@ -21,6 +21,8 @@ onHide(() => {
 </script>
 
 <style lang="scss">
+// wot-ui v2 主题变量入口（Design Token），需在业务样式之前引入
+@use "@wot-ui/ui/styles/theme/index.scss";
 @use "@/styles/rebot.scss";
 @use "@/styles/palette.scss";
 // @import "@/styles/global.scss";
