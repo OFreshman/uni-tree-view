@@ -31,6 +31,8 @@ catalogs:
     '@xiaohe01/tsconfig': ^2.0.0
     miniprogram-api-typings: ^4.1.0
     typescript: ~5.7.3
+  docs:
+    vitepress: ^1.6.3
   frontend:
     pinia: ~2.2.4
     vue: ~3.4.38

@@ -17,6 +17,9 @@
   "scripts": {
     "prepare": "simple-git-hooks",
     "play": "nr -C playground dev:h5",
+    "docs": "nr -C docs dev",
+    "docs:build": "nr -C docs build",
+    "docs:preview": "nr -C docs preview",
     "build": "nr -r --filter=./packages/* build",
     "play:mp-weixin": "nr -C playground dev:mp-weixin",
     "build:uni": "nr build && tsx scripts/build-uni.ts",
