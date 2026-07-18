@@ -5,10 +5,14 @@
     <scroll-view
       class="scroll-view-container"
       :scroll-y="true"
+      :scroll-top="virtualEnabled ? virtualScrollTop : undefined"
+      :scroll-into-view="scrollIntoView"
       :style="scrollViewStyle"
       @scroll="handleVirtualScroll">
       <view v-if="visibleTreeList.length === 0" class="utv-tree-empty">
-        {{ props.emptyText }}
+        <slot name="empty" :filter-value="props.filterValue">
+          {{ props.emptyText }}
+        </slot>
       </view>
       <view
         v-if="virtualEnabled && virtualTopPadding > 0"
@@ -16,6 +20,7 @@
         :style="{ height: `${virtualTopPadding}px` }"></view>
       <view
         v-for="item in renderedTreeList"
+        :id="item.domId"
         :key="item.node.id"
         :style="[{
           paddingLeft: `${item.node.level * props.indent}rpx`
@@ -24,13 +29,20 @@
         :class="{
           'is-leaf': item.node.isLeaf,
           'is-expanded': item.node.expanded,
-          'is-disabled': item.node.disabled
+          'is-disabled': item.node.disabled,
+          'is-checked': props.showCheckbox && item.node.checked === 'checked'
         }"
+        :hover-class="item.node.disabled ? 'none' : 'utv-tree-item--hover'"
+        :hover-stay-time="80"
         @click="handleNodeClick(item.node)">
         <view
           v-if="isExpandable(item.node)"
           class="utv-tree-item__arrow--icon is-right"
-          :class="{ 'is-expand': item.node.expanded, 'is-loading': item.node.loading }"
+          :class="{
+            'is-expand': item.node.expanded,
+            'is-loading': item.node.loading,
+            'is-load-error': Boolean(item.node.loadError)
+          }"
           @click.stop="handleToggleExpand(item.node)"></view>
         <view v-else class="utv-tree-item__arrow--placeholder"></view>
 
@@ -66,7 +78,12 @@
                   :node="item.node"
                   :data="item.node.source"
                   :path="item.path">
-                  {{ item.node.label }}
+                  <text
+                    v-for="(segment, segmentIndex) in getLabelSegments(item.node.label)"
+                    :key="segmentIndex"
+                    :class="{ 'utv-tree-node-label__match': segment.matched }">
+                    {{ segment.text }}
+                  </text>
                 </slot>
               </view>
               <view v-if="props.showPath" class="utv-tree-node-path">
@@ -104,13 +121,15 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, useSlots, watch } from "vue";
+import { computed, nextTick, shallowRef, watch } from "vue";
 import type {
   TreeChangePayload,
   TreeKey,
   TreeNode,
+  TreeScrollToOptions,
   UniTreeListEmits,
-  UniTreeListProps
+  UniTreeListProps,
+  UniTreeListSlots
 } from "./types";
 import { useTreeViewState } from "./useTreeViewState";
 import { useVirtualTreeList } from "./useVirtualTreeList";
@@ -130,6 +149,8 @@ const props = withDefaults(defineProps<UniTreeListProps>(), {
   treeProps: undefined,
   field: null,
   filterValue: "",
+  filterMethod: undefined,
+  highlightFilter: true,
   labelField: "label",
   valueField: "id",
   childrenField: "children",
@@ -141,6 +162,8 @@ const props = withDefaults(defineProps<UniTreeListProps>(), {
   showCheckbox: false,
   showRadioIcon: true,
   multiple: false,
+  checkOnClickNode: false,
+  expandOnClickNode: false,
   checkStrictly: false,
   onlyRadioLeaf: false,
   defaultExpandAll: false,
@@ -167,7 +190,8 @@ const props = withDefaults(defineProps<UniTreeListProps>(), {
 });
 
 const emit = defineEmits<UniTreeListEmits>();
-const slots = useSlots();
+const slots = defineSlots<UniTreeListSlots>();
+const scrollIntoView = shallowRef("");
 
 const {
   isMultiple,
@@ -176,7 +200,7 @@ const {
   checkNode,
   isExpandable,
   getSelectionIconClass,
-  loadNode,
+  loadNode: loadStateNode,
   setCheckedKeys: setStateCheckedKeys,
   getCheckedKeys,
   getHalfCheckedKeys,
@@ -198,16 +222,18 @@ const {
 } = useTreeViewState(props);
 
 const showSelectionControl = computed(() => {
-  return isMultiple.value ? props.showCheckbox || props.multiple : props.showRadioIcon;
+  return Boolean(props.showCheckbox && (isMultiple.value || props.showRadioIcon));
 });
 
 const {
   virtualEnabled,
   renderedItems: virtualRenderedTreeList,
+  scrollTop: virtualScrollTop,
   topPadding: virtualTopPadding,
   bottomPadding: virtualBottomPadding,
   scrollViewStyle,
-  handleScroll: handleVirtualScroll
+  handleScroll: handleVirtualScroll,
+  scrollToIndex
 } = useVirtualTreeList({
   items: visibleTreeList,
   virtual: () => props.virtual,
@@ -219,16 +245,23 @@ const {
 interface RenderedTreeItem {
   node: TreeNode;
   path: TreeNode[];
+  domId: string;
 }
 
 const renderedTreeList = computed(() => {
   return virtualRenderedTreeList.value.map((node): RenderedTreeItem => ({
     node,
-    path: getNodePath(node)
+    path: getNodePath(node),
+    domId: getNodeDomId(node)
   }));
 });
 
 async function handleToggleExpand(node: TreeNode) {
+  if (node.loadError && !node.loading) {
+    await retryLoadSafely(node);
+    return;
+  }
+
   const shouldLoad = !node.loaded;
   const payload = toggleExpand(node);
   if (!payload) {
@@ -240,10 +273,7 @@ async function handleToggleExpand(node: TreeNode) {
   emit("expand-change", payload);
 
   if (payload.expanded && shouldLoad) {
-    const children = await loadNode(node);
-    if (node.loaded) {
-      emit("load", { node, children });
-    }
+    await loadNodeSafely(node);
   }
 }
 
@@ -253,6 +283,116 @@ function handleNodeClick(node: TreeNode) {
     node,
     path: getNodePath(node)
   });
+
+  if (props.expandOnClickNode && isExpandable(node)) {
+    void handleToggleExpand(node);
+  }
+  if (props.showCheckbox && props.checkOnClickNode) {
+    handleCheckChange(node);
+  }
+}
+
+async function loadNode(node: TreeNode) {
+  const wasLoaded = node.loaded;
+  try {
+    const children = await loadStateNode(node);
+    if (!wasLoaded && node.loaded) {
+      emit("load", { node, children });
+    }
+    return children;
+  } catch (error) {
+    emit("load-error", { node, error });
+    throw error;
+  }
+}
+
+async function loadNodeSafely(node: TreeNode) {
+  try {
+    await loadNode(node);
+  } catch {
+    // The load-error event carries the failure and the node remains retryable.
+  }
+}
+
+async function retryLoad(keyOrNode: TreeKey | TreeNode) {
+  const node = typeof keyOrNode === "object" ? keyOrNode : getNode(keyOrNode);
+  if (!node) {
+    return [];
+  }
+  return loadNode(node);
+}
+
+async function retryLoadSafely(node: TreeNode) {
+  try {
+    await retryLoad(node);
+  } catch {
+    // The load-error event carries the failure and another retry remains possible.
+  }
+}
+
+async function scrollToKey(key: TreeKey, options: TreeScrollToOptions = {}) {
+  const node = getNode(key);
+  if (!node) {
+    return false;
+  }
+
+  if (options.expandParents !== false && node.parentIds.length > 0) {
+    setExpandedKeys(node.parentIds, true);
+  }
+  await nextTick();
+
+  const visibleIndex = visibleTreeList.value.findIndex((item) => item.id === key);
+  if (visibleIndex === -1) {
+    return false;
+  }
+
+  if (virtualEnabled.value) {
+    scrollIntoView.value = "";
+    return scrollToIndex(visibleIndex);
+  }
+
+  scrollIntoView.value = "";
+  await nextTick();
+  scrollIntoView.value = getNodeDomId(node);
+  return true;
+}
+
+function getNodeDomId(node: TreeNode) {
+  const source = `${typeof node.id}:${String(node.id)}`;
+  let hash = 0;
+  for (let index = 0; index < source.length; index += 1) {
+    hash = (hash * 31 + source.charCodeAt(index)) >>> 0;
+  }
+  return `utv-tree-node-${hash}`;
+}
+
+function getLabelSegments(label: string) {
+  const filterValue = String(props.filterValue ?? "").trim();
+  if (!props.highlightFilter || !filterValue) {
+    return [{ text: label, matched: false }];
+  }
+
+  const normalizedLabel = label.toLowerCase();
+  const normalizedFilter = filterValue.toLowerCase();
+  const segments: Array<{ text: string; matched: boolean }> = [];
+  let startIndex = 0;
+  let matchIndex = normalizedLabel.indexOf(normalizedFilter);
+
+  while (matchIndex !== -1) {
+    if (matchIndex > startIndex) {
+      segments.push({ text: label.slice(startIndex, matchIndex), matched: false });
+    }
+    const endIndex = matchIndex + filterValue.length;
+    segments.push({ text: label.slice(matchIndex, endIndex), matched: true });
+    startIndex = endIndex;
+    matchIndex = normalizedLabel.indexOf(normalizedFilter, startIndex);
+  }
+
+  if (startIndex < label.length) {
+    segments.push({ text: label.slice(startIndex), matched: false });
+  }
+
+  return segments.length > 0 ? segments : [{ text: label, matched: false }];
 }
 
 function emitFilterChange() {
@@ -264,7 +404,7 @@ function emitFilterChange() {
 }
 
 watch(
-  () => props.filterValue,
+  () => [props.filterValue, props.filterMethod] as const,
   () => {
     emitFilterChange();
   },
@@ -316,7 +456,9 @@ defineExpose({
   getNodePath,
   expandAll,
   collapseAll,
-  loadNode
+  loadNode,
+  retryLoad,
+  scrollToKey
 });
 </script>
 
@@ -328,7 +470,7 @@ defineExpose({
 </style>
 
 <style lang="scss" scoped>
-@import "../../style/index.scss";
+@use "../../style/index.scss";
 .uni-tree-view-container {
   width: 100%;
   height: 100%;
