@@ -1,73 +1,104 @@
 <template>
-  <view class="page">
-    <view class="page__header">
-      <text class="page__title">
-        Uni Tree View
-      </text>
-      <text class="page__subtitle">
-        树形列表选择示例
-      </text>
-    </view>
-
-    <uni-tree-view
-      v-model="checkedValue"
-      show-checkbox
-      :data="treeData"
-      :default-expanded-keys="['building-a']"
-      expand-checked
-      :tree-props="treeProps"
-      @change="handleChange"
-      @expand-change="handleExpandChange"></uni-tree-view>
-
-    <view class="page__panel">
-      <text class="page__panel-title">
-        当前选中
-      </text>
-      <text class="page__panel-value">
-        {{ checkedValue.join(", ") || "暂无" }}
-      </text>
-      <text class="page__panel-title page__panel-title--gap">
-        最近事件
-      </text>
-      <text class="page__panel-value">
-        {{ latestAction }}
-      </text>
-    </view>
-
-    <view class="page__panel page__panel--perf">
-      <view class="page__panel-row">
-        <view>
-          <text class="page__panel-title">
-            大数据测试
+  <app-page>
+    <view class="page">
+      <view class="page__hero">
+        <view class="page__hero-text">
+          <text class="page__title">
+            Uni Tree View
           </text>
-          <text class="page__panel-value">
-            {{ largeTreeSummary }}
+          <text class="page__subtitle">
+            轻量、独立的跨端树形选择组件
           </text>
         </view>
-        <button
-          class="page__button"
-          size="mini"
-          @click="toggleLargeTree">
-          {{ showLargeTree ? "关闭" : "打开" }}
-        </button>
+        <wd-tag type="primary" variant="plain" round>
+          v{{ version }}
+        </wd-tag>
       </view>
 
-      <uni-tree-view
-        v-if="showLargeTree"
-        v-model="largeCheckedValue"
-        class="page__large-tree"
-        show-checkbox
-        virtual
-        default-expand-all
-        :virtual-height="560"
-        :virtual-item-height="36"
-        :virtual-overscan="12"
-        :data="largeTreeData"
-        :tree-props="treeProps"
-        @change="handleLargeChange"
-        @expand-change="handleLargeExpandChange"></uni-tree-view>
+      <wd-search
+        v-model="filterValue"
+        placeholder="搜索节点"
+        hide-cancel
+        placeholder-left></wd-search>
+
+      <view class="page__card">
+        <view class="page__card-header">
+          <text class="page__card-title">
+            基础多选
+          </text>
+          <wd-tag v-if="checkedValue.length" type="primary" variant="plain">
+            已选 {{ checkedValue.length }}
+          </wd-tag>
+        </view>
+        <uni-tree-view
+          v-model="checkedValue"
+          show-checkbox
+          multiple
+          check-on-click-node
+          expand-on-click-node
+          theme-color="#299764"
+          :data="treeData"
+          :filter-value="filterValue"
+          :default-expanded-keys="['building-a']"
+          expand-checked
+          :tree-props="treeProps"
+          @change="handleChange"
+          @expand-change="handleExpandChange"></uni-tree-view>
+      </view>
+
+      <wd-cell-group border custom-class="page__cells">
+        <wd-cell title="当前选中" :value="checkedText"></wd-cell>
+        <wd-cell title="最近事件" :value="latestAction"></wd-cell>
+        <wd-cell
+          title="更多示例"
+          value="懒加载 / 插槽 / 弹窗选择"
+          is-link
+          clickable
+          @click="goExamples"></wd-cell>
+      </wd-cell-group>
+
+      <view class="page__card">
+        <view class="page__card-header">
+          <view class="page__card-header-main">
+            <text class="page__card-title">
+              大数据虚拟渲染
+            </text>
+            <text class="page__card-desc">
+              {{ largeTreeSummary }}
+            </text>
+          </view>
+          <wd-button
+            size="small"
+            type="primary"
+            :variant="showLargeTree ? 'plain' : 'base'"
+            @click="toggleLargeTree">
+            {{ showLargeTree ? "关闭" : "开启" }}
+          </wd-button>
+        </view>
+
+        <view v-if="showLargeTree" class="page__large-tree">
+          <uni-tree-view
+            v-model="largeCheckedValue"
+            show-checkbox
+            multiple
+            check-on-click-node
+            expand-on-click-node
+            virtual
+            default-expand-all
+            theme-color="#299764"
+            :virtual-height="560"
+            :virtual-item-height="36"
+            :virtual-overscan="12"
+            :data="largeTreeData"
+            :tree-props="treeProps"
+            @change="handleLargeChange"
+            @expand-change="handleLargeExpandChange"></uni-tree-view>
+        </view>
+      </view>
+
+      <wd-gap height="48rpx" bg-color="transparent"></wd-gap>
     </view>
-  </view>
+  </app-page>
 </template>
 
 <script setup lang='ts'>
@@ -80,6 +111,8 @@ interface DemoTreeNode {
   children?: DemoTreeNode[];
 }
 
+const version = __UNI_TREE_VIEW_VERSION__;
+const filterValue = shallowRef("");
 const checkedValue = shallowRef<Array<string | number>>(["floor-a-2"]);
 const latestAction = shallowRef("等待操作");
 const showLargeTree = shallowRef(false);
@@ -128,16 +161,24 @@ const treeData = [
   }
 ];
 
+const checkedText = computed(() => {
+  return checkedValue.value.join(", ") || "暂无";
+});
+
 const largeTreeSummary = computed(() => {
   if (!showLargeTree.value) {
-    return "未挂载";
+    return "点击开启 5000+ 节点性能演示";
   }
 
-  return `${largeNodeCount.value} 个节点，最多 6 级，${largeLatestAction.value}`;
+  return `${largeNodeCount.value} 个节点 / 6 级 · ${largeLatestAction.value}`;
 });
 
 function handleChange(payload: any) {
   latestAction.value = `change: ${payload.keys.join(", ") || "none"}`;
+}
+
+function goExamples() {
+  uni.navigateTo({ url: "/pages/examples/index" });
 }
 
 function handleExpandChange(payload: any) {
@@ -202,11 +243,15 @@ function createLargeTreeData() {
 <style scoped lang='scss'>
 .page {
   min-height: 100vh;
-  background: #f6f7fb;
+  padding: 24rpx 24rpx 0;
+  background: var(--wot-filled-bottom, #f6f7fb);
 }
 
-.page__header {
-  padding: 40rpx 32rpx 28rpx;
+.page__hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 24rpx 8rpx 32rpx;
 }
 
 .page__title,
@@ -215,69 +260,65 @@ function createLargeTreeData() {
 }
 
 .page__title {
-  color: #111827;
-  font-size: 40rpx;
+  color: var(--wot-text-main, #111827);
+  font-size: 44rpx;
   font-weight: 700;
+  letter-spacing: 1rpx;
 }
 
 .page__subtitle {
   margin-top: 12rpx;
-  color: #667085;
+  color: var(--wot-text-auxiliary, #667085);
   font-size: 26rpx;
 }
 
-.page__panel {
-  margin: 32rpx;
+.page__card {
+  margin-top: 24rpx;
   padding: 24rpx;
-  background: #ffffff;
-  border-radius: 8rpx;
+  background: var(--wot-filled-oppo, #ffffff);
+  border-radius: 24rpx;
+  box-shadow: 0 2rpx 12rpx rgba(16, 24, 40, 0.04);
 }
 
-.page__panel--perf {
-  margin-bottom: 48rpx;
-}
-
-.page__panel-row {
+.page__card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 24rpx;
+  margin-bottom: 16rpx;
 }
 
-.page__panel-title,
-.page__panel-value {
+.page__card-header-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.page__card-title {
   display: block;
+  color: var(--wot-text-main, #111827);
+  font-size: 30rpx;
+  font-weight: 600;
 }
 
-.page__panel-title {
-  color: #667085;
-  font-size: 24rpx;
-}
-
-.page__panel-title--gap {
-  margin-top: 20rpx;
-}
-
-.page__panel-value {
+.page__card-desc {
+  display: block;
   margin-top: 8rpx;
-  color: #111827;
-  font-size: 28rpx;
-}
-
-.page__button {
-  flex: 0 0 auto;
-  margin: 0;
-  color: #ffffff;
-  background: #111827;
-  border-radius: 8rpx;
+  color: var(--wot-text-auxiliary, #667085);
+  font-size: 24rpx;
 }
 
 .page__large-tree {
   height: 560px;
+  margin-top: 16rpx;
+  overflow: hidden;
+  border: 1rpx solid var(--wot-border-light, #e4e7ec);
+  border-radius: 16rpx;
+}
+
+// wd-cell-group 外层圆角
+:deep(.page__cells) {
   margin-top: 24rpx;
   overflow: hidden;
-  background: #ffffff;
-  border: 1rpx solid #e4e7ec;
-  border-radius: 8rpx;
+  border-radius: 24rpx;
 }
 </style>
