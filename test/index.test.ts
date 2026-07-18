@@ -579,8 +579,9 @@ describe("useTreeViewState", () => {
     const replacementRoot = node(state, "lazy-root");
 
     request.reject(new Error("stale request"));
-    await expect(loading).rejects.toThrow("stale request");
+    await expect(loading).resolves.toEqual([]);
 
+    expect(oldRoot.loadError).toBeNull();
     expect(replacementRoot.loadError).toBeNull();
     expect(replacementRoot.loading).toBe(false);
   });

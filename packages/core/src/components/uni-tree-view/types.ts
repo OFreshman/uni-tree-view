@@ -115,7 +115,7 @@ export interface UniTreeListProps {
   /** Current selected value. Single select uses one key, multiple select uses an array. */
   modelValue?: TreeModelValue;
   /** Tree data. */
-  data: TreeDataItem[];
+  data?: TreeDataItem[];
   /** Filter keyword. Matching nodes and their related branch stay visible. */
   filterValue?: string;
   /** Custom node matcher used when filterValue is not empty. */

@@ -51,14 +51,10 @@
   "peerDependencies": {
     "vue": ">=3.3.0"
   },
-  "dependencies": {
-    "@types/lodash-es": "catalog:types"
-  },
   "devDependencies": {
     "@uni-helper/vite-plugin-uni-components": "catalog:build",
     "@uni-helper/vite-plugin-uni-pages": "catalog:build",
     "@vue/runtime-core": "catalog:dev",
-    "lodash-es": "catalog:utils",
     "tsx": "catalog:script",
     "vue": "catalog:frontend"
   }
