@@ -118,6 +118,16 @@ function checkedKeys(state: ReturnType<typeof useTreeViewState>) {
   return state.getCheckedKeys();
 }
 
+function createDeferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise;
+    reject = rejectPromise;
+  });
+  return { promise, reject, resolve };
+}
+
 describe("useTreeViewState", () => {
   it("flattens tree data and shows only root nodes initially", () => {
     const { state } = createState();
@@ -235,7 +245,8 @@ describe("useTreeViewState", () => {
 
   it("selects a parent and descendants in linked multiple mode", () => {
     const { state } = createState({
-      showCheckbox: true
+      showCheckbox: true,
+      multiple: true
     });
 
     const payload = state.checkNode(node(state, "building-b"));
@@ -247,7 +258,8 @@ describe("useTreeViewState", () => {
 
   it("updates parent half checked state from children", () => {
     const { state } = createState({
-      showCheckbox: true
+      showCheckbox: true,
+      multiple: true
     });
 
     state.checkNode(node(state, "room-a-201"));
@@ -260,7 +272,8 @@ describe("useTreeViewState", () => {
 
   it("skips disabled nodes during user selection but keeps parent state consistent", () => {
     const { state } = createState({
-      showCheckbox: true
+      showCheckbox: true,
+      multiple: true
     });
 
     const disabledPayload = state.checkNode(node(state, "room-a-202"));
@@ -276,6 +289,7 @@ describe("useTreeViewState", () => {
   it("keeps parent and children independent in checkStrictly mode", () => {
     const { state } = createState({
       showCheckbox: true,
+      multiple: true,
       checkStrictly: true
     });
 
@@ -306,9 +320,29 @@ describe("useTreeViewState", () => {
     expect(checkedKeys(state)).toEqual([]);
   });
 
+  it("keeps selection visibility independent from single or multiple mode", () => {
+    const single = createState({
+      showCheckbox: true
+    });
+
+    const singlePayload = single.state.checkNode(node(single.state, "building-b"));
+    expect(single.state.isMultiple.value).toBe(false);
+    expect(singlePayload?.value).toBe("building-b");
+    expect(checkedKeys(single.state)).toEqual(["building-b"]);
+    expect(node(single.state, "floor-b-1").checked).toBe(CHECK_STATUS_MAP.unchecked);
+
+    const multiple = createState({
+      multiple: true
+    });
+    const multiplePayload = multiple.state.checkNode(node(multiple.state, "building-b"));
+    expect(multiple.state.isMultiple.value).toBe(true);
+    expect(multiplePayload?.value).toEqual(["building-b", "floor-b-1", "floor-b-2"]);
+  });
+
   it("exposes checked node query and mutation methods", () => {
     const { state } = createState({
-      showCheckbox: true
+      showCheckbox: true,
+      multiple: true
     });
 
     const checkedPayload = state.setCheckedKeys(["floor-b-1", "floor-b-2"]);
@@ -335,6 +369,29 @@ describe("useTreeViewState", () => {
     props.filterValue = "";
     await nextTick();
     expect(visibleKeys(state)).toEqual(["building-a", "floor-a-1", "floor-a-2", "building-b"]);
+  });
+
+  it("supports custom filter matching", async () => {
+    const { props, state } = createState({
+      filterMethod: (value, targetNode) => {
+        return String(targetNode.source.category ?? "") === value;
+      },
+      data: [
+        {
+          id: "root",
+          label: "Root",
+          children: [
+            { id: "active", label: "Alpha", category: "active" },
+            { id: "archived", label: "Beta", category: "archived" }
+          ]
+        }
+      ]
+    });
+
+    props.filterValue = "active";
+    await nextTick();
+
+    expect(visibleKeys(state)).toEqual(["root", "active"]);
   });
 
   it("returns node paths for custom display and events", () => {
@@ -440,10 +497,38 @@ describe("useTreeViewState", () => {
     expect(node(state, "fresh-child").parentId).toBe("static-root");
   });
 
+  it("keeps lazy nodes retryable after load failures", async () => {
+    let attempts = 0;
+    const { state } = createState({
+      data: createLazyTreeData(),
+      loadMode: true,
+      loadApi: async () => {
+        attempts += 1;
+        if (attempts === 1) {
+          throw new Error("network error");
+        }
+        return [{ id: "lazy-child", label: "Lazy child", leaf: true }];
+      }
+    });
+
+    const root = node(state, "lazy-root");
+    await expect(state.loadNode(root)).rejects.toThrow("network error");
+    expect(root.loading).toBe(false);
+    expect(root.loaded).toBe(false);
+    expect(root.loadError).toBeInstanceOf(Error);
+
+    await expect(state.loadNode(root)).resolves.toEqual([
+      { id: "lazy-child", label: "Lazy child", leaf: true }
+    ]);
+    expect(root.loadError).toBeNull();
+    expect(root.loaded).toBe(true);
+  });
+
   it("inherits checked state for lazy children in linked multiple mode", async () => {
     const { state } = createState({
       data: createLazyTreeData(),
       showCheckbox: true,
+      multiple: true,
       loadMode: true,
       loadApi: () => [
         { id: "lazy-child", label: "Lazy child", leaf: true }
@@ -456,6 +541,159 @@ describe("useTreeViewState", () => {
 
     expect(checkedKeys(state)).toEqual(["lazy-root", "lazy-child"]);
     expect(node(state, "lazy-child").checked).toBe(CHECK_STATUS_MAP.checked);
+  });
+
+  it("ignores stale lazy responses after replacing tree data", async () => {
+    const request = createDeferred<TreeDataItem[]>();
+    const { props, state } = createState({
+      data: createLazyTreeData(),
+      loadMode: true,
+      loadApi: () => request.promise
+    });
+
+    const oldRoot = node(state, "lazy-root");
+    const loading = state.loadNode(oldRoot);
+    props.data = [{ id: "new-root", label: "New root", leaf: true }];
+    await nextTick();
+
+    request.resolve([{ id: "late-child", label: "Late child", leaf: true }]);
+    await loading;
+
+    expect(state.treeList.value.map((item) => item.id)).toEqual(["new-root"]);
+    expect(state.nodeMap.value.has("late-child")).toBe(false);
+    expect(oldRoot.loading).toBe(false);
+  });
+
+  it("keeps replacement nodes clean when stale lazy requests fail", async () => {
+    const request = createDeferred<TreeDataItem[]>();
+    const { props, state } = createState({
+      data: createLazyTreeData(),
+      loadMode: true,
+      loadApi: () => request.promise
+    });
+
+    const oldRoot = node(state, "lazy-root");
+    const loading = state.loadNode(oldRoot);
+    props.data = [{ id: "lazy-root", label: "Replacement root", leaf: false }];
+    await nextTick();
+    const replacementRoot = node(state, "lazy-root");
+
+    request.reject(new Error("stale request"));
+    await expect(loading).rejects.toThrow("stale request");
+
+    expect(replacementRoot.loadError).toBeNull();
+    expect(replacementRoot.loading).toBe(false);
+  });
+
+  it.each([
+    { multiple: true, modelValue: ["lazy-child"] },
+    { multiple: false, modelValue: "lazy-child" }
+  ])("applies controlled lazy child selection after loading ($multiple)", async ({ modelValue, multiple }) => {
+    const { state } = createState({
+      data: createLazyTreeData(),
+      showCheckbox: true,
+      multiple,
+      modelValue,
+      loadMode: true,
+      loadApi: () => [{ id: "lazy-child", label: "Lazy child", leaf: true }]
+    });
+
+    expect(checkedKeys(state)).toEqual([]);
+    await state.loadNode(node(state, "lazy-root"));
+
+    expect(checkedKeys(state)).toContain("lazy-child");
+    expect(node(state, "lazy-child").checked).toBe(CHECK_STATUS_MAP.checked);
+  });
+
+  it("applies unresolved default keys and updates linked parent state after lazy loading", async () => {
+    const { state } = createState({
+      data: createLazyTreeData(),
+      showCheckbox: true,
+      multiple: true,
+      defaultCheckedKeys: ["lazy-child"],
+      loadMode: true,
+      loadApi: () => [{ id: "lazy-child", label: "Lazy child", leaf: true }]
+    });
+
+    await state.loadNode(node(state, "lazy-root"));
+
+    expect(checkedKeys(state)).toEqual(["lazy-root", "lazy-child"]);
+  });
+
+  it("does not reapply an unchecked default key during unrelated lazy loading", async () => {
+    const { state } = createState({
+      data: [
+        { id: "default-node", label: "Default node", leaf: true },
+        ...createLazyTreeData()
+      ],
+      showCheckbox: true,
+      multiple: true,
+      checkStrictly: true,
+      defaultCheckedKeys: ["default-node"],
+      loadMode: true,
+      loadApi: () => [{ id: "lazy-child", label: "Lazy child", leaf: true }]
+    });
+
+    state.checkNode(node(state, "default-node"));
+    await state.loadNode(node(state, "lazy-root"));
+
+    expect(checkedKeys(state)).toEqual([]);
+  });
+
+  it("preserves uncontrolled checked state across immutable data refreshes", async () => {
+    const { props, state } = createState({
+      showCheckbox: true,
+      multiple: true,
+      checkStrictly: true,
+      defaultCheckedKeys: ["room-a-101"]
+    });
+
+    state.checkNode(node(state, "floor-b-1"));
+    props.data = createTreeData();
+    await nextTick();
+
+    expect(checkedKeys(state)).toEqual(["room-a-101", "floor-b-1"]);
+
+    props.data = createTreeData().filter((item) => item.id !== "building-b");
+    await nextTick();
+    expect(checkedKeys(state)).toEqual(["room-a-101"]);
+
+    props.data = createTreeData();
+    await nextTick();
+    expect(checkedKeys(state)).toEqual(["room-a-101"]);
+  });
+
+  it("keeps controlled selection authoritative across data refreshes", async () => {
+    const { props, state } = createState({
+      showCheckbox: true,
+      multiple: true,
+      checkStrictly: true,
+      modelValue: ["floor-b-1"]
+    });
+
+    state.checkNode(node(state, "room-a-101"));
+    props.data = createTreeData();
+    await nextTick();
+
+    expect(checkedKeys(state)).toEqual(["floor-b-1"]);
+  });
+
+  it("preserves disabled checked nodes internally when packing excludes them", async () => {
+    const { props, state } = createState({
+      showCheckbox: true,
+      multiple: true,
+      checkStrictly: true,
+      checkedDisabled: true,
+      packDisabledkey: false
+    });
+
+    state.setCheckedKeys(["room-a-202"]);
+    expect(checkedKeys(state)).toEqual([]);
+    props.data = createTreeData();
+    await nextTick();
+
+    expect(node(state, "room-a-202").checked).toBe(CHECK_STATUS_MAP.checked);
+    expect(checkedKeys(state)).toEqual([]);
   });
 
   it("honors checkedDisabled and packDisabledkey options", () => {
@@ -481,6 +719,7 @@ describe("useTreeViewState", () => {
   it("does not expand a checked parent when controlled modelValue changes after selection", async () => {
     const { props, state } = createState({
       showCheckbox: true,
+      multiple: true,
       modelValue: ["floor-a-2"],
       defaultExpandedKeys: ["building-a"],
       expandChecked: true
@@ -528,7 +767,8 @@ describe("useTreeViewState", () => {
   it("keeps visible node cache and linked selection correct with large trees", () => {
     const { state } = createState({
       data: createLargeTreeData(),
-      showCheckbox: true
+      showCheckbox: true,
+      multiple: true
     });
 
     expect(state.treeList.value).toHaveLength(10_525);

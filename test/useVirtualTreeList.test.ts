@@ -112,4 +112,26 @@ describe("useVirtualTreeList", () => {
 
     scope.stop();
   });
+
+  it("supports programmatic scrolling by item index", () => {
+    const scope = effectScope();
+    const result = scope.run(() => {
+      return useVirtualTreeList({
+        items: shallowRef(Array.from({ length: 100 }, (_, index) => index)),
+        virtual: true,
+        itemHeight: 20,
+        height: 100,
+        overscan: 1
+      });
+    });
+
+    expect(result).toBeTruthy();
+    expect(result!.scrollToIndex(25)).toBe(true);
+    expect(result!.scrollTop.value).toBe(500);
+    expect(result!.renderedItems.value).toContain(25);
+    expect(result!.scrollToIndex(1_000)).toBe(true);
+    expect(result!.scrollTop.value).toBe(1_980);
+
+    scope.stop();
+  });
 });
