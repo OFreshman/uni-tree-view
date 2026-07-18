@@ -28,7 +28,7 @@ export default {
     default: "#007aff"
   },
   /**
-   * 是否开启多选，默认单选
+   * 是否启用并显示选择控件
    */
   showCheckbox: {
     type: Boolean,
@@ -38,6 +38,20 @@ export default {
    * 是否多选
    */
   multiple: {
+    type: Boolean,
+    default: false
+  },
+  /**
+   * 点击节点内容时是否切换选中状态
+   */
+  checkOnClickNode: {
+    type: Boolean,
+    default: false
+  },
+  /**
+   * 点击节点内容时是否展开或收起
+   */
+  expandOnClickNode: {
     type: Boolean,
     default: false
   },
@@ -75,6 +89,20 @@ export default {
   filterValue: {
     type: String,
     default: ""
+  },
+  /**
+   * 自定义节点过滤方法
+   */
+  filterMethod: {
+    type: Function,
+    default: undefined
+  },
+  /**
+   * 是否高亮默认标签中的过滤关键词
+   */
+  highlightFilter: {
+    type: Boolean,
+    default: true
   },
   /**
    * 是否自动展开到选中的节点，默认不展开

@@ -23,6 +23,7 @@ export interface TreeViewStateProps {
   appendField?: string;
   iconField?: string;
   filterValue?: string;
+  filterMethod?: (value: string, node: TreeNode) => boolean;
   modelValue?: TreeModelValue;
   defaultCheckedKeys?: TreeKey | TreeKey[] | null;
   showCheckbox?: boolean;
@@ -64,13 +65,12 @@ export function useTreeViewState(props: TreeViewStateProps) {
     };
   });
 
-  const isMultiple = computed(() => Boolean(props.multiple || props.showCheckbox));
+  const isMultiple = computed(() => Boolean(props.multiple));
 
   watch(
     () => [
       props.data,
-      getTreeConfigSignature(),
-      props.isLeafFn
+      getTreeConfigSignature()
     ] as const,
     () => {
       initializeTree(toRaw(props.data ?? []));
@@ -95,7 +95,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
   );
 
   watch(
-    () => props.filterValue,
+    () => [props.filterValue, props.filterMethod] as const,
     () => {
       updateVisibility();
     }
@@ -195,7 +195,8 @@ export function useTreeViewState(props: TreeViewStateProps) {
         checked: CHECK_STATUS_MAP.unchecked,
         isLeaf: false,
         loaded: false,
-        loading: false
+        loading: false,
+        loadError: null
       };
       treeNode.isLeaf = resolveIsLeaf(item, treeNode);
       treeNode.loaded = treeNode.isLeaf || !props.loadMode || (Array.isArray(children) && children.length > 0 && !props.alwaysFirstLoad);
@@ -379,13 +380,17 @@ export function useTreeViewState(props: TreeViewStateProps) {
   }
 
   function updateVisibility() {
-    const filterValue = String(props.filterValue ?? "").trim().toLowerCase();
+    const rawFilterValue = String(props.filterValue ?? "").trim();
+    const normalizedFilterValue = rawFilterValue.toLowerCase();
     const visibleNodes: TreeNode[] = [];
 
-    if (filterValue) {
+    if (rawFilterValue) {
       const visibleKeySet = new Set<TreeKey>();
       for (const node of treeList.value) {
-        if (!node.label.toLowerCase().includes(filterValue)) {
+        const matched = props.filterMethod
+          ? props.filterMethod(rawFilterValue, node)
+          : node.label.toLowerCase().includes(normalizedFilterValue);
+        if (!matched) {
           continue;
         }
 
@@ -490,7 +495,6 @@ export function useTreeViewState(props: TreeViewStateProps) {
       modelValue: props.modelValue,
       defaultCheckedKeys: props.defaultCheckedKeys,
       multiple: props.multiple,
-      showCheckbox: props.showCheckbox,
       checkStrictly: props.checkStrictly,
       onlyRadioLeaf: props.onlyRadioLeaf,
       checkedDisabled: props.checkedDisabled,
@@ -794,11 +798,15 @@ export function useTreeViewState(props: TreeViewStateProps) {
     }
 
     node.loading = true;
+    node.loadError = null;
     try {
       const children = await props.loadApi(node);
       const normalizedChildren = Array.isArray(children) ? children : [];
       replaceNodeChildren(node, normalizedChildren);
       return normalizedChildren;
+    } catch (error) {
+      node.loadError = error;
+      throw error;
     } finally {
       node.loading = false;
     }

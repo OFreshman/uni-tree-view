@@ -90,6 +90,16 @@ export function useVirtualTreeList<T>(options: UseVirtualTreeListOptions<T>) {
     scrollTop.value = Number.isFinite(nextScrollTop) ? Math.max(0, nextScrollTop) : 0;
   }
 
+  function scrollToIndex(index: number) {
+    if (!virtualEnabled.value || totalCount.value === 0) {
+      return false;
+    }
+
+    const normalizedIndex = Math.min(Math.max(0, Math.floor(index)), totalCount.value - 1);
+    scrollTop.value = normalizedIndex * itemHeight.value;
+    return true;
+  }
+
   return {
     scrollTop,
     virtualEnabled,
@@ -99,7 +109,8 @@ export function useVirtualTreeList<T>(options: UseVirtualTreeListOptions<T>) {
     topPadding,
     bottomPadding,
     scrollViewStyle,
-    handleScroll
+    handleScroll,
+    scrollToIndex
   };
 }
 

@@ -28,6 +28,7 @@ export interface TreeNode {
   isLeaf: boolean;
   loaded: boolean;
   loading: boolean;
+  loadError: unknown | null;
 }
 
 export interface TreeProps {
@@ -53,6 +54,16 @@ export interface TreeLoadPayload {
   children: TreeDataItem[];
 }
 
+export interface TreeLoadErrorPayload {
+  node: TreeNode;
+  error: unknown;
+}
+
+export interface TreeScrollToOptions {
+  /** Expand ancestors before locating the node. */
+  expandParents?: boolean;
+}
+
 export interface TreeExpandPayload {
   expanded: boolean;
   node: TreeNode;
@@ -68,6 +79,24 @@ export interface TreeFilterPayload {
   value: string;
   keys: TreeKey[];
   nodes: TreeNode[];
+}
+
+export interface TreeSlotProps {
+  node: TreeNode;
+  data: TreeDataItem;
+  path: TreeNode[];
+}
+
+export interface TreeEmptySlotProps {
+  filterValue: string;
+}
+
+export interface UniTreeListSlots {
+  default?: (props: TreeSlotProps) => unknown;
+  label?: (props: TreeSlotProps) => unknown;
+  icon?: (props: TreeSlotProps) => unknown;
+  append?: (props: TreeSlotProps) => unknown;
+  empty?: (props: TreeEmptySlotProps) => unknown;
 }
 
 export interface TreeLegacyField {
@@ -89,6 +118,10 @@ export interface UniTreeListProps {
   data: TreeDataItem[];
   /** Filter keyword. Matching nodes and their related branch stay visible. */
   filterValue?: string;
+  /** Custom node matcher used when filterValue is not empty. */
+  filterMethod?: (value: string, node: TreeNode) => boolean;
+  /** Highlight literal filter keyword matches in the built-in label. */
+  highlightFilter?: boolean;
   /** Default checked keys for uncontrolled initial state. */
   defaultCheckedKeys?: TreeKey | TreeKey[];
   /** Field mapping for id, label, children and disabled. */
@@ -111,12 +144,16 @@ export interface UniTreeListProps {
   iconField?: string;
   /** Theme color for active checkbox/radio. */
   themeColor?: string;
-  /** Whether to show checkbox UI. */
+  /** Whether to enable and show the selection control. */
   showCheckbox?: boolean;
   /** Whether to show radio UI in single-select mode. */
   showRadioIcon?: boolean;
   /** Whether to support multiple selection. */
   multiple?: boolean;
+  /** Whether clicking a node row changes its selection state. */
+  checkOnClickNode?: boolean;
+  /** Whether clicking a node row expands or collapses it. */
+  expandOnClickNode?: boolean;
   /** Whether parent and child checked states are independent. */
   checkStrictly?: boolean;
   /** Single-select mode can only select leaf nodes. */
@@ -183,18 +220,26 @@ export interface UniTreeListExposed {
   expandAll: () => void;
   collapseAll: () => void;
   loadNode: (node: TreeNode) => Promise<TreeDataItem[]>;
+  retryLoad: (keyOrNode: TreeKey | TreeNode) => Promise<TreeDataItem[]>;
+  scrollToKey: (key: TreeKey, options?: TreeScrollToOptions) => Promise<boolean>;
 }
 
-export interface UniTreeListEmits {
-  "update:modelValue": (value: TreeModelValue) => void;
-  change: (payload: TreeChangePayload) => void;
-  checked: (payload: TreeChangePayload) => void;
-  updated: (payload: TreeChangePayload) => void;
-  "check-change": (payload: TreeChangePayload) => void;
-  expand: (expanded: boolean, node: TreeNode) => void;
-  "expand-change": (payload: TreeExpandPayload) => void;
-  load: (payload: TreeLoadPayload) => void;
-  "node-click": (payload: TreeNodeClickPayload) => void;
-  "filter-change": (payload: TreeFilterPayload) => void;
-  goChild: (params: { id: TreeKey; node: TreeNode }) => void;
-}
+/**
+ * 事件表使用 Vue 3.3+ 的「具名元组」形态，且必须是 type 别名而非 interface：
+ * `defineEmits<T>()` 的约束是 `Record<string, any[]>`，interface 没有隐式索引签名，无法满足。
+ */
+// eslint-disable-next-line ts/consistent-type-definitions -- interface 无隐式索引签名，不满足 defineEmits 约束
+export type UniTreeListEmits = {
+  "update:modelValue": [value: TreeModelValue];
+  "change": [payload: TreeChangePayload];
+  "checked": [payload: TreeChangePayload];
+  "updated": [payload: TreeChangePayload];
+  "check-change": [payload: TreeChangePayload];
+  "expand": [expanded: boolean, node: TreeNode];
+  "expand-change": [payload: TreeExpandPayload];
+  "load": [payload: TreeLoadPayload];
+  "load-error": [payload: TreeLoadErrorPayload];
+  "node-click": [payload: TreeNodeClickPayload];
+  "filter-change": [payload: TreeFilterPayload];
+  "goChild": [params: { id: TreeKey; node: TreeNode }];
+};
