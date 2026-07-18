@@ -1,28 +1,64 @@
 .utv-tree-item {
+  position: relative;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   min-height: 72rpx;
   padding-right: 24rpx;
   color: #1f2937;
+  transition: background-color 0.2s ease;
+
+  // hover-class 按压反馈，兼容微信/支付宝小程序与 H5
+  &--hover {
+    background-color: rgba(17, 24, 39, 0.04);
+  }
 
   &.is-disabled {
     color: #a3aab8;
   }
 
+  // 选中行淡色背景：伪元素 + opacity 取代 color-mix，兼容低版本小程序 webview
+  &.is-checked::before {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 0;
+    background-color: var(--theme-color, #007aff);
+    content: "";
+    opacity: 0.06;
+    pointer-events: none;
+  }
+
+  &.is-checked .utv-tree-node-label {
+    color: var(--theme-color, #007aff);
+    font-weight: 500;
+  }
+
+  &.is-disabled.is-checked::before {
+    display: none;
+  }
+
+  &.is-disabled.is-checked .utv-tree-node-label {
+    color: #a3aab8;
+    font-weight: normal;
+  }
+
   &__arrow--placeholder {
-    flex: 0 0 32rpx;
-    width: 32rpx;
-    height: 32rpx;
+    flex: 0 0 48rpx;
+    width: 48rpx;
+    height: 48rpx;
   }
 
   &__arrow--icon {
     position: relative;
-    flex: 0 0 32rpx;
+    flex: 0 0 48rpx;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32rpx;
-    height: 32rpx;
+    width: 48rpx;
+    height: 48rpx;
     &::after {
       position: relative;
       z-index: 1;
@@ -32,6 +68,7 @@
       font-size: 32rpx;
       font-style: normal;
       color: #999999;
+      transition: transform 0.2s ease;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
@@ -52,12 +89,23 @@
         content: '\e7f1';
       }
     }
+
+    &.is-load-error::after {
+      color: #e5484d;
+      content: "!";
+      font-family: sans-serif !important;
+      font-weight: 600;
+      transform: none;
+    }
   }
 
   &__checkbox {
-    flex: 0 0 40rpx;
-    width: 40rpx;
-    height: 40rpx;
+    flex: 0 0 56rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56rpx;
+    height: 72rpx;
     overflow: hidden;
 
     &.is--disabled {
@@ -80,8 +128,9 @@
         overflow: hidden;
         /* stylelint-disable-next-line font-family-no-missing-generic-family-keyword */
         font-family: "uni-tree-iconfont" !important;
-        font-size: 32rpx;
+        font-size: 36rpx;
         font-style: normal;
+        transition: color 0.2s ease;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
       }
@@ -117,6 +166,10 @@
       }
     }
   }
+
+  &.is-virtual &__checkbox {
+    height: 100%;
+  }
 }
 
 .utv-tree-node-label {
@@ -128,6 +181,15 @@
   line-height: 40rpx;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.utv-tree-node-label__match {
+  color: var(--theme-color, #007aff);
+  font-weight: 600;
+}
+
+.utv-tree-item.is-disabled .utv-tree-node-label__match {
+  color: inherit;
 }
 
 .utv-tree-node-content {
@@ -176,9 +238,20 @@
 }
 
 .utv-tree-empty {
-  padding: 48rpx 24rpx;
+  padding: 64rpx 24rpx;
   color: #98a2b3;
   font-size: 28rpx;
   line-height: 40rpx;
   text-align: center;
+}
+
+// 加载图标旋转动画；此前被 .is-loading 引用但未定义
+@keyframes IconLoading {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
