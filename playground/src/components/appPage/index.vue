@@ -10,6 +10,7 @@
 
 <script lang="ts" setup>
 import type { Slots } from "./types";
+import { useTheme } from "@/composable/useTheme";
 
 defineOptions({
   name: "AppPage",

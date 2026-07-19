@@ -104,6 +104,7 @@
 <script setup lang='ts'>
 import UniTreeView from "uni-tree-view";
 import { computed, shallowRef } from "vue";
+import AppPage from "@/components/appPage/index.vue";
 
 interface DemoTreeNode {
   id: string;
