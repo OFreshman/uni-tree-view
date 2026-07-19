@@ -1,9 +1,10 @@
 .utv-tree-item {
   position: relative;
+  z-index: 0;
   box-sizing: border-box;
   display: flex;
   align-items: center;
-  min-height: 56rpx;
+  min-height: 48rpx;
   padding-right: 24rpx;
   color: #1f2937;
   transition: background-color 0.2s ease;
@@ -46,21 +47,19 @@
   }
 
   &__arrow--placeholder {
-    flex: 0 0 48rpx;
-    width: 48rpx;
-    height: 48rpx;
-    margin-right: 16rpx;
+    flex: 0 0 40rpx;
+    width: 40rpx;
+    height: 40rpx;
   }
 
   &__arrow--icon {
     position: relative;
-    flex: 0 0 48rpx;
+    flex: 0 0 40rpx;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 48rpx;
-    height: 48rpx;
-    margin-right: 16rpx;
+    width: 40rpx;
+    height: 40rpx;
     &::after {
       position: relative;
       z-index: 1;
@@ -102,13 +101,12 @@
   }
 
   &__checkbox {
-    flex: 0 0 56rpx;
+    flex: 0 0 48rpx;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 56rpx;
-    height: 56rpx;
-    margin-left: 12rpx;
+    width: 48rpx;
+    height: 48rpx;
     overflow: hidden;
 
     &.is--disabled {
@@ -178,7 +176,7 @@
 .utv-tree-node-label {
   flex: 1;
   min-width: 0;
-  padding: 0 16rpx;
+  padding: 0 8rpx;
   overflow: hidden;
   font-size: 28rpx;
   line-height: 40rpx;

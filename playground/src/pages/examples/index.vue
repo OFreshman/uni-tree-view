@@ -1,7 +1,12 @@
 <template>
   <app-page>
     <view class="page">
-      <wd-tabs v-model="activeTab" custom-class="page__tabs" sticky>
+      <wd-tabs
+        v-model="activeTab"
+        :offset-top="-1"
+        custom-class="page__tabs"
+        custom-style="--wot-tabs-nav-bg: var(--wot-filled-oppo, #ffffff);"
+        sticky>
         <wd-tab title="选择模式" name="selection">
           <view class="page__panel">
             <view class="page__card">
@@ -380,8 +385,8 @@ function confirmPopup() {
   border-radius: 32rpx 32rpx 0 0;
 }
 
-:deep(.page__tabs) {
-  background-color: var(--wot-filled-oppo, #ffffff);
+:deep(.page__tabs .wd-tabs__nav) {
+  box-shadow: 0 1rpx 0 var(--wot-border-light, #e4e7ec);
 }
 
 .page__popup-bar {
