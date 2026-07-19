@@ -73,3 +73,19 @@ jobs:
 
       - name: Test
         run: nr test
+
+      - name: Build H5 playground
+        if: matrix.os == 'ubuntu-latest'
+        run: pnpm build:play
+
+      - name: Build WeChat mini program
+        if: matrix.os == 'ubuntu-latest'
+        run: pnpm -C playground build:mp-weixin
+
+      - name: Build Alipay mini program
+        if: matrix.os == 'ubuntu-latest'
+        run: pnpm -C playground build:mp-alipay
+
+      - name: Build uni_modules package
+        if: matrix.os == 'ubuntu-latest'
+        run: pnpm build:uni

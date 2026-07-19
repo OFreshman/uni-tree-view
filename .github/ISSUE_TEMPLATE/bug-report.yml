@@ -1,0 +1,58 @@
+name: 🐛 Bug 反馈
+description: 组件行为不符合预期
+title: '[Bug] '
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        提交前请先阅读[常见问题](https://ofreshman.github.io/uni-tree-view/guide/faq)，并确认使用的是最新版本。
+
+  - type: input
+    id: version
+    attributes:
+      label: uni-tree-view 版本
+      placeholder: 0.0.7
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: 出现问题的平台
+      multiple: true
+      options:
+        - 微信小程序
+        - 支付宝小程序
+        - H5
+        - App
+    validations:
+      required: true
+
+  - type: input
+    id: env
+    attributes:
+      label: 环境信息
+      description: uni-app 编译器版本 / Vue 版本 / 基础库版本等
+      placeholder: HBuilderX 4.76 / Vue 3.4 / 微信基础库 3.8.x
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 最小重现
+      description: 提供能复现问题的最小代码片段和数据样例（或重现仓库链接）
+      placeholder: |
+        ```vue
+        <uni-tree-view :data="treeData" show-checkbox multiple />
+        ```
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望行为与实际行为
+    validations:
+      required: true

@@ -1,0 +1,30 @@
+name: ✨ 功能建议
+description: 希望组件增加新能力
+title: '[Feature] '
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        本组件以「移动端体积和性能敏感」为设计约束，超出树组件核心职责的能力（如搜索框、弹窗容器）建议组合现有组件库实现，详见[介绍](https://ofreshman.github.io/uni-tree-view/guide/introduction)。
+
+  - type: textarea
+    id: scenario
+    attributes:
+      label: 使用场景
+      description: 描述你遇到的业务场景，而不只是方案本身
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 期望的 API 形态
+      placeholder: |
+        <uni-tree-view :some-new-prop="..." />
+
+  - type: textarea
+    id: alternative
+    attributes:
+      label: 现有替代方案
+      description: 目前你是如何绕过这个限制的？

@@ -111,26 +111,26 @@ async function build() {
               chrome: "√"
             },
             app: {
-              vue: "√",
+              vue: "u",
               nvue: "x",
-              android: "√",
-              ios: "√",
-              harmony: "√"
+              android: "u",
+              ios: "u",
+              harmony: "u"
             },
             mp: {
               weixin: "√",
               alipay: "√",
-              toutiao: "√",
-              baidu: "√",
-              kuaishou: "√",
-              jd: "√",
-              harmony: "√",
-              qq: "√",
-              lark: "√"
+              toutiao: "u",
+              baidu: "u",
+              kuaishou: "u",
+              jd: "u",
+              harmony: "u",
+              qq: "u",
+              lark: "u"
             },
             quickapp: {
-              huawei: "√",
-              union: "√"
+              huawei: "u",
+              union: "u"
             }
           },
           "uni-app-x": {
@@ -149,9 +149,9 @@ async function build() {
           }
         },
         cloud: {
-          aliyun: "√",
-          tcb: "√",
-          alipay: "√"
+          aliyun: "x",
+          tcb: "x",
+          alipay: "x"
         }
       }
     }
@@ -182,7 +182,17 @@ async function build() {
     consola.warn("README.md was not found, skip copying readme.md");
   }
 
+  const copiedChangelog = await copyFirstExistingFile([
+    r(fromDir, "CHANGELOG.md"),
+    r("CHANGELOG.md")
+  ], r(destDir, "changelog.md"));
+
+  if (!copiedChangelog) {
+    consola.warn("CHANGELOG.md was not found, skip copying changelog.md");
+  }
+
   const copiedLicense = await copyFirstExistingFile([
+    r(fromDir, "LICENSE"),
     r("LICENSE"),
     r("LICENSE.md"),
     r("license.md")
