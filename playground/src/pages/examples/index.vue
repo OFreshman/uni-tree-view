@@ -379,6 +379,10 @@ function confirmPopup() {
   border-radius: 32rpx 32rpx 0 0;
 }
 
+:deep(.page__tabs) {
+  background-color: var(--wot-filled-oppo, #ffffff);
+}
+
 .page__popup-bar {
   display: flex;
   align-items: center;
