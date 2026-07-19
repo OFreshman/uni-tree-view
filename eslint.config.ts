@@ -12,7 +12,8 @@ export default defineConfig({
     "./**/*.min.js",
     "**/dist-resolver",
     "playground/src/uni_modules",
-    "packages/core/scripts/*.js"
+    "packages/core/scripts/*.js",
+    ".claude"
   ]
 }, {
   files: ["docs/**/*.vue"],

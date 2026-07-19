@@ -37,6 +37,7 @@ dist-ssr
 .project
 .idea
 .hbuilderx
+.claude
 .DS_Store
 *.suo
 *.ntvs*
