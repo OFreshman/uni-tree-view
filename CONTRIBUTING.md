@@ -30,7 +30,8 @@ packages/core   组件包本体（发布为 uni-tree-view）
 playground      uni-app 演示工程
 docs            VitePress 文档站
 test            单元测试
-scripts         构建脚本（build:uni 生成 uni_modules 产物）
+scripts         构建脚本（build:uni 生成 DCloud 发布文件）
+artifacts       本地发布产物（插件 ZIP、说明文档、示例工程 ZIP）
 ```
 
 ## 提交前检查
@@ -62,5 +63,5 @@ docs: 补充 xxx 示例
 
 ```bash
 pnpm release    # bumpp 交互式升版本 + tag
-pnpm build:uni  # 生成 npm 包与 uni_modules 双产物
+pnpm build:uni  # 生成 DCloud 插件 ZIP、说明文档和独立示例工程 ZIP
 ```

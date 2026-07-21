@@ -11,6 +11,7 @@ export default defineConfig({
     "**/*.md",
     "./**/*.min.js",
     "**/dist-resolver",
+    "artifacts",
     "playground/src/uni_modules",
     "packages/core/scripts/*.js",
     ".claude"

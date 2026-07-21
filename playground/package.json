@@ -72,18 +72,25 @@
     "@dcloudio/uni-stacktracey": "catalog:dev",
     "@dcloudio/vite-plugin-uni": "catalog:build",
     "@iconify-json/carbon": "catalog:icons",
+    "@mini-types/alipay": "catalog:dev",
     "@types/lodash-es": "catalog:types",
+    "@types/node": "catalog:types",
     "@uni-helper/pages-json-schema": "catalog:dev",
+    "@uni-helper/uni-app-types": "catalog:dev",
     "@uni-helper/unocss-preset-uni": "catalog:style",
     "@uni-helper/vite-plugin-uni-components": "catalog:build",
     "@uni-helper/vite-plugin-uni-manifest": "catalog:build",
     "@uni-helper/vite-plugin-uni-pages": "catalog:build",
     "@vue/runtime-core": "catalog:dev",
+    "@xiaohe01/tsconfig": "catalog:dev",
+    "miniprogram-api-typings": "catalog:dev",
     "sass": "catalog:style",
+    "typescript": "catalog:dev",
     "unocss": "catalog:style",
     "unocss-applet": "catalog:style",
     "unplugin-auto-import": "catalog:build",
     "vite": "catalog:build",
-    "vite-plugin-uni-polyfill": "catalog:build"
+    "vite-plugin-uni-polyfill": "catalog:build",
+    "vue-tsc": "catalog:dev"
   }
 }
