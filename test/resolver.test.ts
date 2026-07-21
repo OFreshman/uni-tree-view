@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { UniTreeListResolver, UniTreeViewResolver } from "../packages/core/resolver";
+import { UniTreeViewResolver } from "../packages/core/resolver";
 
 describe("uni-tree-view resolver", () => {
   it("resolves the recommended component name", () => {
@@ -7,15 +7,6 @@ describe("uni-tree-view resolver", () => {
 
     expect(resolver.resolve("UniTreeView")).toEqual({
       name: "UniTreeView",
-      from: "uni-tree-view"
-    });
-  });
-
-  it("keeps the legacy UniTreeList component name compatible", () => {
-    const resolver = UniTreeListResolver();
-
-    expect(resolver.resolve("UniTreeList")).toEqual({
-      name: "UniTreeList",
       from: "uni-tree-view"
     });
   });

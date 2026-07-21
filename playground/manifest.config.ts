@@ -1,7 +1,7 @@
 import { defineManifestConfig } from "@uni-helper/vite-plugin-uni-manifest";
 
 export default defineManifestConfig({
-  name: "Uni Tree List",
+  name: "Uni Tree View",
   appid: "__UNI__D8AD38E",
   description: "",
   versionName: "1.0.0",

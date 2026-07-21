@@ -8,7 +8,7 @@ import type {
   TreeDataItem,
   TreeKey,
   TreeNode,
-  UniTreeListProps
+  UniTreeViewProps
 } from "uni-tree-view/shared";
 ```
 

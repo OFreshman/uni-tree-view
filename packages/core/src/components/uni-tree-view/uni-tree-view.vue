@@ -130,9 +130,9 @@ import type {
   TreeKey,
   TreeNode,
   TreeScrollToOptions,
-  UniTreeListEmits,
-  UniTreeListProps,
-  UniTreeListSlots
+  UniTreeViewEmits,
+  UniTreeViewProps,
+  UniTreeViewSlots
 } from "./types";
 import { useTreeViewState } from "./useTreeViewState";
 import { useVirtualTreeList } from "./useVirtualTreeList";
@@ -146,7 +146,7 @@ defineOptions({
   }
 });
 
-const props = withDefaults(defineProps<UniTreeListProps>(), {
+const props = withDefaults(defineProps<UniTreeViewProps>(), {
   modelValue: undefined,
   data: () => [],
   treeProps: undefined,
@@ -192,8 +192,8 @@ const props = withDefaults(defineProps<UniTreeListProps>(), {
   virtualOverscan: 8
 });
 
-const emit = defineEmits<UniTreeListEmits>();
-const slots = defineSlots<UniTreeListSlots>();
+const emit = defineEmits<UniTreeViewEmits>();
+const slots = defineSlots<UniTreeViewSlots>();
 const scrollIntoView = shallowRef("");
 
 const {
