@@ -10,10 +10,21 @@ function r(...paths: string[]) {
 }
 
 function getComponentVersion() {
-  const packageJson = JSON.parse(readFileSync(r("..", "packages", "core", "package.json"), "utf8")) as {
-    version: string;
-  };
-  return packageJson.version;
+  const packageJsonPaths = [
+    r("src", "uni_modules", "KieranYin9527-tree", "package.json"),
+    r("..", "packages", "core", "package.json")
+  ];
+
+  for (const packageJsonPath of packageJsonPaths) {
+    try {
+      const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8")) as {
+        version: string;
+      };
+      return packageJson.version;
+    } catch {}
+  }
+
+  throw new Error("Unable to resolve uni-tree-view version");
 }
 
 function buildTransformAssetUrls() {

@@ -60,7 +60,7 @@ export default defineConfig({
 
 ## 方式二：uni-app 插件市场
 
-在 [DCloud 插件市场](https://ext.dcloud.net.cn/) 导入后，组件会安装到项目的 `uni_modules/uni-tree-view`。
+在 [DCloud 插件市场](https://ext.dcloud.net.cn/) 导入插件 `KieranYin9527-tree`（显示名称：`keryin-tree-view`）后，组件会安装到项目的 `uni_modules/KieranYin9527-tree`。
 
 uni_modules 遵循 easycom 规范，**无需任何配置**，直接在模板中使用：
 
