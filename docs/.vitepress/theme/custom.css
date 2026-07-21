@@ -1,0 +1,30 @@
+:root {
+  --vp-c-brand-1: #299764;
+  --vp-c-brand-2: #238458;
+  --vp-c-brand-3: #1f754f;
+  --vp-c-brand-soft: rgba(41, 151, 100, 0.14);
+}
+
+@media (max-width: 767px) {
+  .vp-doc div[class*="language-"] {
+    margin-right: -24px;
+    margin-left: -24px;
+    border-radius: 0;
+  }
+
+  .vp-doc table {
+    width: 100%;
+    min-width: 0;
+    white-space: nowrap;
+  }
+
+  .vp-doc th,
+  .vp-doc td {
+    min-width: 100px;
+  }
+
+  .vp-doc th:nth-child(2),
+  .vp-doc td:nth-child(2) {
+    min-width: 180px;
+  }
+}
