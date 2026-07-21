@@ -42,7 +42,7 @@
 
 ## 构建提示
 
-- `packages/core/package.json` 中的 `uni-tree-list/resolver` 导出指向 `dist-resolver/index.*`。
+- `packages/core/package.json` 中的 `uni-tree-view/resolver` 导出指向 `dist-resolver/index.*`。
 - 构建时会先生成 `dist-resolver/resolver/*`，随后 `scripts/post-build.ts` 会移动到 `dist-resolver/index.*`。
 - 如果 unbuild 提示找不到 `dist-resolver/index.*`，先确认 post-build 结束后的最终文件是否存在，再考虑改 exports。
 

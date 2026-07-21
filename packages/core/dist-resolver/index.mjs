@@ -1,7 +1,6 @@
 const INDEX = "uni-tree-view";
 const importsMap = {
-  "UniTreeView": INDEX,
-  "UniTreeList": INDEX
+  "UniTreeView": INDEX
   // "provideEcharts": SHARED,
   // "provideEchartsTheme": SHARED,
   // "provideEchartsOption": SHARED,
@@ -27,6 +26,5 @@ function UniTreeViewResolver(options = {}) {
     }
   };
 }
-const UniTreeListResolver = UniTreeViewResolver;
 
-export { UniTreeListResolver, UniTreeViewResolver };
+export { UniTreeViewResolver };

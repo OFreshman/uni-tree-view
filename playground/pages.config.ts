@@ -7,7 +7,7 @@ export default defineUniPages({
     }
   },
   globalStyle: {
-    navigationBarTitleText: "Uni Tree List",
+    navigationBarTitleText: "Uni Tree View",
     navigationBarTextStyle: "black",
     navigationBarBackgroundColor: "#ffffff",
     "mp-weixin": {

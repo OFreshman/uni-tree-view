@@ -1,27 +1,27 @@
 /* eslint-disable ts/no-empty-object-type */
 import type { DefineComponent } from "vue";
 import type { AllowedComponentProps } from "../../types";
-import type { UniTreeListEmits, UniTreeListExposed, UniTreeListProps } from "./types";
+import type { UniTreeViewEmits, UniTreeViewExposed, UniTreeViewProps } from "./types";
 
 /**
  * `DefineComponent` 的 E 参数要求 `EmitsOptions`（函数值）形态，
- * 这里从 `UniTreeListEmits` 的元组形态映射而来。
+ * 这里从 `UniTreeViewEmits` 的元组形态映射而来。
  */
-type UniTreeListEmitsOptions = {
-  [K in keyof UniTreeListEmits]: (...args: UniTreeListEmits[K]) => any;
+type UniTreeViewEmitsOptions = {
+  [K in keyof UniTreeViewEmits]: (...args: UniTreeViewEmits[K]) => any;
 };
 
-type UniTreeList = DefineComponent<
-  AllowedComponentProps & UniTreeListProps,
-  UniTreeListExposed,
+type UniTreeViewComponent = DefineComponent<
+  AllowedComponentProps & UniTreeViewProps,
+  UniTreeViewExposed,
   {},
   {},
   {},
   {},
   {},
-  UniTreeListEmitsOptions
+  UniTreeViewEmitsOptions
 >;
 
-declare const _default: UniTreeList;
+declare const _default: UniTreeViewComponent;
 
 export default _default;

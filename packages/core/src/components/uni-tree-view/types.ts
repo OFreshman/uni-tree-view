@@ -91,7 +91,7 @@ export interface TreeEmptySlotProps {
   filterValue: string;
 }
 
-export interface UniTreeListSlots {
+export interface UniTreeViewSlots {
   default?: (props: TreeSlotProps) => unknown;
   label?: (props: TreeSlotProps) => unknown;
   icon?: (props: TreeSlotProps) => unknown;
@@ -111,7 +111,7 @@ export interface TreeLegacyField {
   icon?: string;
 }
 
-export interface UniTreeListProps {
+export interface UniTreeViewProps {
   /** Current selected value. Single select uses one key, multiple select uses an array. */
   modelValue?: TreeModelValue;
   /** Tree data. */
@@ -200,7 +200,7 @@ export interface UniTreeListProps {
   virtualOverscan?: number;
 }
 
-export interface UniTreeListExposed {
+export interface UniTreeViewExposed {
   setCheckedKeys: (keys: TreeKey | TreeKey[], checked?: boolean) => void;
   getCheckedKeys: () => TreeKey[];
   getHalfCheckedKeys: () => TreeKey[];
@@ -229,7 +229,7 @@ export interface UniTreeListExposed {
  * `defineEmits<T>()` 的约束是 `Record<string, any[]>`，interface 没有隐式索引签名，无法满足。
  */
 // eslint-disable-next-line ts/consistent-type-definitions -- interface 无隐式索引签名，不满足 defineEmits 约束
-export type UniTreeListEmits = {
+export type UniTreeViewEmits = {
   "update:modelValue": [value: TreeModelValue];
   "change": [payload: TreeChangePayload];
   "checked": [payload: TreeChangePayload];
