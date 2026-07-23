@@ -5,6 +5,9 @@ hero:
   name: Uni Tree View
   text: 跨端树形列表/选择组件
   tagline: 基于 uni-app + Vue 3，一套代码运行在微信小程序、支付宝小程序和 H5
+  image:
+    src: /logo.svg
+    alt: uni-tree-view Logo
   actions:
     - theme: brand
       text: 快速上手

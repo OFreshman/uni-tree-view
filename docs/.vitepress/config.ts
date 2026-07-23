@@ -5,8 +5,14 @@ export default defineConfig({
   title: "Uni Tree View",
   description: "适用于 uni-app + Vue 3 的跨端树形列表/选择组件，支持微信/支付宝小程序和 H5",
   base: "/uni-tree-view/",
+  head: [
+    ["link", { rel: "icon", type: "image/svg+xml", href: "/uni-tree-view/favicon.svg" }],
+    ["meta", { property: "og:image", content: "https://ofreshman.github.io/uni-tree-view/social-card.png" }],
+    ["meta", { name: "twitter:card", content: "summary_large_image" }]
+  ],
   lastUpdated: true,
   themeConfig: {
+    logo: { src: "/logo.svg", alt: "uni-tree-view Logo" },
     nav: [
       { text: "指南", link: "/guide/introduction", activeMatch: "/guide/" },
       { text: "API", link: "/apis/props", activeMatch: "/apis/" },
