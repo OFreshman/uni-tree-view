@@ -2,13 +2,19 @@
   <app-page>
     <view class="page">
       <view class="page__hero">
-        <view class="page__hero-text">
-          <text class="page__title">
-            Uni Tree View
-          </text>
-          <text class="page__subtitle">
-            轻量、独立的跨端树形选择组件
-          </text>
+        <view class="page__hero-main">
+          <image
+            class="page__logo"
+            src="/static/uni-tree-view-logo.png"
+            mode="aspectFit"></image>
+          <view class="page__hero-text">
+            <text class="page__title">
+              Uni Tree View
+            </text>
+            <text class="page__subtitle">
+              轻量、独立的跨端树形选择组件
+            </text>
+          </view>
         </view>
         <wd-tag type="primary" variant="plain" round>
           v{{ version }}
@@ -250,9 +256,24 @@ function createLargeTreeData() {
 
 .page__hero {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
+  gap: 24rpx;
   padding: 24rpx 8rpx 32rpx;
+}
+
+.page__hero-main {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-width: 0;
+  gap: 20rpx;
+}
+
+.page__logo {
+  flex: none;
+  width: 96rpx;
+  height: 96rpx;
 }
 
 .page__title,
