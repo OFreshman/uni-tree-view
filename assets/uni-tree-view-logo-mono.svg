@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">uni-tree-view monochrome logo</title>
+  <desc id="desc">A compact monochrome U-shaped tree view logo.</desc>
+  <defs>
+    <mask id="arrow-cutout" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+      <rect width="512" height="512" fill="#fff" />
+      <path d="M364 204 446 256l-82 52v-34l29-18-29-18z" fill="#000" />
+    </mask>
+  </defs>
+  <g id="mark">
+    <path d="M72 68v256c0 82 53 126 128 126h112c75 0 128-44 128-126V68" fill="none" stroke="currentColor" stroke-width="82" stroke-linecap="round" stroke-linejoin="round" mask="url(#arrow-cutout)" />
+    <path d="M232 192 204 237M280 192l28 45" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" />
+    <circle cx="256" cy="134" r="43" fill="currentColor" />
+    <circle cx="184" cy="278" r="37" fill="currentColor" />
+    <circle cx="328" cy="278" r="37" fill="currentColor" />
+  </g>
+</svg>
