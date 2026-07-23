@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 300" role="img" aria-labelledby="title desc">
+  <title id="title">uni-tree-view</title>
+  <desc id="desc">uni-tree-view logo and wordmark.</desc>
+  <defs>
+    <linearGradient id="brand" x1="78" y1="72" x2="434" y2="442" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#32DA62" />
+      <stop offset="0.52" stop-color="#16D39A" />
+      <stop offset="1" stop-color="#08C9D4" />
+    </linearGradient>
+    <linearGradient id="node" x1="182" y1="244" x2="332" y2="314" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#17D99B" />
+      <stop offset="1" stop-color="#08C9D4" />
+    </linearGradient>
+    <mask id="arrow-cutout" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+      <rect width="512" height="512" fill="#fff" />
+      <path d="M364 204 446 256l-82 52v-34l29-18-29-18z" fill="#000" />
+    </mask>
+  </defs>
+  <g transform="translate(18 18) scale(.515)">
+    <path d="M72 68v256c0 82 53 126 128 126h112c75 0 128-44 128-126V68" fill="none" stroke="url(#brand)" stroke-width="82" stroke-linecap="round" stroke-linejoin="round" mask="url(#arrow-cutout)" />
+    <path d="M232 192 204 237M280 192l28 45" fill="none" stroke="url(#node)" stroke-width="16" stroke-linecap="round" />
+    <circle cx="256" cy="134" r="43" fill="#123564" />
+    <circle cx="184" cy="278" r="37" fill="url(#node)" />
+    <circle cx="328" cy="278" r="37" fill="url(#node)" />
+  </g>
+  <text x="320" y="178" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="66" font-weight="750" letter-spacing="-3"><tspan fill="#123564">uni-tree</tspan><tspan fill="#16CFA0">-view</tspan></text>
+</svg>
