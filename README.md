@@ -1,5 +1,9 @@
 # uni-tree-view
 
+<p align="center">
+  <img src="./assets/uni-tree-view-logo.svg" alt="uni-tree-view Logo" width="180" />
+</p>
+
 [![npm version](https://img.shields.io/npm/v/uni-tree-view.svg)](https://www.npmjs.com/package/uni-tree-view)
 [![CI](https://github.com/OFreshman/uni-tree-view/actions/workflows/ci.yml/badge.svg)](https://github.com/OFreshman/uni-tree-view/actions/workflows/ci.yml)
 [![license](https://img.shields.io/npm/l/uni-tree-view.svg)](./LICENSE)
