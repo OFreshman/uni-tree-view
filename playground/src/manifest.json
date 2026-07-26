@@ -78,7 +78,7 @@
   "vueVersion": "3",
   "h5": {
     "router": {
-      "mode": "history",
+      "mode": "hash",
       "base": "/ui/"
     },
     "optimization": {
