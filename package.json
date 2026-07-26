@@ -18,7 +18,7 @@
     "prepare": "simple-git-hooks",
     "play": "nr -C playground dev:h5",
     "docs": "nr -C docs dev",
-    "docs:build": "nr -C docs build",
+    "docs:build": "nr -C docs build && nr build && nr -C playground build:h5:docs && tsx scripts/compose-docs.ts",
     "docs:preview": "nr -C docs preview",
     "build": "nr -r --filter=./packages/* build",
     "play:mp-weixin": "nr -C playground dev:mp-weixin",

@@ -1,3 +1,8 @@
+---
+demo: basic
+demoTitle: 基础用法
+---
+
 # 基础用法
 
 ## 纯展示树

@@ -1,3 +1,8 @@
+---
+demo: selection
+demoTitle: 单选与多选
+---
+
 # 单选与多选
 
 ## 单选
