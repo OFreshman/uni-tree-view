@@ -48,29 +48,33 @@ function buildPlugins(): PluginOption[] {
   ];
 }
 
-export default defineConfig({
-  root: process.cwd(),
-  base: process.env.UNI_PLATFORM === "h5" ? "/ui/" : "/",
-  define: {
-    __UNI_TREE_VIEW_VERSION__: JSON.stringify(getComponentVersion())
-  },
-  resolve: {
-    alias: {
-      "@": r("src")
-    }
-  },
-  css: {
-    preprocessorOptions: {
-      scss: {
-        // wot-ui v2 依赖 sass >= 1.78，使用 modern-compiler 避免 legacy-js-api 警告
-        api: "modern-compiler",
-        silenceDeprecations: ["legacy-js-api"]
+export default defineConfig(({ mode }) => {
+  const h5Base = mode === "docs" ? "/uni-tree-view/ui/" : "/ui/";
+
+  return {
+    root: process.cwd(),
+    base: process.env.UNI_PLATFORM === "h5" ? h5Base : "/",
+    define: {
+      __UNI_TREE_VIEW_VERSION__: JSON.stringify(getComponentVersion())
+    },
+    resolve: {
+      alias: {
+        "@": r("src")
       }
+    },
+    css: {
+      preprocessorOptions: {
+        scss: {
+          // wot-ui v2 依赖 sass >= 1.78，使用 modern-compiler 避免 legacy-js-api 警告
+          api: "modern-compiler",
+          silenceDeprecations: ["legacy-js-api"]
+        }
+      }
+    },
+    plugins: buildPlugins(),
+    build: {
+      target: "es6",
+      cssTarget: "chrome61"
     }
-  },
-  plugins: buildPlugins(),
-  build: {
-    target: "es6",
-    cssTarget: "chrome61"
-  }
+  };
 });
