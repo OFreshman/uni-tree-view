@@ -3,10 +3,10 @@
     <view class="docs-preview-page">
       <view class="docs-preview-header">
         <view class="docs-preview-header__brand">
-          <view class="docs-preview-header__mark">
-            <view class="docs-preview-header__branch docs-preview-header__branch--left"></view>
-            <view class="docs-preview-header__branch docs-preview-header__branch--right"></view>
-          </view>
+          <image
+            class="docs-preview-header__logo"
+            src="/static/uni-tree-view-logo.png"
+            mode="aspectFit"></image>
           <view class="docs-preview-header__copy">
             <view class="docs-preview-header__title">
               Uni Tree View
@@ -130,57 +130,11 @@ onLoad((options) => {
   min-width: 0;
 }
 
-.docs-preview-header__mark {
-  position: relative;
-  box-sizing: border-box;
+.docs-preview-header__logo {
+  display: block;
   flex: 0 0 auto;
   width: 58rpx;
   height: 58rpx;
-  background: linear-gradient(145deg, #38b779, #218657);
-  border: 1rpx solid rgba(255, 255, 255, 0.6);
-  border-radius: 17rpx;
-  box-shadow: 0 10rpx 24rpx rgba(35, 132, 88, 0.22);
-}
-
-.docs-preview-header__mark::before,
-.docs-preview-header__mark::after,
-.docs-preview-header__branch::after {
-  position: absolute;
-  background: #fff;
-  border-radius: 999rpx;
-  content: "";
-}
-
-.docs-preview-header__mark::before {
-  top: 14rpx;
-  left: 27rpx;
-  width: 5rpx;
-  height: 30rpx;
-}
-
-.docs-preview-header__mark::after {
-  top: 13rpx;
-  left: 18rpx;
-  width: 22rpx;
-  height: 5rpx;
-}
-
-.docs-preview-header__branch::after {
-  top: 29rpx;
-  width: 13rpx;
-  height: 5rpx;
-}
-
-.docs-preview-header__branch--left::after {
-  left: 16rpx;
-  transform: rotate(35deg);
-  transform-origin: right center;
-}
-
-.docs-preview-header__branch--right::after {
-  right: 16rpx;
-  transform: rotate(-35deg);
-  transform-origin: left center;
 }
 
 .docs-preview-header__copy {
