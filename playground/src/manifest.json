@@ -78,8 +78,7 @@
   "vueVersion": "3",
   "h5": {
     "router": {
-      "mode": "hash",
-      "base": "/ui/"
+      "mode": "hash"
     },
     "optimization": {
       "prefetch": true,
