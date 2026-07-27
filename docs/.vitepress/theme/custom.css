@@ -1,3 +1,36 @@
+/* ─── 宽屏布局自适应 ─────────────────────────────────
+   默认主题版心锁死 1440px，1920 及以上会在侧边栏左侧留出大片空白。
+   这里让版心随视口平滑加宽：两侧各保留约 132px 呼吸留白，
+   超宽屏（≥2000px）封顶在 1800px，回归居中排版。 */
+@media (min-width: 1440px) {
+  :root {
+    --vp-layout-max-width: clamp(1440px, calc(100vw - 200px), 1800px);
+  }
+}
+
+/* 非示例页（右侧无实时预览）在宽屏下正文适当加宽，缓解两侧空、中间挤 */
+@media (min-width: 1440px) {
+  .VPDoc.has-aside:not(:has(.DemoPreview--aside)) .content-container {
+    max-width: 740px;
+  }
+}
+
+/* ─── 示例页右侧 aside 加宽以承载实时预览 ───────────────
+   默认 aside 只有 256px（内容区 224px），放不下手机预览。
+   仅在页面内存在 aside 形态预览时加宽，并禁止被 flex 压缩，
+   保证 fixed 定位的 aside-container 不会盖到正文或溢出视口。 */
+@media (min-width: 1440px) {
+  .VPDoc:has(.DemoPreview--aside) .aside {
+    flex-shrink: 0;
+    max-width: 404px;
+  }
+
+  .VPDoc:has(.DemoPreview--aside) .aside-container,
+  .VPDoc:has(.DemoPreview--aside) .aside-curtain {
+    width: 372px;
+  }
+}
+
 :root {
   --vp-c-brand-1: #299764;
   --vp-c-brand-2: #238458;
