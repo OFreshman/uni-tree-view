@@ -11,6 +11,7 @@
   "include": [
     "scripts/**/*.ts",
     "eslint.config.ts",
-    "vitest.config.mts"
+    "vitest.config.mts",
+    "bump.config.ts"
   ]
 }
