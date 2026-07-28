@@ -1,5 +1,5 @@
 import { resolve } from "node:path";
-import { cwd } from "node:process";
+import process, { cwd } from "node:process";
 import chalk from "chalk";
 import { consola } from "consola";
 import { copy, remove } from "fs-extra";
@@ -23,6 +23,7 @@ async function main() {
     consola.success(chalk.green("Simplify succeeded for dist"));
   } catch (error) {
     consola.error("Simplify failed for `dist`", error);
+    process.exitCode = 1;
   }
 
   try {
@@ -36,6 +37,7 @@ async function main() {
     consola.success(chalk.green("Copy succeeded for README"));
   } catch (error) {
     consola.error("Copy failed for `README`", error);
+    process.exitCode = 1;
   }
 }
 
