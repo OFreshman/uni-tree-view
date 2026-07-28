@@ -15,6 +15,8 @@
 
 - showCheckbox 只控制选择能力和选择控件，multiple 独立控制单选/多选。
 - 优化移动端按压反馈、选择区域、选中态和加载状态。
+- 优化文档站示例页实时预览布局：宽屏挂载到右侧栏，窄屏以可折叠卡片展示。
+- 文档预览 playground 改用项目 Logo，并移除 H5 路由固定 base 以适配文档内嵌预览。
 - Playground 迁移到 Wot UI v2；核心组件仍保持零 Wot UI 依赖。
 
 ### Fixed
