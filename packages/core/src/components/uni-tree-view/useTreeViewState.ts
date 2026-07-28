@@ -296,7 +296,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
 
     const node = resolvedKeys
       .map((key) => nodeMap.value.get(key))
-      .find((item): item is TreeNode => Boolean(item) && (!props.onlyRadioLeaf || item.isLeaf));
+      .find((item): item is TreeNode => item !== undefined && (!props.onlyRadioLeaf || item.isLeaf));
     if (node) {
       clearCheckedStatus();
       node.checked = CHECK_STATUS_MAP.checked;
@@ -673,7 +673,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
     const normalizedKeys = normalizeKeys(keys);
     const changedNode = normalizedKeys
       .map((key) => nodeMap.value.get(key))
-      .find((node): node is TreeNode => Boolean(node) && (!node.disabled || Boolean(props.checkedDisabled)));
+      .find((node): node is TreeNode => node !== undefined && (!node.disabled || Boolean(props.checkedDisabled)));
     if (!changedNode) {
       return null;
     }

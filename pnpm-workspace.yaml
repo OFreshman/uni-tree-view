@@ -10,6 +10,7 @@ catalogs:
     '@uni-helper/vite-plugin-uni-components': ^0.2.0
     '@uni-helper/vite-plugin-uni-manifest': ^0.2.8
     '@uni-helper/vite-plugin-uni-pages': ^0.2.29
+    '@vitejs/plugin-vue': ^5.2.4
     unbuild: ^3.6.0
     unplugin-auto-import: ^20.0.0
     vite: ^5.4.19
@@ -45,7 +46,6 @@ catalogs:
     eslint-plugin-pnpm: ^1.1.1
     lint-staged: ^16.1.5
     simple-git-hooks: ^2.13.1
-    stylelint: ^16.23.1
   node:
     chalk: ^5.5.0
     consola: ^3.4.2
@@ -77,6 +77,8 @@ catalogs:
     unocss: ~66.0.0
     unocss-applet: ^0.10.0
   test:
+    '@vue/test-utils': ^2.4.11
+    happy-dom: ^18.0.1
     vitest: ^3.2.4
   types:
     '@types/archiver': ^6.0.3

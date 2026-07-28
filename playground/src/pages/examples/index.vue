@@ -181,6 +181,7 @@
 
 <script setup lang='ts'>
 import UniTreeView from "uni-tree-view";
+import type { TreeDataItem } from "uni-tree-view";
 import { computed, ref, shallowRef } from "vue";
 import AppPage from "@/components/appPage/index.vue";
 
@@ -250,7 +251,7 @@ const lazyRootData: DemoNode[] = [
   { id: "lazy-3", label: "行政部", type: "dept" }
 ];
 
-function isLazyLeaf(item: DemoNode) {
+function isLazyLeaf(item: TreeDataItem) {
   return item.type === "member";
 }
 

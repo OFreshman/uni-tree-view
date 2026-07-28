@@ -47,16 +47,20 @@
   ],
   "scripts": {
     "build": "nr clean:dist && unbuild && tsx scripts/post-build.ts",
-    "clean:dist": "rimraf ./dist ./dist-resolver"
+    "clean:dist": "rimraf ./dist ./dist-resolver",
+    "lint:type": "vue-tsc --noEmit -p tsconfig.check.json && tsc --noEmit -p tsconfig.node.json"
   },
   "peerDependencies": {
     "vue": ">=3.3.0"
   },
   "devDependencies": {
+    "@types/node": "catalog:types",
     "@uni-helper/vite-plugin-uni-components": "catalog:build",
     "@uni-helper/vite-plugin-uni-pages": "catalog:build",
     "@vue/runtime-core": "catalog:dev",
     "tsx": "catalog:script",
-    "vue": "catalog:frontend"
+    "typescript": "catalog:dev",
+    "vue": "catalog:frontend",
+    "vue-tsc": "catalog:dev"
   }
 }

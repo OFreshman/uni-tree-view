@@ -39,6 +39,15 @@ jobs:
       - name: Install
         run: nci
 
+      - name: Lint code
+        run: nr lint
+
+      - name: Lint type
+        run: nr lint:type
+
+      - name: Test
+        run: nr test
+
       - name: Build
         run: nr build
 
