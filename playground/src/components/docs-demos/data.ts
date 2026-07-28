@@ -58,15 +58,3 @@ export const demoTreeData: DemoTreeNode[] = [
     ]
   }
 ];
-
-export function createVirtualTreeData(groupCount = 24, memberCount = 18) {
-  return Array.from({ length: groupCount }, (_, groupIndex): DemoTreeNode => ({
-    id: `team-${groupIndex + 1}`,
-    label: `业务团队 ${String(groupIndex + 1).padStart(2, "0")}`,
-    append: `${memberCount} 人`,
-    children: Array.from({ length: memberCount }, (_, memberIndex): DemoTreeNode => ({
-      id: `member-${groupIndex + 1}-${memberIndex + 1}`,
-      label: `成员 ${groupIndex + 1}-${String(memberIndex + 1).padStart(2, "0")}`
-    }))
-  }));
-}
