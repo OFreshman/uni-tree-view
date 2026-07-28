@@ -1,2 +1,4 @@
 .vitepress/cache
+.vitepress/config.ts.timestamp-*.mjs
 .vitepress/dist
+/public/ui/

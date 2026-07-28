@@ -12,6 +12,8 @@ export default defineConfig({
     "./**/*.min.js",
     "**/dist-resolver",
     "artifacts",
+    "docs/public/ui",
+    "docs/.vitepress/config.ts.timestamp-*.mjs",
     "playground/src/uni_modules",
     "packages/core/scripts/*.js",
     ".claude"

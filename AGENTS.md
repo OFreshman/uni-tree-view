@@ -45,6 +45,8 @@
 - `packages/core/package.json` 中的 `uni-tree-view/resolver` 导出指向 `dist-resolver/index.*`。
 - 构建时会先生成 `dist-resolver/resolver/*`，随后 `scripts/post-build.ts` 会移动到 `dist-resolver/index.*`。
 - 如果 unbuild 提示找不到 `dist-resolver/index.*`，先确认 post-build 结束后的最终文件是否存在，再考虑改 exports。
+- 文档站实时预览由 playground 的 `build:h5:docs` 直接生成到 `docs/public/ui`，随后 VitePress 将其复制到 `docs/.vitepress/dist/ui`；完整流水线使用 `pnpm docs:build`。
+- `docs/public/ui` 是已忽略的生成目录；单独运行 VitePress build 只会复用已有内容，在干净检出时不会自动生成 demo，且本地残留可能过期。验证 docs 改动时应运行完整的 `pnpm docs:build`。
 
 ## 提交约束
 
