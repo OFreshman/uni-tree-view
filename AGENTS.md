@@ -31,7 +31,7 @@
 - 对外类型：`packages/core/src/components/uni-tree-view/types.ts` 和 `packages/core/src/components/uni-tree-view/uni-tree-view.vue.d.ts`。
 - 当前基础能力：展开/收起、单选、多选、禁用节点、`v-model`、`checked`、`goChild` 和 `updated`。
 - `treeProps` 用于映射 `id`、`label`、`children`、`disabled` 字段名。
-- 修改组件能力时，保持运行时 props/emits 和 `.d.ts` 类型同步。
+- 修改组件能力时，保持 `defineProps`/`withDefaults`/`defineEmits`、`types.ts` 和 `.d.ts` 类型同步。
 
 ## 测试约束
 

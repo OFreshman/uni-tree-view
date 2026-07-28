@@ -5,7 +5,7 @@
   "packageManager": "pnpm@10.11.0",
   "description": "一个基于 Vue3 / uni-app 的跨平台树形列表/选择组件，兼容小程序 (dCloud 插件市场) 和 H5",
   "author": "OFreshman <415561402@qq.com>",
-  "license": "ISC",
+  "license": "MIT",
   "keywords": [
     "tree",
     "tree-view",
@@ -13,7 +13,6 @@
     "uniapp tree",
     "uni-tree-view"
   ],
-  "main": "index.js",
   "scripts": {
     "prepare": "simple-git-hooks",
     "play": "nr -C playground dev:h5",
@@ -28,12 +27,12 @@
     "clean": "rimraf **/dist **/dist-resolver **/uni_modules docs/public/ui --glob",
     "clean:uni": "rimraf ./artifacts/dcloud ./playground/src/uni_modules",
     "lint": "eslint --cache .",
-    "lint:type": "tsc --noEmit",
-    "test": "vitest",
+    "lint:type": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.test.json && pnpm --filter uni-tree-view lint:type && pnpm -C playground lint:type",
+    "test": "vitest run",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "lint:fix": "nr lint --fix",
-    "stylelint:fix": "stylelint **/*.{css,scss,html,vue} --fix"
+    "test:watch": "vitest"
   },
   "devDependencies": {
     "@antfu/ni": "catalog:dev",
@@ -44,7 +43,10 @@
     "@mini-types/alipay": "catalog:dev",
     "@types/archiver": "catalog:types",
     "@types/fs-extra": "catalog:types",
+    "@types/node": "catalog:types",
     "@uni-helper/uni-app-types": "catalog:dev",
+    "@vitejs/plugin-vue": "catalog:build",
+    "@vue/test-utils": "catalog:test",
     "@xiaohe01/eslint-config": "catalog:lint",
     "@xiaohe01/tsconfig": "catalog:dev",
     "archiver": "catalog:script",
@@ -54,18 +56,19 @@
     "eslint": "catalog:lint",
     "eslint-plugin-pnpm": "catalog:lint",
     "fs-extra": "catalog:node",
+    "happy-dom": "catalog:test",
     "lint-staged": "catalog:lint",
     "miniprogram-api-typings": "catalog:dev",
     "pncat": "catalog:cli",
     "rimraf": "catalog:node",
     "simple-git-hooks": "catalog:lint",
-    "stylelint": "catalog:lint",
     "tsx": "catalog:script",
     "typescript": "catalog:dev",
     "unbuild": "catalog:build",
     "vite": "catalog:build",
     "vitest": "catalog:test",
-    "vue": "catalog:frontend"
+    "vue": "catalog:frontend",
+    "vue-tsc": "catalog:dev"
   },
   "simple-git-hooks": {
     "pre-commit": "npx lint-staged"

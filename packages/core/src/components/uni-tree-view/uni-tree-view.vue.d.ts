@@ -3,6 +3,8 @@ import type { DefineComponent } from "vue";
 import type { AllowedComponentProps } from "../../types";
 import type { UniTreeViewEmits, UniTreeViewExposed, UniTreeViewProps } from "./types";
 
+export type * from "./types";
+
 /**
  * `DefineComponent` 的 E 参数要求 `EmitsOptions`（函数值）形态，
  * 这里从 `UniTreeViewEmits` 的元组形态映射而来。

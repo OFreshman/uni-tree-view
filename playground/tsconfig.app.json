@@ -6,15 +6,16 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     },
     "types": [
       "vite/client",
       "@dcloudio/types",
       "@uni-helper/uni-app-types",
       "miniprogram-api-typings",
-      "@mini-types/alipay",
-      "@wot-ui/ui/global"
+      "@mini-types/alipay"
     ],
     "allowJs": true
   },

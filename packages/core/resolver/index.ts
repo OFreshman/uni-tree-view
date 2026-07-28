@@ -1,4 +1,4 @@
-import type { ComponentResolver } from "@uni-helper/vite-plugin-uni-components";
+import type { ComponentResolverObject } from "@uni-helper/vite-plugin-uni-components";
 
 const INDEX = "uni-tree-view";
 // const SHARED = `${INDEX}/shared`;
@@ -17,10 +17,10 @@ export interface UniTreeViewResolverOptions {
   exclude?: RegExp;
 }
 
-export function UniTreeViewResolver(options: UniTreeViewResolverOptions = {}): ComponentResolver {
+export function UniTreeViewResolver(options: UniTreeViewResolverOptions = {}): ComponentResolverObject {
   return {
     type: "component",
-    resolve(name: any) {
+    resolve(name: string) {
       if (options.exclude && name.match(options.exclude)) {
         return;
       }
