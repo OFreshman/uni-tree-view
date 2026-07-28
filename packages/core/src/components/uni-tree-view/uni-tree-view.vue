@@ -5,7 +5,7 @@
     <scroll-view
       class="scroll-view-container"
       :scroll-y="true"
-      :scroll-top="virtualEnabled ? virtualScrollTop : undefined"
+      :scroll-top="virtualEnabled ? virtualScrollCommandTop : undefined"
       :scroll-into-view="scrollIntoView"
       :style="scrollViewStyle"
       @scroll="handleVirtualScroll">
@@ -195,6 +195,9 @@ const props = withDefaults(defineProps<UniTreeViewProps>(), {
 const emit = defineEmits<UniTreeViewEmits>();
 const slots = defineSlots<UniTreeViewSlots>();
 const scrollIntoView = shallowRef("");
+const virtualScrollCommandTop = shallowRef<number>();
+const nodeDomIds = new Map<TreeKey, string>();
+let nextNodeDomId = 0;
 
 const {
   isMultiple,
@@ -251,10 +254,15 @@ interface RenderedTreeItem {
   domId: string;
 }
 
+const needsRenderedNodePath = computed(() => {
+  return Boolean(slots.default || slots.icon || slots.label || slots.append);
+});
+
 const renderedTreeList = computed(() => {
+  const includePath = needsRenderedNodePath.value;
   return virtualRenderedTreeList.value.map((node): RenderedTreeItem => ({
     node,
-    path: getNodePath(node),
+    path: includePath ? getNodePath(node) : [],
     domId: getNodeDomId(node)
   }));
 });
@@ -350,8 +358,13 @@ async function scrollToKey(key: TreeKey, options: TreeScrollToOptions = {}) {
   }
 
   if (virtualEnabled.value) {
-    scrollIntoView.value = "";
-    return scrollToIndex(visibleIndex);
+    virtualScrollCommandTop.value = undefined;
+    await nextTick();
+    if (!scrollToIndex(visibleIndex)) {
+      return false;
+    }
+    virtualScrollCommandTop.value = virtualScrollTop.value;
+    return true;
   }
 
   scrollIntoView.value = "";
@@ -361,12 +374,15 @@ async function scrollToKey(key: TreeKey, options: TreeScrollToOptions = {}) {
 }
 
 function getNodeDomId(node: TreeNode) {
-  const source = `${typeof node.id}:${String(node.id)}`;
-  let hash = 0;
-  for (let index = 0; index < source.length; index += 1) {
-    hash = (hash * 31 + source.charCodeAt(index)) >>> 0;
+  const cachedDomId = nodeDomIds.get(node.id);
+  if (cachedDomId) {
+    return cachedDomId;
   }
-  return `utv-tree-node-${hash}`;
+
+  nextNodeDomId += 1;
+  const domId = `utv-tree-node-${nextNodeDomId}`;
+  nodeDomIds.set(node.id, domId);
+  return domId;
 }
 
 function getLabelSegments(label: string) {
