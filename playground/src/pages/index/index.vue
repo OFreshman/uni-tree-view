@@ -73,17 +73,28 @@
               {{ largeTreeSummary }}
             </text>
           </view>
-          <wd-button
-            size="small"
-            type="primary"
-            :variant="showLargeTree ? 'plain' : 'base'"
-            @click="toggleLargeTree">
-            {{ showLargeTree ? "关闭" : "开启" }}
-          </wd-button>
+          <view class="page__card-actions">
+            <wd-button
+              v-if="showLargeTree"
+              size="small"
+              type="primary"
+              variant="plain"
+              @click="locateLargeTarget">
+              定位 6 级节点
+            </wd-button>
+            <wd-button
+              size="small"
+              type="primary"
+              :variant="showLargeTree ? 'plain' : 'base'"
+              @click="toggleLargeTree">
+              {{ showLargeTree ? "关闭" : "开启" }}
+            </wd-button>
+          </view>
         </view>
 
         <view v-if="showLargeTree" class="page__large-tree">
           <uni-tree-view
+            ref="largeTreeRef"
             v-model="largeCheckedValue"
             show-checkbox
             multiple
@@ -109,8 +120,10 @@
 
 <script setup lang='ts'>
 import UniTreeView from "uni-tree-view";
+import type { UniTreeViewExposed } from "uni-tree-view";
 import { computed, shallowRef } from "vue";
 import AppPage from "@/components/appPage/index.vue";
+import { createLargeTreeData, LARGE_TREE_DEFAULTS } from "@/utils/largeTreeData";
 
 interface DemoTreeNode {
   id: string;
@@ -123,9 +136,12 @@ const filterValue = shallowRef("");
 const checkedValue = shallowRef<Array<string | number>>(["floor-a-2"]);
 const latestAction = shallowRef("等待操作");
 const showLargeTree = shallowRef(false);
+const largeTreeRef = shallowRef<UniTreeViewExposed | null>(null);
 const largeTreeData = shallowRef<DemoTreeNode[]>([]);
 const largeCheckedValue = shallowRef<Array<string | number>>([]);
 const largeNodeCount = shallowRef(0);
+const largeTargetKey = shallowRef("");
+const largeTargetLabel = shallowRef("");
 const largeLatestAction = shallowRef("未开启");
 
 const treeProps = {
@@ -174,10 +190,10 @@ const checkedText = computed(() => {
 
 const largeTreeSummary = computed(() => {
   if (!showLargeTree.value) {
-    return "点击开启 5000+ 节点性能演示";
+    return `点击生成 ${LARGE_TREE_DEFAULTS.total.toLocaleString()} 个节点 / 2-6 层随机分支`;
   }
 
-  return `${largeNodeCount.value} 个节点 / 6 级 · ${largeLatestAction.value}`;
+  return `${largeNodeCount.value.toLocaleString()} 个节点 / 2-6 层 · ${largeLatestAction.value}`;
 });
 
 function handleChange(payload: any) {
@@ -198,13 +214,17 @@ function toggleLargeTree() {
     largeTreeData.value = [];
     largeCheckedValue.value = [];
     largeNodeCount.value = 0;
+    largeTargetKey.value = "";
+    largeTargetLabel.value = "";
     largeLatestAction.value = "已关闭";
     return;
   }
 
-  const { data, count } = createLargeTreeData();
-  largeTreeData.value = data;
-  largeNodeCount.value = count;
+  const largeTree = createLargeTreeData();
+  largeTreeData.value = largeTree.data;
+  largeNodeCount.value = largeTree.count;
+  largeTargetKey.value = largeTree.targetKey;
+  largeTargetLabel.value = largeTree.targetLabel;
   largeLatestAction.value = "已生成";
   showLargeTree.value = true;
 }
@@ -217,33 +237,9 @@ function handleLargeExpandChange(payload: any) {
   largeLatestAction.value = `${payload.expanded ? "展开" : "收起"} ${payload.node.id}`;
 }
 
-function createLargeTreeData() {
-  const levelSizes = [7, 7, 5, 4, 3, 2];
-  const levelNames = ["省", "市", "区县", "镇街", "社区", "网格"];
-  let count = 0;
-
-  function createLevel(level: number, parentKey: string): DemoTreeNode[] {
-    return Array.from({ length: levelSizes[level] }, (_, index) => {
-      const key = parentKey ? `${parentKey}-${index + 1}` : `${index + 1}`;
-      count += 1;
-
-      const node: DemoTreeNode = {
-        id: `area-${key}`,
-        label: `${levelNames[level]} ${key}`
-      };
-
-      if (level < levelSizes.length - 1) {
-        node.children = createLevel(level + 1, key);
-      }
-
-      return node;
-    });
-  }
-
-  return {
-    data: createLevel(0, ""),
-    count
-  };
+async function locateLargeTarget() {
+  const located = await largeTreeRef.value?.scrollToKey(largeTargetKey.value, { expandParents: true });
+  largeLatestAction.value = located ? `已定位 ${largeTargetLabel.value}` : "目标节点定位失败";
 }
 </script>
 
@@ -313,6 +309,13 @@ function createLargeTreeData() {
 .page__card-header-main {
   flex: 1;
   min-width: 0;
+}
+
+.page__card-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 12rpx;
+  align-items: center;
 }
 
 .page__card-title {

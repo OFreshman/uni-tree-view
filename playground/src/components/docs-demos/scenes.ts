@@ -55,9 +55,9 @@ export const demoSceneMeta: Record<DemoScene, DemoSceneMeta> = {
     index: "05",
     title: "虚拟渲染",
     shortTitle: "大数据",
-    description: "数百个节点仍只渲染可视区域，也可以直接定位到深层目标。",
+    description: "12,000 个随机分支节点仍只渲染可视区域，也可以直接定位到 6 级目标。",
     eyebrow: "VIRTUAL LIST",
-    tags: ["456 节点", "快速定位"]
+    tags: ["12,000 节点", "2-6 层", "快速定位"]
   },
   slots: {
     index: "06",
