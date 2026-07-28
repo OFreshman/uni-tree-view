@@ -49,6 +49,26 @@
   width: min(300px, 72vw);
   max-width: none;
   max-height: none;
+  animation: utv-float 6s ease-in-out infinite;
+}
+
+/* keyframes 必须保留默认主题 translate(-50%, -50%) 的居中位移，
+   否则动画期间图标会脱离 image 容器中心点 */
+@keyframes utv-float {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) translateY(0);
+  }
+
+  50% {
+    transform: translate(-50%, -50%) translateY(-14px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .VPHero .image-src {
+    animation: none;
+  }
 }
 
 @media (max-width: 959px) {
