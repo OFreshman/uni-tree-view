@@ -10,7 +10,6 @@ on:
       - 'playground/src/**'
       - playground/vite.config.ts
       - playground/package.json
-      - scripts/compose-docs.ts
       - package.json
       - CHANGELOG.md
       - .github/workflows/docs.yml
