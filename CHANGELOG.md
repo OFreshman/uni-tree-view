@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+## 0.0.9 - 2026-07-29
+
 ### Fixed
 
 - 修复 GitHub Actions 发布标签校验脚本被 shell 提前解析导致发布中断的问题。
