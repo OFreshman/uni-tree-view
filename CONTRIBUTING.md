@@ -75,3 +75,12 @@ pnpm release:push    # 最后一次性推送 main 和 tag
 ```
 
 推送 tag 后，GitHub Actions 会再次检查、验证微信/支付宝 playground 构建、发布 npm，并将 DCloud ZIP 上传到 GitHub Release。DCloud 插件市场仍需维护者下载该 ZIP 后手动上传。
+
+npm 发布使用 Trusted Publishing。首次配置时，在 npm 的 `uni-tree-view` 包设置中添加 GitHub Actions Trusted Publisher：
+
+- Organization or user：`OFreshman`
+- Repository：`uni-tree-view`
+- Workflow filename：`release.yml`
+- Environment name：留空
+
+发布流水线不再读取 `NPM_TOKEN`。如果 tag 推送后的任务失败，可在 GitHub Actions 手动运行 Release workflow，并在 `tag` 输入框填写已有标签（例如 `v0.0.9`）；流水线会检出该标签并重新验证包版本。

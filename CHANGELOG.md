@@ -4,6 +4,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- npm 发布迁移到 GitHub Actions Trusted Publishing，并支持手动重试已有发布标签。
+
 ## 0.0.9 - 2026-07-29
 
 ### Fixed
