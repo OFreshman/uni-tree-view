@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  assertUnreleasedHasContent,
   createPackageChangelog,
   formatReleaseDate,
   promoteUnreleased
@@ -10,6 +11,26 @@ describe("createPackageChangelog", () => {
     expect(createPackageChangelog("# Changelog\r\n\r\n## Unreleased\r\n")).toBe(
       "<!-- 此文件由仓库根目录 CHANGELOG.md 自动生成，请勿直接编辑。 -->\n\n# Changelog\n\n## Unreleased\n"
     );
+  });
+});
+
+describe("assertUnreleasedHasContent", () => {
+  it("accepts release notes in the unreleased section", () => {
+    expect(() => assertUnreleasedHasContent(
+      "# Changelog\n\n## Unreleased\n\n### Fixed\n\n- Release fix.\n"
+    )).not.toThrow();
+  });
+
+  it("rejects an empty unreleased section with an actionable message", () => {
+    expect(() => assertUnreleasedHasContent(
+      "# Changelog\n\n## Unreleased\n\n## 0.0.8 - 2026-07-29\n"
+    )).toThrow("Add release notes before running `pnpm release`");
+  });
+
+  it("rejects a changelog without an unreleased section", () => {
+    expect(() => assertUnreleasedHasContent(
+      "# Changelog\n\n## 0.0.8 - 2026-07-29\n"
+    )).toThrow("Missing `## Unreleased` section");
   });
 });
 
@@ -29,7 +50,7 @@ describe("promoteUnreleased", () => {
     expect(() => promoteUnreleased(source, {
       date: "2026-07-28",
       version: "0.0.8"
-    })).toThrow("The `## Unreleased` section is empty");
+    })).toThrow("Add release notes before running `pnpm release`");
   });
 
   it("rejects a duplicate release version", () => {
