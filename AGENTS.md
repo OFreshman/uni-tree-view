@@ -29,8 +29,8 @@
 
 - 主组件：`packages/core/src/components/uni-tree-view/uni-tree-view.vue`。
 - 对外类型：`packages/core/src/components/uni-tree-view/types.ts` 和 `packages/core/src/components/uni-tree-view/uni-tree-view.vue.d.ts`。
-- 当前基础能力：展开/收起、单选、多选、禁用节点、`v-model`、`checked`、`goChild` 和 `updated`。
-- `treeProps` 用于映射 `id`、`label`、`children`、`disabled` 字段名。
+- 当前基础能力：展开/收起、单选、多选、禁用节点、`v-model`、`check-change` 和 `expand-change`。
+- `treeProps` 只用于映射 `id`、`label`、`children`、`disabled`、`leaf`、`append`、`icon` 字段名；节点行外部样式类使用一级 `nodeClass` prop。
 - 修改组件能力时，保持 `defineProps`/`withDefaults`/`defineEmits`、`types.ts` 和 `.d.ts` 类型同步。
 
 ## 测试约束
@@ -47,11 +47,13 @@
 - 如果 unbuild 提示找不到 `dist-resolver/index.*`，先确认 post-build 结束后的最终文件是否存在，再考虑改 exports。
 - 文档站实时预览由 playground 的 `build:h5:docs` 直接生成到 `docs/public/ui`，随后 VitePress 将其复制到 `docs/.vitepress/dist/ui`；完整流水线使用 `pnpm docs:build`。
 - `docs/public/ui` 是已忽略的生成目录；单独运行 VitePress build 只会复用已有内容，在干净检出时不会自动生成 demo，且本地残留可能过期。验证 docs 改动时应运行完整的 `pnpm docs:build`。
+- 变更日志只维护仓库根目录 `CHANGELOG.md`；`packages/core/CHANGELOG.md` 是 npm 打包前自动生成的忽略文件，不要手动编辑。
 
 ## 提交约束
 
 - 提交信息使用 `feat:`、`fix:`、`docs:`、`style:`、`refactor:`、`test:`、`chore:` 等类型前缀加中文说明，简洁描述本次提交的实际变更。
-- 提交前检查暂存区，按功能边界分批提交；提交代码时无特别说明，就按功能逐批提交。
+- 提交前检查暂存区，按功能边界分批提交。用户说“提交代码”时，默认含义是按功能分批执行 `git add` 和 `git commit`，并为每批编写对应的 commit message。
+- “提交代码”不包含 `git push`。除非用户明确要求“push”或“推送”，否则任何情况下都不要执行 `git push`；由用户手动推送，避免意外触发 GitHub Actions workflow。
 
 ## 参考资料
 
