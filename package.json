@@ -36,6 +36,7 @@
     "test:coverage": "vitest run --coverage",
     "check": "pnpm lint && pnpm lint:type && pnpm test && pnpm build:play && git diff --check",
     "changelog": "tsx scripts/update-changelog.ts",
+    "changelog:package": "tsx scripts/sync-package-changelog.ts",
     "release": "tsx scripts/release.ts",
     "release:prepare": "pnpm changelog && pnpm check",
     "release:push": "git push origin main --follow-tags"

@@ -17,26 +17,11 @@ const PackageFiles = [
   "docs/package.json"
 ];
 
-const ChangelogFiles = [
-  "CHANGELOG.md",
-  "packages/core/CHANGELOG.md"
-];
+const ChangelogFile = "CHANGELOG.md";
 
 async function readPackageVersion(filePath: string): Promise<string> {
   const source = await readFile(resolve(filePath), "utf8");
   return (JSON.parse(source) as PackageJson).version;
-}
-
-async function createChangelogUpdate(filePath: string, version: string, date: string) {
-  const absolutePath = resolve(filePath);
-  const source = await readFile(absolutePath, "utf8");
-  const updatedSource = promoteUnreleased(source, { date, version });
-
-  return {
-    absolutePath,
-    filePath,
-    updatedSource
-  };
 }
 
 function assertVersionIsNotTagged(version: string): void {
@@ -66,15 +51,12 @@ async function main(): Promise<void> {
     throw new Error(`Invalid RELEASE_DATE: ${date}`);
   }
 
-  // 先校验所有 CHANGELOG，再统一写入，避免其中一个文件校验失败时只更新了一半。
-  const updates = await Promise.all(
-    ChangelogFiles.map((filePath) => createChangelogUpdate(filePath, version, date))
-  );
+  const absolutePath = resolve(ChangelogFile);
+  const source = await readFile(absolutePath, "utf8");
+  const updatedSource = promoteUnreleased(source, { date, version });
 
-  await Promise.all(updates.map(async ({ absolutePath, filePath, updatedSource }) => {
-    await writeFile(absolutePath, updatedSource, "utf8");
-    console.log(`Updated ${filePath} for v${version}`);
-  }));
+  await writeFile(absolutePath, updatedSource, "utf8");
+  console.log(`Updated ${ChangelogFile} for v${version}`);
 }
 
 main().catch((error) => {

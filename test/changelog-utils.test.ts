@@ -1,5 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { formatReleaseDate, promoteUnreleased } from "../scripts/changelog-utils";
+import {
+  createPackageChangelog,
+  formatReleaseDate,
+  promoteUnreleased
+} from "../scripts/changelog-utils";
+
+describe("createPackageChangelog", () => {
+  it("marks the package changelog as generated and copies the root changelog", () => {
+    expect(createPackageChangelog("# Changelog\r\n\r\n## Unreleased\r\n")).toBe(
+      "<!-- 此文件由仓库根目录 CHANGELOG.md 自动生成，请勿直接编辑。 -->\n\n# Changelog\n\n## Unreleased\n"
+    );
+  });
+});
 
 describe("promoteUnreleased", () => {
   it("moves unreleased entries under the release heading", () => {

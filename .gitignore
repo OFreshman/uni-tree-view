@@ -30,6 +30,7 @@ dist
 dist-ssr
 /artifacts
 /coverage
+/packages/core/CHANGELOG.md
 
 # IDE文件
 .vscode/*

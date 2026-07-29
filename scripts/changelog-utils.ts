@@ -5,6 +5,8 @@ export interface PromoteUnreleasedOptions {
   version: string;
 }
 
+const PackageChangelogNotice = "<!-- 此文件由仓库根目录 CHANGELOG.md 自动生成，请勿直接编辑。 -->";
+
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -19,6 +21,12 @@ export function formatReleaseDate(date = new Date()): string {
   const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
 
   return `${values.year}-${values.month}-${values.day}`;
+}
+
+export function createPackageChangelog(source: string): string {
+  const normalizedSource = source.replace(/\r\n/g, "\n").trim();
+
+  return `${PackageChangelogNotice}\n\n${normalizedSource}\n`;
 }
 
 export function promoteUnreleased(

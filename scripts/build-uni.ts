@@ -222,7 +222,6 @@ async function buildPluginPackage(pkg: PackageJson, pluginDir: string) {
     r("README.md")
   ], r(pluginDir, "readme.md"));
   const copiedChangelog = await copyFirstExistingFile([
-    r(coreDir, "CHANGELOG.md"),
     r("CHANGELOG.md")
   ], r(pluginDir, "changelog.md"));
   const copiedLicense = await copyFirstExistingFile([
