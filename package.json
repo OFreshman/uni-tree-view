@@ -35,10 +35,11 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "check": "pnpm lint && pnpm lint:type && pnpm test && pnpm build:play && git diff --check",
+    "check:platforms": "pnpm -C playground build:mp-weixin && pnpm -C playground build:mp-alipay",
     "changelog": "tsx scripts/update-changelog.ts",
     "changelog:package": "tsx scripts/sync-package-changelog.ts",
     "release": "tsx scripts/release.ts",
-    "release:prepare": "pnpm changelog && pnpm check",
+    "release:prepare": "pnpm changelog && pnpm check && pnpm check:platforms",
     "release:push": "git push origin main --follow-tags"
   },
   "devDependencies": {
