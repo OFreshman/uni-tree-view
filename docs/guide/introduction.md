@@ -14,7 +14,7 @@
 - 🔍 关键词过滤、自定义 `filterMethod`、命中高亮
 - ⚡ `virtual` 虚拟渲染，万级节点流畅滚动
 - 🔌 `loadApi` 懒加载，内置加载态 / 失败重试
-- 🎨 `themeColor` 一键换主题色，插槽自由定制节点内容
+- 🎨 `themeColor`、`nodeClass` 与插槽自由定制节点外观和内容
 - 📦 零运行时依赖，npm 与 uni_modules 双通道分发
 
 ## 它不做什么

@@ -45,7 +45,7 @@ body:
       description: 提供能复现问题的最小代码片段和数据样例（或重现仓库链接）
       placeholder: |
         ```vue
-        <uni-tree-view :data="treeData" show-checkbox multiple />
+        <uni-tree-view :data="treeData" selectable multiple />
         ```
     validations:
       required: true

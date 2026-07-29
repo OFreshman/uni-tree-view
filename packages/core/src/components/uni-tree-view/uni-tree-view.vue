@@ -28,13 +28,16 @@
           minHeight: virtualEnabled ? `${props.virtualItemHeight}px` : undefined
         }"
         class="utv-tree-item"
-        :class="{
-          'is-leaf': item.node.isLeaf,
-          'is-expanded': item.node.expanded,
-          'is-disabled': item.node.disabled,
-          'is-checked': props.showCheckbox && item.node.checked === 'checked',
-          'is-virtual': virtualEnabled
-        }"
+        :class="[
+          props.nodeClass,
+          {
+            'is-leaf': item.node.isLeaf,
+            'is-expanded': item.node.expanded,
+            'is-disabled': item.node.disabled,
+            'is-checked': props.selectable && item.node.checked === 'checked',
+            'is-virtual': virtualEnabled
+          }
+        ]"
         :hover-class="item.node.disabled ? 'none' : 'utv-tree-item--hover'"
         :hover-stay-time="80"
         @click="handleNodeClick(item.node)">
@@ -50,7 +53,7 @@
         <view v-else class="utv-tree-item__arrow--placeholder"></view>
 
         <view
-          v-if="showSelectionControl && props.checkboxPlacement === 'left'"
+          v-if="showSelectionControl && props.selectionPlacement === 'left'"
           class="utv-tree-item__checkbox"
           :class="{ 'is--disabled': item.node.disabled }"
           @click.stop="handleCheckChange(item.node)">
@@ -106,7 +109,7 @@
         </view>
 
         <view
-          v-if="showSelectionControl && props.checkboxPlacement === 'right'"
+          v-if="showSelectionControl && props.selectionPlacement === 'right'"
           class="utv-tree-item__checkbox"
           :class="{ 'is--disabled': item.node.disabled }"
           @click.stop="handleCheckChange(item.node)">
@@ -126,7 +129,7 @@
 <script lang="ts" setup>
 import { computed, nextTick, shallowRef, watch } from "vue";
 import type {
-  TreeChangePayload,
+  TreeCheckChangePayload,
   TreeKey,
   TreeNode,
   TreeScrollToOptions,
@@ -150,19 +153,11 @@ const props = withDefaults(defineProps<UniTreeViewProps>(), {
   modelValue: undefined,
   data: () => [],
   treeProps: undefined,
-  field: null,
   filterValue: "",
   filterMethod: undefined,
   highlightFilter: true,
-  labelField: "label",
-  valueField: "id",
-  childrenField: "children",
-  disabledField: "disabled",
-  leafField: "leaf",
-  appendField: "append",
-  iconField: "icon",
   themeColor: "#007aff",
-  showCheckbox: false,
+  selectable: false,
   showRadioIcon: true,
   multiple: false,
   checkOnClickNode: false,
@@ -171,7 +166,6 @@ const props = withDefaults(defineProps<UniTreeViewProps>(), {
   onlyRadioLeaf: false,
   defaultExpandAll: false,
   defaultExpandedKeys: () => [],
-  defaultExpandedIds: () => [],
   expandChecked: false,
   cacheExpandedKeys: false,
   defaultCheckedKeys: () => [],
@@ -181,8 +175,9 @@ const props = withDefaults(defineProps<UniTreeViewProps>(), {
   alwaysFirstLoad: false,
   checkedDisabled: false,
   packDisabledkey: true,
+  nodeClass: "",
   indent: 40,
-  checkboxPlacement: "left",
+  selectionPlacement: "left",
   emptyText: "暂无数据",
   showPath: false,
   pathSeparator: " / ",
@@ -228,7 +223,7 @@ const {
 } = useTreeViewState(props);
 
 const showSelectionControl = computed(() => {
-  return Boolean(props.showCheckbox && (isMultiple.value || props.showRadioIcon));
+  return Boolean(props.selectable && (isMultiple.value || props.showRadioIcon));
 });
 
 const {
@@ -279,8 +274,6 @@ async function handleToggleExpand(node: TreeNode) {
     return;
   }
 
-  emit("goChild", { id: node.id, node });
-  emit("expand", payload.expanded, node);
   emit("expand-change", payload);
 
   if (payload.expanded && shouldLoad) {
@@ -298,7 +291,7 @@ function handleNodeClick(node: TreeNode) {
   if (props.expandOnClickNode && isExpandable(node)) {
     void handleToggleExpand(node);
   }
-  if (props.showCheckbox && props.checkOnClickNode) {
+  if (props.selectable && props.checkOnClickNode) {
     handleCheckChange(node);
   }
 }
@@ -439,12 +432,9 @@ function handleCheckChange(node: TreeNode) {
   commitSelectionChange(payload);
 }
 
-function commitSelectionChange(payload: TreeChangePayload) {
+function commitSelectionChange(payload: TreeCheckChangePayload) {
   emit("update:modelValue", payload.value);
-  emit("change", payload);
-  emit("checked", payload);
   emit("check-change", payload);
-  emit("updated", payload);
 }
 
 function setCheckedKeys(keys: TreeKey | TreeKey[], checked = true) {

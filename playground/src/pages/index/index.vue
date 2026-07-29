@@ -38,7 +38,7 @@
         </view>
         <uni-tree-view
           v-model="checkedValue"
-          show-checkbox
+          selectable
           multiple
           check-on-click-node
           expand-on-click-node
@@ -48,7 +48,7 @@
           :default-expanded-keys="['building-a']"
           expand-checked
           :tree-props="treeProps"
-          @change="handleChange"
+          @check-change="handleCheckChange"
           @expand-change="handleExpandChange"></uni-tree-view>
       </view>
 
@@ -96,7 +96,7 @@
           <uni-tree-view
             ref="largeTreeRef"
             v-model="largeCheckedValue"
-            show-checkbox
+            selectable
             multiple
             check-on-click-node
             expand-on-click-node
@@ -108,7 +108,7 @@
             :virtual-overscan="12"
             :data="largeTreeData"
             :tree-props="treeProps"
-            @change="handleLargeChange"
+            @check-change="handleLargeChange"
             @expand-change="handleLargeExpandChange"></uni-tree-view>
         </view>
       </view>
@@ -196,7 +196,7 @@ const largeTreeSummary = computed(() => {
   return `${largeNodeCount.value.toLocaleString()} 个节点 / 2-6 层 · ${largeLatestAction.value}`;
 });
 
-function handleChange(payload: any) {
+function handleCheckChange(payload: any) {
   latestAction.value = `change: ${payload.keys.join(", ") || "none"}`;
 }
 

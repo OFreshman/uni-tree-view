@@ -19,7 +19,7 @@
 ### 自定义 label 与尾部徽标
 
 ```vue
-<uni-tree-view :data="treeData" show-checkbox multiple>
+<uni-tree-view :data="treeData" selectable multiple>
   <template #label="{ node }">
     <text :style="node.level === 0 ? 'font-weight:600' : ''">
       {{ node.label }}

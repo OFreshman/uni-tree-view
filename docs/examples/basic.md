@@ -7,7 +7,7 @@ demoTitle: 基础用法
 
 ## 纯展示树
 
-不传 `show-checkbox` 时为纯展示树，点击箭头展开收起：
+不传 `selectable` 时为纯展示树，点击箭头展开收起：
 
 ```vue
 <template>
@@ -61,12 +61,32 @@ const treeData = [
 ```vue
 <uni-tree-view
   :data="treeData"
-  show-checkbox
+  selectable
   multiple
   check-on-click-node
   expand-on-click-node
 />
 ```
+
+## 自定义节点样式
+
+普通 `class` 设置组件根容器；`node-class` 设置每个节点行的外部类名：
+
+```vue
+<uni-tree-view
+  class="department-tree"
+  node-class="department-tree-node"
+  :data="treeData"
+/>
+
+<style scoped>
+:deep(.department-tree-node) {
+  min-height: 44px;
+}
+</style>
+```
+
+`node-class` 是外部样式入口，不需要依赖组件内部类名。
 
 ## 节点路径
 

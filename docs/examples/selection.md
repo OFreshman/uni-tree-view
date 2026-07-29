@@ -7,13 +7,13 @@ demoTitle: 单选与多选
 
 ## 单选
 
-`show-checkbox` 不加 `multiple` 即为单选，`v-model` 为单个 key：
+`selectable` 不加 `multiple` 即为单选，`v-model` 为单个 key：
 
 ```vue
 <template>
   <uni-tree-view
     v-model="selected"
-    show-checkbox
+    selectable
     :data="treeData"
   />
 </template>
@@ -28,7 +28,7 @@ const selected = ref("room-a-101");
 只允许选择叶子节点：
 
 ```vue
-<uni-tree-view v-model="selected" show-checkbox only-radio-leaf :data="treeData" />
+<uni-tree-view v-model="selected" selectable only-radio-leaf :data="treeData" />
 ```
 
 ## 多选（父子联动）
@@ -39,10 +39,10 @@ const selected = ref("room-a-101");
 <template>
   <uni-tree-view
     v-model="checked"
-    show-checkbox
+    selectable
     multiple
     :data="treeData"
-    @change="onChange"
+    @check-change="onChange"
   />
 </template>
 
@@ -60,7 +60,7 @@ function onChange({ keys, node }) {
 ## 严格模式（父子独立）
 
 ```vue
-<uni-tree-view v-model="checked" show-checkbox multiple check-strictly :data="treeData" />
+<uni-tree-view v-model="checked" selectable multiple check-strictly :data="treeData" />
 ```
 
 ## 通过方法操作选中
@@ -69,7 +69,7 @@ function onChange({ keys, node }) {
 <template>
   <wd-button @click="checkFloor">选中 1 层</wd-button>
   <wd-button variant="plain" @click="clear">清空</wd-button>
-  <uni-tree-view ref="treeRef" v-model="checked" show-checkbox multiple :data="treeData" />
+  <uni-tree-view ref="treeRef" v-model="checked" selectable multiple :data="treeData" />
 </template>
 
 <script setup>

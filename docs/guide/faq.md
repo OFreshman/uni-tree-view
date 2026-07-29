@@ -21,16 +21,18 @@ treeData.value = [...treeData.value];
 
 替换根数组时，非受控选中状态会按仍然存在的节点 key 保留；受控场景始终以 `v-model` 为准。
 
+`tree-props` 的映射配置发生响应式变化时，组件会重新解析整棵树；但它只负责声明字段名，不会改变上述 `data` 不做深度监听的约定。
+
 ## 选中了但 v-model 没更新?
 
-`v-model` 只在启用选择时生效，确认传了 `show-checkbox`。单选模式 `v-model` 是单个 key，多选模式（`multiple`）是 key 数组。
+`v-model` 只在启用选择时生效，确认传了 `selectable`。单选模式 `v-model` 是单个 key，多选模式（`multiple`）是 key 数组。
 
 ## 父子联动不符合预期?
 
 默认父子联动（勾选父节点会勾选所有子节点）。如果希望父子状态互相独立，开启：
 
 ```vue
-<uni-tree-view show-checkbox multiple check-strictly :data="data" />
+<uni-tree-view selectable multiple check-strictly :data="data" />
 ```
 
 ## 禁用节点为什么出现在返回的 keys 里?
@@ -43,7 +45,7 @@ treeData.value = [...treeData.value];
 
 ## 小程序上样式没生效?
 
-组件启用了 `virtualHost`，外层样式直接作用于组件根节点。如果你在页面里覆盖组件内部样式，注意小程序的样式隔离——建议只通过 `theme-color`、`indent` 等 props 和插槽定制，不要穿透组件内部类名。
+组件启用了 `virtualHost`，普通 `class` 可作用于组件根节点。需要定制每个节点行时，请通过 `node-class` 传入自己的稳定类名；主题、缩进和内容分别使用 `theme-color`、`indent` 与插槽。不要直接依赖组件内部类名，并注意小程序的组件样式隔离规则。
 
 ## 懒加载子节点失败了怎么办?
 
@@ -67,7 +69,7 @@ function onError({ node, error }) {
 ```vue
 <wd-popup v-model="show" position="bottom">
   <view style="height: 60vh;">
-    <uni-tree-view v-model="value" show-checkbox multiple :data="data" />
+    <uni-tree-view v-model="value" selectable multiple :data="data" />
   </view>
 </wd-popup>
 ```
