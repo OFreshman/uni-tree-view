@@ -33,7 +33,7 @@
       <uni-tree-view
         ref="treeRef"
         v-model="checkedValue"
-        show-checkbox
+        selectable
         multiple
         check-on-click-node
         expand-on-click-node

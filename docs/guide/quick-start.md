@@ -21,7 +21,7 @@ const treeData = [
 </script>
 ```
 
-不传 `show-checkbox` 时是纯展示树，点击箭头展开收起。
+不传 `selectable` 时是纯展示树，点击箭头展开收起。
 
 ## 多选 + v-model
 
@@ -29,10 +29,10 @@ const treeData = [
 <template>
   <uni-tree-view
     v-model="checkedValue"
-    show-checkbox
+    selectable
     multiple
     :data="treeData"
-    @change="handleChange"
+    @check-change="handleCheckChange"
   />
 </template>
 
@@ -41,19 +41,19 @@ import { ref } from "vue";
 
 const checkedValue = ref(["floor-a-1"]);
 
-function handleChange({ keys, nodes }) {
+function handleCheckChange({ keys, nodes }) {
   console.log("当前选中:", keys);
 }
 </script>
 ```
 
-`showCheckbox` 控制是否启用选择，`multiple` 控制单选/多选：
+`selectable` 控制是否启用选择，`multiple` 控制单选/多选：
 
 | 用法 | 行为 |
 | --- | --- |
-| 不传 `show-checkbox` | 纯展示树，无选择入口 |
-| `show-checkbox` | 单选，radio 控件 |
-| `show-checkbox multiple` | 多选，checkbox 控件，父子联动 |
+| 不传 `selectable` | 纯展示树，无选择入口 |
+| `selectable` | 单选，radio 控件 |
+| `selectable multiple` | 多选，checkbox 控件，父子联动 |
 
 ## 自定义字段名
 
@@ -72,6 +72,30 @@ function handleChange({ keys, nodes }) {
   />
 </template>
 ```
+
+`tree-props` 只声明数据字段名。映射配置发生响应式变化时，组件会重新解析树数据。
+
+## 自定义节点样式
+
+普通 `class` 作用于组件根容器；`node-class` 会添加到每个节点行，因此无需依赖组件内部类名：
+
+```vue
+<template>
+  <uni-tree-view
+    class="department-tree"
+    node-class="department-tree-node"
+    :data="treeData"
+  />
+</template>
+
+<style scoped>
+:deep(.department-tree-node) {
+  min-height: 44px;
+}
+</style>
+```
+
+使用 scoped 样式或小程序端时，仍需遵循对应平台的组件样式隔离规则。
 
 ## 搜索过滤
 

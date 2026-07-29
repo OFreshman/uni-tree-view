@@ -4,7 +4,7 @@
 
 ```vue
 <template>
-  <uni-tree-view ref="treeRef" :data="treeData" show-checkbox multiple />
+  <uni-tree-view ref="treeRef" :data="treeData" selectable multiple />
 </template>
 
 <script setup>

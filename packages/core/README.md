@@ -10,7 +10,7 @@
 
 适用于 uni-app + Vue 3 的跨端树形列表/选择组件，一套代码运行在微信小程序、支付宝小程序和 H5。
 
-**📖 [完整文档](https://ofreshman.github.io/uni-tree-view/)** · [快速上手](https://ofreshman.github.io/uni-tree-view/guide/quick-start) · [API 参考](https://ofreshman.github.io/uni-tree-view/apis/props) · [常见问题](https://ofreshman.github.io/uni-tree-view/guide/faq)
+**📖 [完整文档](https://ofreshman.github.io/uni-tree-view/)** · [在线演示](https://ofreshman.github.io/uni-tree-view/ui/#/) · [快速上手](https://ofreshman.github.io/uni-tree-view/guide/quick-start) · [API 参考](https://ofreshman.github.io/uni-tree-view/apis/props) · [常见问题](https://ofreshman.github.io/uni-tree-view/guide/faq)
 
 ## 特性
 
@@ -18,7 +18,7 @@
 - 🔍 关键词过滤、自定义匹配、命中高亮
 - ⚡ 固定行高虚拟渲染，万级节点流畅滚动
 - 🔌 懒加载子节点，内置加载态与失败重试
-- 🎨 主题色一个 prop 搞定，label/icon/append/empty 插槽自由定制
+- 🎨 主题色、`node-class` 与 label/icon/append/empty 插槽自由定制
 - 📦 零运行时依赖，npm 与 uni_modules（插件市场）双通道分发
 
 ## 安装
@@ -35,10 +35,10 @@ pnpm add uni-tree-view
 <template>
   <uni-tree-view
     v-model="checkedValue"
-    show-checkbox
+    selectable
     multiple
     :data="treeData"
-    @change="handleChange"
+    @check-change="handleCheckChange"
   />
 </template>
 
@@ -58,19 +58,31 @@ const treeData = [
   }
 ];
 
-function handleChange({ keys, nodes }) {
+function handleCheckChange({ keys, nodes }) {
   console.log("当前选中:", keys);
 }
 </script>
 ```
 
-`showCheckbox` 控制是否启用选择，`multiple` 控制单选/多选：
+`selectable` 控制是否启用选择，`multiple` 控制单选/多选：
 
 | 用法 | 行为 |
 | --- | --- |
-| 不传 `showCheckbox` | 纯展示树 |
-| `showCheckbox` | 单选（radio） |
-| `showCheckbox multiple` | 多选（checkbox，父子联动） |
+| 不传 `selectable` | 纯展示树 |
+| `selectable` | 单选（radio） |
+| `selectable multiple` | 多选（checkbox，父子联动） |
+
+普通 `class` 作用于组件根容器；需要使用自己的类名定制每个节点行时，传入 `node-class`：
+
+```vue
+<uni-tree-view
+  class="department-tree"
+  node-class="department-tree-node"
+  :data="treeData"
+/>
+```
+
+`tree-props` 只负责数据字段映射，不包含样式配置。
 
 完整的 Props / Events / Slots / Methods 列表、懒加载与虚拟渲染示例请见 **[文档站](https://ofreshman.github.io/uni-tree-view/)**。
 

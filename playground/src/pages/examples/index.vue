@@ -15,7 +15,7 @@
               </view>
               <uni-tree-view
                 v-model="radioValue"
-                show-checkbox
+                selectable
                 theme-color="#299764"
                 default-expand-all
                 :data="orgData"
@@ -28,7 +28,7 @@
               </view>
               <uni-tree-view
                 v-model="strictValue"
-                show-checkbox
+                selectable
                 multiple
                 check-strictly
                 theme-color="#299764"
@@ -43,7 +43,7 @@
               </view>
               <uni-tree-view
                 v-model="rowClickValue"
-                show-checkbox
+                selectable
                 multiple
                 check-on-click-node
                 expand-on-click-node
@@ -72,7 +72,7 @@
               <uni-tree-view
                 ref="lazyTreeRef"
                 v-model="lazyValue"
-                show-checkbox
+                selectable
                 multiple
                 load-mode
                 theme-color="#299764"
@@ -164,7 +164,7 @@
             <view class="page__popup-body">
               <uni-tree-view
                 v-model="popupDraftValue"
-                show-checkbox
+                selectable
                 multiple
                 theme-color="#299764"
                 default-expand-all

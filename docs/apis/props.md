@@ -23,15 +23,12 @@ interface TreeProps {
 }
 ```
 
-::: details 旧版字段映射（兼容用，不推荐新项目使用）
-为兼容社区常见树组件的写法，还支持 `field` 对象以及 `label-field` / `value-field` / `children-field` / `disabled-field` / `leaf-field` / `append-field` / `icon-field` 等零散 props。新项目请统一使用 `tree-props`。
-:::
 
 ## 选择
 
 | 属性 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
-| `show-checkbox` | `boolean` | `false` | 是否启用并展示选择控件 |
+| `selectable` | `boolean` | `false` | 是否启用并展示选择控件 |
 | `multiple` | `boolean` | `false` | 是否多选。`false` 时为单选（radio） |
 | `show-radio-icon` | `boolean` | `true` | 单选模式是否展示 radio 图标 |
 | `check-strictly` | `boolean` | `false` | 父子选中状态是否互相独立 |
@@ -72,11 +69,30 @@ interface TreeProps {
 | 属性 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
 | `theme-color` | `string` | `#007aff` | 主题色（选中控件、高亮） |
+| `node-class` | `string` | `""` | 添加到每个节点行的自定义 class，不必依赖组件内部类名 |
 | `indent` | `number` | `40` | 每级缩进，单位 **rpx** |
-| `checkbox-placement` | `"left" \| "right"` | `"left"` | 选择控件位置 |
+| `selection-placement` | `"left" \| "right"` | `"left"` | radio / checkbox 选择控件位置 |
 | `empty-text` | `string` | `暂无数据` | 空数据文案 |
 | `show-path` | `boolean` | `false` | label 下方展示节点路径 |
 | `path-separator` | `string` | `" / "` | 路径分隔符 |
+
+普通 `class` 仍按 Vue / uni-app 约定作用于组件根容器；需要定制节点行时使用 `node-class`：
+
+```vue
+<uni-tree-view
+  class="department-tree"
+  node-class="department-tree-node"
+  :data="data"
+/>
+
+<style scoped>
+:deep(.department-tree-node) {
+  min-height: 44px;
+}
+</style>
+```
+
+使用 scoped 样式或小程序端时，仍需遵循对应平台的组件样式隔离规则。
 
 ## 虚拟渲染
 

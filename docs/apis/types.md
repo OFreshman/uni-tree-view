@@ -4,7 +4,7 @@
 
 ```ts
 import type {
-  TreeChangePayload,
+  TreeCheckChangePayload,
   TreeDataItem,
   TreeKey,
   TreeNode,

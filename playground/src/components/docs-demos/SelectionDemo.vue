@@ -27,7 +27,7 @@
       <uni-tree-view
         v-if="mode === 'single'"
         v-model="singleValue"
-        show-checkbox
+        selectable
         only-radio-leaf
         check-on-click-node
         default-expand-all
@@ -36,7 +36,7 @@
       <uni-tree-view
         v-else-if="mode === 'multiple'"
         v-model="multipleValue"
-        show-checkbox
+        selectable
         multiple
         check-on-click-node
         default-expand-all
@@ -45,12 +45,12 @@
       <uni-tree-view
         v-else
         v-model="strictValue"
-        show-checkbox
+        selectable
         multiple
         check-strictly
         check-on-click-node
         default-expand-all
-        checkbox-placement="right"
+        selection-placement="right"
         theme-color="#299764"
         :data="demoTreeData"></uni-tree-view>
     </view>

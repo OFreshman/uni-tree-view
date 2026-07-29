@@ -2,10 +2,9 @@ import { computed, ref, toRaw, watch } from "vue";
 import { CHECK_STATUS_MAP, DefaultTreeProps } from "./constants";
 import type {
   CheckStatus,
-  TreeChangePayload,
+  TreeCheckChangePayload,
   TreeDataItem,
   TreeKey,
-  TreeLegacyField,
   TreeModelValue,
   TreeNode,
   TreeProps
@@ -14,25 +13,15 @@ import type {
 export interface TreeViewStateProps {
   data?: TreeDataItem[];
   treeProps?: Partial<TreeProps>;
-  field?: TreeLegacyField | null;
-  labelField?: string;
-  valueField?: string;
-  childrenField?: string;
-  disabledField?: string;
-  leafField?: string;
-  appendField?: string;
-  iconField?: string;
   filterValue?: string;
   filterMethod?: (value: string, node: TreeNode) => boolean;
   modelValue?: TreeModelValue;
   defaultCheckedKeys?: TreeKey | TreeKey[] | null;
-  showCheckbox?: boolean;
   multiple?: boolean;
   checkStrictly?: boolean;
   onlyRadioLeaf?: boolean;
   defaultExpandAll?: boolean;
   defaultExpandedKeys?: TreeKey[] | null;
-  defaultExpandedIds?: TreeKey[] | null;
   expandChecked?: boolean;
   cacheExpandedKeys?: boolean;
   loadMode?: boolean;
@@ -53,17 +42,14 @@ export function useTreeViewState(props: TreeViewStateProps) {
   let initialized = false;
 
   const resolvedTreeProps = computed<TreeProps>(() => {
-    const field = props.field ?? {};
     return {
-      ...DefaultTreeProps,
-      id: props.treeProps?.id ?? field.id ?? field.key ?? field.value ?? props.valueField ?? DefaultTreeProps.id,
-      label: props.treeProps?.label ?? field.label ?? props.labelField ?? DefaultTreeProps.label,
-      children: props.treeProps?.children ?? field.children ?? props.childrenField ?? DefaultTreeProps.children,
-      disabled: props.treeProps?.disabled ?? field.disabled ?? props.disabledField ?? DefaultTreeProps.disabled,
-      leaf: props.treeProps?.leaf ?? field.leaf ?? props.leafField ?? DefaultTreeProps.leaf,
-      append: props.treeProps?.append ?? field.append ?? props.appendField ?? DefaultTreeProps.append,
-      icon: props.treeProps?.icon ?? field.icon ?? props.iconField ?? DefaultTreeProps.icon,
-      class: props.treeProps?.class ?? DefaultTreeProps.class
+      id: props.treeProps?.id ?? DefaultTreeProps.id,
+      label: props.treeProps?.label ?? DefaultTreeProps.label,
+      children: props.treeProps?.children ?? DefaultTreeProps.children,
+      disabled: props.treeProps?.disabled ?? DefaultTreeProps.disabled,
+      leaf: props.treeProps?.leaf ?? DefaultTreeProps.leaf,
+      append: props.treeProps?.append ?? DefaultTreeProps.append,
+      icon: props.treeProps?.icon ?? DefaultTreeProps.icon
     };
   });
 
@@ -166,7 +152,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
       }
     }
 
-    return buildChangePayload(node);
+    return buildCheckChangePayload(node);
   }
 
   function flattenTree(
@@ -305,11 +291,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
 
   function applyExpandedState() {
     const defaultExpandedKeys = normalizeKeys(props.defaultExpandedKeys);
-    const defaultExpandedIds = normalizeKeys(props.defaultExpandedIds);
-    const expandedKeySet = new Set<TreeKey>([
-      ...defaultExpandedKeys,
-      ...defaultExpandedIds
-    ]);
+    const expandedKeySet = new Set<TreeKey>(defaultExpandedKeys);
 
     for (const node of treeList.value) {
       node.expanded = Boolean(props.defaultExpandAll)
@@ -540,7 +522,6 @@ export function useTreeViewState(props: TreeViewStateProps) {
     return JSON.stringify({
       defaultExpandAll: props.defaultExpandAll,
       defaultExpandedKeys: normalizeKeys(props.defaultExpandedKeys),
-      defaultExpandedIds: normalizeKeys(props.defaultExpandedIds),
       expandChecked: props.expandChecked,
       cacheExpandedKeys: props.cacheExpandedKeys
     });
@@ -660,7 +641,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
     return getCheckedKeys()[0] ?? null;
   }
 
-  function buildChangePayload(node: TreeNode): TreeChangePayload {
+  function buildCheckChangePayload(node: TreeNode): TreeCheckChangePayload {
     return {
       value: getModelValue(),
       keys: getCheckedKeys(),
@@ -699,7 +680,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
           }
         }
       }
-      return buildChangePayload(changedNode);
+      return buildCheckChangePayload(changedNode);
     }
 
     if (isMultiple.value) {
@@ -719,7 +700,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
       changedNode.checked = CHECK_STATUS_MAP.checked;
     }
 
-    return buildChangePayload(changedNode);
+    return buildCheckChangePayload(changedNode);
   }
 
   function setExpandedKeys(keys: TreeKey[] | "all", expanded = true) {

@@ -2,7 +2,7 @@
 import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 import { nextTick } from "vue";
-import type { TreeChangePayload, UniTreeViewExposed } from "../packages/core/src/components/uni-tree-view/types";
+import type { TreeCheckChangePayload, UniTreeViewExposed } from "../packages/core/src/components/uni-tree-view/types";
 import UniTreeView from "../packages/core/src/components/uni-tree-view/uni-tree-view.vue";
 
 const treeData = [
@@ -26,7 +26,7 @@ describe("uni-tree-view component", () => {
         data: treeData,
         defaultExpandAll: true,
         multiple: true,
-        showCheckbox: true
+        selectable: true
       }
     });
     const tree = exposed(wrapper);
@@ -58,7 +58,7 @@ describe("uni-tree-view component", () => {
     tree.setCheckedKeys("child");
     await nextTick();
 
-    const payload = wrapper.emitted<TreeChangePayload[]>("checked")?.[0]?.[0];
+    const payload = wrapper.emitted<TreeCheckChangePayload[]>("check-change")?.[0]?.[0];
     expect(tree.getCheckedKeys()).toEqual(["root", "child"]);
     expect(payload).toMatchObject({
       value: ["root", "child"],
@@ -83,6 +83,28 @@ describe("uni-tree-view component", () => {
 
     expect(wrapper.text()).toContain("child:Alpha root>Alpha child");
     expect(wrapper.findAll(".utv-tree-node-label__match")).toHaveLength(2);
+  });
+
+  it("adds nodeClass to rows while preserving the standard root class", () => {
+    const wrapper = mount(UniTreeView, {
+      props: {
+        data: [
+          { id: "first", label: "First" },
+          { id: "second", label: "Second" }
+        ],
+        nodeClass: "consumer-tree-node emphasized"
+      },
+      attrs: {
+        class: "consumer-tree"
+      }
+    });
+
+    expect(wrapper.classes()).toContain("consumer-tree");
+    for (const row of wrapper.findAll(".utv-tree-item")) {
+      expect(row.classes()).toEqual(
+        expect.arrayContaining(["consumer-tree-node", "emphasized"])
+      );
+    }
   });
 
   it("uses stable collision-free DOM ids and scroll commands in virtual mode", async () => {

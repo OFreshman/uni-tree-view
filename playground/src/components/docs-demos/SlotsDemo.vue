@@ -15,7 +15,7 @@
       </view>
       <uni-tree-view
         v-model="checkedValue"
-        show-checkbox
+        selectable
         multiple
         default-expand-all
         :data="demoTreeData"

@@ -168,42 +168,33 @@ describe("useTreeViewState", () => {
     });
   });
 
-  it("supports legacy field mapping props", () => {
-    const { state } = createState({
-      data: createMappedTreeData(),
-      field: {
-        value: "value",
-        label: "name",
-        children: "nodes",
-        disabled: "blocked"
+  it("rebuilds nodes when treeProps mapping changes", async () => {
+    const { props, state } = createState({
+      data: [
+        {
+          id: "default-id",
+          label: "Default label",
+          value: "mapped-id",
+          name: "Mapped label"
+        }
+      ],
+      treeProps: {
+        id: "id",
+        label: "label",
+        children: "children"
       }
     });
 
-    expect(state.treeList.value.map((item) => item.id)).toEqual([1, 11]);
-    expect(node(state, 11)).toMatchObject({
-      label: "Child",
-      disabled: true
-    });
-  });
+    expect(state.getNode("default-id")?.label).toBe("Default label");
 
-  it("supports split legacy field mapping props", () => {
-    const { state } = createState({
-      data: createMappedTreeData(),
-      labelField: "name",
-      valueField: "value",
-      childrenField: "nodes",
-      disabledField: "blocked",
-      appendField: "extra",
-      iconField: "glyph"
-    });
+    props.treeProps!.label = "name";
+    await nextTick();
+    expect(state.getNode("default-id")?.label).toBe("Mapped label");
 
-    expect(state.treeList.value.map((item) => item.id)).toEqual([1, 11]);
-    expect(node(state, 11)).toMatchObject({
-      label: "Child",
-      append: "child-extra",
-      icon: "C",
-      disabled: true
-    });
+    props.treeProps!.id = "value";
+    await nextTick();
+    expect(state.getNode("default-id")).toBeUndefined();
+    expect(state.getNode("mapped-id")?.label).toBe("Mapped label");
   });
 
   it("applies default expanded keys and expand/collapse methods", () => {
@@ -234,7 +225,6 @@ describe("useTreeViewState", () => {
 
   it("expands checked ancestors only during initialization or expansion config changes", () => {
     const { state } = createState({
-      showCheckbox: true,
       modelValue: ["room-a-201"],
       expandChecked: true
     });
@@ -245,7 +235,6 @@ describe("useTreeViewState", () => {
 
   it("selects a parent and descendants in linked multiple mode", () => {
     const { state } = createState({
-      showCheckbox: true,
       multiple: true
     });
 
@@ -258,7 +247,6 @@ describe("useTreeViewState", () => {
 
   it("updates parent half checked state from children", () => {
     const { state } = createState({
-      showCheckbox: true,
       multiple: true
     });
 
@@ -272,7 +260,6 @@ describe("useTreeViewState", () => {
 
   it("skips disabled nodes during user selection but keeps parent state consistent", () => {
     const { state } = createState({
-      showCheckbox: true,
       multiple: true
     });
 
@@ -288,7 +275,6 @@ describe("useTreeViewState", () => {
 
   it("keeps parent and children independent in checkStrictly mode", () => {
     const { state } = createState({
-      showCheckbox: true,
       multiple: true,
       checkStrictly: true
     });
@@ -321,9 +307,7 @@ describe("useTreeViewState", () => {
   });
 
   it("keeps selection visibility independent from single or multiple mode", () => {
-    const single = createState({
-      showCheckbox: true
-    });
+    const single = createState();
 
     const singlePayload = single.state.checkNode(node(single.state, "building-b"));
     expect(single.state.isMultiple.value).toBe(false);
@@ -341,7 +325,6 @@ describe("useTreeViewState", () => {
 
   it("exposes checked node query and mutation methods", () => {
     const { state } = createState({
-      showCheckbox: true,
       multiple: true
     });
 
@@ -426,9 +409,7 @@ describe("useTreeViewState", () => {
   });
 
   it("keeps selection state while filtering empty results", async () => {
-    const { props, state } = createState({
-      showCheckbox: true
-    });
+    const { props, state } = createState();
 
     state.checkNode(node(state, "room-a-201"));
     props.filterValue = "missing";
@@ -527,7 +508,6 @@ describe("useTreeViewState", () => {
   it("inherits checked state for lazy children in linked multiple mode", async () => {
     const { state } = createState({
       data: createLazyTreeData(),
-      showCheckbox: true,
       multiple: true,
       loadMode: true,
       loadApi: () => [
@@ -592,7 +572,6 @@ describe("useTreeViewState", () => {
   ])("applies controlled lazy child selection after loading ($multiple)", async ({ modelValue, multiple }) => {
     const { state } = createState({
       data: createLazyTreeData(),
-      showCheckbox: true,
       multiple,
       modelValue,
       loadMode: true,
@@ -609,7 +588,6 @@ describe("useTreeViewState", () => {
   it("applies unresolved default keys and updates linked parent state after lazy loading", async () => {
     const { state } = createState({
       data: createLazyTreeData(),
-      showCheckbox: true,
       multiple: true,
       defaultCheckedKeys: ["lazy-child"],
       loadMode: true,
@@ -627,7 +605,6 @@ describe("useTreeViewState", () => {
         { id: "default-node", label: "Default node", leaf: true },
         ...createLazyTreeData()
       ],
-      showCheckbox: true,
       multiple: true,
       checkStrictly: true,
       defaultCheckedKeys: ["default-node"],
@@ -643,7 +620,6 @@ describe("useTreeViewState", () => {
 
   it("preserves uncontrolled checked state across immutable data refreshes", async () => {
     const { props, state } = createState({
-      showCheckbox: true,
       multiple: true,
       checkStrictly: true,
       defaultCheckedKeys: ["room-a-101"]
@@ -666,7 +642,6 @@ describe("useTreeViewState", () => {
 
   it("keeps controlled selection authoritative across data refreshes", async () => {
     const { props, state } = createState({
-      showCheckbox: true,
       multiple: true,
       checkStrictly: true,
       modelValue: ["floor-b-1"]
@@ -681,7 +656,6 @@ describe("useTreeViewState", () => {
 
   it("preserves disabled checked nodes internally when packing excludes them", async () => {
     const { props, state } = createState({
-      showCheckbox: true,
       multiple: true,
       checkStrictly: true,
       checkedDisabled: true,
@@ -698,15 +672,12 @@ describe("useTreeViewState", () => {
   });
 
   it("honors checkedDisabled and packDisabledkey options", () => {
-    const blocked = createState({
-      showCheckbox: true
-    });
+    const blocked = createState();
 
     expect(blocked.state.setCheckedKeys(["room-a-202"])).toBeNull();
     expect(blocked.state.checkNode(node(blocked.state, "room-a-202"))).toBeNull();
 
     const allowed = createState({
-      showCheckbox: true,
       checkedDisabled: true,
       packDisabledkey: false
     });
@@ -719,7 +690,6 @@ describe("useTreeViewState", () => {
 
   it("does not expand a checked parent when controlled modelValue changes after selection", async () => {
     const { props, state } = createState({
-      showCheckbox: true,
       multiple: true,
       modelValue: ["floor-a-2"],
       defaultExpandedKeys: ["building-a"],
@@ -747,7 +717,6 @@ describe("useTreeViewState", () => {
 
   it("updates tree shape when data changes without changing expansion on model-only updates", async () => {
     const { props, state } = createState({
-      showCheckbox: true,
       defaultExpandedKeys: ["building-a"]
     });
 
@@ -768,7 +737,6 @@ describe("useTreeViewState", () => {
   it("keeps visible node cache and linked selection correct with large trees", () => {
     const { state } = createState({
       data: createLargeTreeData(),
-      showCheckbox: true,
       multiple: true
     });
 

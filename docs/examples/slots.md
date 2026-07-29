@@ -10,7 +10,7 @@ demoTitle: 自定义插槽
 `label` 插槽只替换文本部分，保留缩进、箭头、选择控件：
 
 ```vue
-<uni-tree-view :data="treeData" show-checkbox multiple>
+<uni-tree-view :data="treeData" selectable multiple>
   <template #label="{ node, data }">
     <text :style="{ fontWeight: node.level === 0 ? 600 : 400 }">
       {{ node.label }}
@@ -42,7 +42,7 @@ demoTitle: 自定义插槽
 `default` 插槽替换整个内容区（icon + label + append），缩进、箭头和选择控件仍由组件负责：
 
 ```vue
-<uni-tree-view :data="treeData" show-checkbox multiple>
+<uni-tree-view :data="treeData" selectable multiple>
   <template #default="{ node, data }">
     <view class="custom-node">
       <wd-img v-if="data.avatar" :src="data.avatar" width="48rpx" height="48rpx" round />

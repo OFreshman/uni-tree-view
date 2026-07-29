@@ -22,7 +22,7 @@
       <uni-tree-view
         :key="renderKey"
         load-mode
-        show-checkbox
+        selectable
         only-radio-leaf
         check-on-click-node
         :data="rootData"
