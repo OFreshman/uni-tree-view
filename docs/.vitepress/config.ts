@@ -17,7 +17,7 @@ export default defineConfig({
       { text: "指南", link: "/guide/introduction", activeMatch: "/guide/" },
       { text: "API", link: "/apis/props", activeMatch: "/apis/" },
       { text: "示例", link: "/examples/basic", activeMatch: "/examples/" },
-      { text: "更新日志", link: "/guide/changelog" }
+      { text: "在线演示", link: "https://ofreshman.github.io/uni-tree-view/ui/#/" }
     ],
     sidebar: {
       "/guide/": [
@@ -33,8 +33,7 @@ export default defineConfig({
           text: "进阶",
           items: [
             { text: "平台兼容性", link: "/guide/platforms" },
-            { text: "常见问题", link: "/guide/faq" },
-            { text: "更新日志", link: "/guide/changelog" }
+            { text: "常见问题", link: "/guide/faq" }
           ]
         }
       ],
