@@ -5,12 +5,22 @@ on:
     tags:
       - 'v*'
 
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to publish, for example v0.0.9
+        required: true
+        type: string
+
+env:
+  RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+
 permissions:
   contents: write
   id-token: write
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-${{ inputs.tag || github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -22,6 +32,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ env.RELEASE_TAG }}
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -33,16 +44,23 @@ jobs:
           cache: pnpm
           registry-url: https://registry.npmjs.org
 
+      - name: Install npm with trusted publishing support
+        run: npm install --global npm@11.18.0
+
       - name: Install
         run: pnpm install --frozen-lockfile
 
       - name: Verify release tag
         shell: bash
         run: |
+          if [[ "$RELEASE_TAG" != v* ]]; then
+            echo "::error::Release tag must start with v, received $RELEASE_TAG"
+            exit 1
+          fi
           version="$(node -p 'require("./packages/core/package.json").version')"
           expected="v${version}"
-          if [[ "$GITHUB_REF_NAME" != "$expected" ]]; then
-            echo "::error::Expected tag $expected, received $GITHUB_REF_NAME"
+          if [[ "$RELEASE_TAG" != "$expected" ]]; then
+            echo "::error::Expected tag $expected, received $RELEASE_TAG"
             exit 1
           fi
 
@@ -73,21 +91,19 @@ jobs:
 
       - name: Publish npm package
         if: steps.npm-version.outputs.published != 'true'
-        run: pnpm --filter './packages/core' publish --access public --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
+        working-directory: packages/core
+        run: npm publish --access public --provenance
 
       - name: Create or update GitHub release
         shell: bash
         run: |
           assets=(artifacts/npm/* artifacts/dcloud/*)
-          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            gh release upload "$GITHUB_REF_NAME" "${assets[@]}" --clobber
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" "${assets[@]}" --clobber
           else
-            gh release create "$GITHUB_REF_NAME" "${assets[@]}" \
+            gh release create "$RELEASE_TAG" "${assets[@]}" \
               --generate-notes \
-              --title "$GITHUB_REF_NAME" \
+              --title "$RELEASE_TAG" \
               --verify-tag
           fi
         env:
