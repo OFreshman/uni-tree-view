@@ -61,7 +61,9 @@ docs: 补充 xxx 示例
 
 ## 发布流程（维护者）
 
-变更日志只维护仓库根目录 `CHANGELOG.md` 的 `Unreleased`；npm 包内的 `CHANGELOG.md` 会在打包前自动生成。
+变更日志只维护仓库根目录 `CHANGELOG.md` 的 `Unreleased`；npm 包内的 `CHANGELOG.md` 会在打包前自动生成。执行发布前必须确保 `Unreleased` 非空，并先提交所有功能、文档和发布流程修复。
+
+发布脚本会在修改版本号前检查分支、工作区和变更日志；如果 bumpp 在创建 release commit 前失败，会自动恢复本次发布改动的跟踪文件。
 
 ```bash
 pnpm check           # 提交功能代码前完整检查
