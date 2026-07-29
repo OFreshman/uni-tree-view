@@ -61,7 +61,15 @@ docs: 补充 xxx 示例
 
 ## 发布流程（维护者）
 
+变更日志只维护仓库根目录 `CHANGELOG.md` 的 `Unreleased`；npm 包内的 `CHANGELOG.md` 会在打包前自动生成。
+
 ```bash
-pnpm release    # bumpp 交互式升版本 + tag
-pnpm build:uni  # 生成 DCloud 插件 ZIP、说明文档和独立示例工程 ZIP
+pnpm check           # 提交功能代码前完整检查
+git commit           # 按功能边界提交，不把版本升级混入功能提交
+pnpm release patch   # 升级版本、归档 CHANGELOG、再次检查 H5/微信/支付宝、创建 release commit 和 tag
+git show HEAD        # 人工确认版本和 CHANGELOG 内容
+git tag --points-at HEAD
+pnpm release:push    # 最后一次性推送 main 和 tag
 ```
+
+推送 tag 后，GitHub Actions 会再次检查、验证微信/支付宝 playground 构建、发布 npm，并将 DCloud ZIP 上传到 GitHub Release。DCloud 插件市场仍需维护者下载该 ZIP 后手动上传。
