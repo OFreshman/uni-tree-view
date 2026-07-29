@@ -50,7 +50,8 @@
   "scripts": {
     "build": "nr clean:dist && unbuild && tsx scripts/post-build.ts",
     "clean:dist": "rimraf ./dist ./dist-resolver",
-    "lint:type": "vue-tsc --noEmit -p tsconfig.check.json && tsc --noEmit -p tsconfig.node.json"
+    "lint:type": "vue-tsc --noEmit -p tsconfig.check.json && tsc --noEmit -p tsconfig.node.json",
+    "prepack": "pnpm -w changelog:package"
   },
   "peerDependencies": {
     "vue": ">=3.3.0"
