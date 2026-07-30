@@ -9,7 +9,7 @@
   "homepage": "https://ofreshman.github.io/uni-tree-view",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/OFreshman/uni-tree-view"
+    "url": "git+https://github.com/OFreshman/uni-tree-view.git"
   },
   "bugs": "https://github.com/OFreshman/uni-tree-view/issues",
   "keywords": [
