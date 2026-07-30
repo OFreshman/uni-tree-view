@@ -7,6 +7,7 @@
 ### Fixed
 
 - npm 发布迁移到 GitHub Actions Trusted Publishing，并支持手动重试已有发布标签。
+- 规范 npm 包仓库元数据，并升级 Release workflow 的 Node 环境 Action，消除 npm 11 发布警告。
 
 ## 0.0.9 - 2026-07-29
 
