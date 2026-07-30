@@ -79,7 +79,7 @@ pnpm release:push    # 最后一次性推送 main 和 tag
 npm 发布使用 Trusted Publishing。首次配置时，在 npm 的 `uni-tree-view` 包设置中添加 GitHub Actions Trusted Publisher：
 
 - Organization or user：`OFreshman`
-- Repository：`uni-tree-view`
+- Repository：`uni-tree-view`（只填写仓库名，不要填写 GitHub 完整 URL）
 - Workflow filename：`release.yml`
 - Environment name：留空
 
