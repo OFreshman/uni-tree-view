@@ -46,13 +46,13 @@
     font-weight: normal;
   }
 
-  &__arrow--placeholder {
+  &__arrow-placeholder {
     flex: 0 0 40rpx;
     width: 40rpx;
     height: 40rpx;
   }
 
-  &__arrow--icon {
+  &__arrow-icon {
     position: relative;
     flex: 0 0 40rpx;
     display: flex;
@@ -109,11 +109,11 @@
     height: 48rpx;
     overflow: hidden;
 
-    &.is--disabled {
+    &.is-disabled {
       opacity: 0.45;
     }
 
-    &--icon {
+    &-icon {
       position: relative;
       display: flex;
       align-items: center;
