@@ -43,22 +43,22 @@
         @click="handleNodeClick(item.node)">
         <view
           v-if="isExpandable(item.node)"
-          class="utv-tree-item__arrow--icon is-right"
+          class="utv-tree-item__arrow-icon is-right"
           :class="{
             'is-expand': item.node.expanded,
             'is-loading': item.node.loading,
             'is-load-error': Boolean(item.node.loadError)
           }"
           @click.stop="handleToggleExpand(item.node)"></view>
-        <view v-else class="utv-tree-item__arrow--placeholder"></view>
+        <view v-else class="utv-tree-item__arrow-placeholder"></view>
 
         <view
           v-if="showSelectionControl && props.selectionPlacement === 'left'"
           class="utv-tree-item__checkbox"
-          :class="{ 'is--disabled': item.node.disabled }"
+          :class="{ 'is-disabled': item.node.disabled }"
           @click.stop="handleCheckChange(item.node)">
           <view
-            class="utv-tree-item__checkbox--icon"
+            class="utv-tree-item__checkbox-icon"
             :class="getSelectionIconClass(item.node)"></view>
         </view>
 
@@ -111,10 +111,10 @@
         <view
           v-if="showSelectionControl && props.selectionPlacement === 'right'"
           class="utv-tree-item__checkbox"
-          :class="{ 'is--disabled': item.node.disabled }"
+          :class="{ 'is-disabled': item.node.disabled }"
           @click.stop="handleCheckChange(item.node)">
           <view
-            class="utv-tree-item__checkbox--icon"
+            class="utv-tree-item__checkbox-icon"
             :class="getSelectionIconClass(item.node)"></view>
         </view>
       </view>
