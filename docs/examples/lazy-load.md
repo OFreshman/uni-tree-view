@@ -87,9 +87,9 @@ function onError({ node }) {
 </script>
 ```
 
-## 每次展开都重新加载
+## 带静态 children 也强制走一次加载
 
-默认只加载一次。数据实时性要求高时：
+节点在数据里自带静态 `children` 时，默认会被视为已加载，展开不会调用 `load-api`。开启 `always-first-load` 后，这类节点首次展开时也会强制调用一次 `load-api`（加载成功后同样不再重复请求）：
 
 ```vue
 <uni-tree-view load-mode always-first-load :data="rootData" :load-api="loadChildren" />

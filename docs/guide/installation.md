@@ -75,5 +75,5 @@ uni_modules 遵循 easycom 规范，**无需任何配置**，直接在模板中�
 | 依赖 | 版本 |
 | --- | --- |
 | Vue | >= 3.3 |
-| uni-app 编译器 | Vue 3 版本（HBuilderX 3.8+ 或 CLI） |
+| uni-app 编译器 | Vue 3 版本（HBuilderX 4.15+ 或 CLI） |
 | sass | 项目需支持 scss（uni-app 模板默认支持） |

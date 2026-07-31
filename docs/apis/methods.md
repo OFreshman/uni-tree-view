@@ -60,4 +60,4 @@ function selectAll() {
 | --- | --- | --- |
 | `loadNode` | `(node: TreeNode) => Promise<TreeDataItem[]>` | 手动触发节点加载 |
 | `retryLoad` | `(keyOrNode) => Promise<TreeDataItem[]>` | 重试加载失败的节点 |
-| `scrollToKey` | `(key, options?: { expandParents? }) => Promise<boolean>` | 滚动到指定节点（虚拟模式），`expandParents` 先展开祖先链 |
+| `scrollToKey` | `(key, options?: { expandParents? }) => Promise<boolean>` | 滚动到指定节点（虚拟与普通模式均可用），`expandParents` 默认 `true`，先展开祖先链后定位 |

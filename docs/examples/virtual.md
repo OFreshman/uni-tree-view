@@ -42,7 +42,7 @@ const { data, count } = createLargeTreeData({
 
 | 参数 | 说明 |
 | --- | --- |
-| `virtual-height` | 滚动容器高度（px），**必须指定** |
+| `virtual-height` | 滚动容器高度（px），默认 400，建议按容器实际高度显式指定 |
 | `virtual-item-height` | 每行高度（px）；组件会据此固定虚拟行高度 |
 | `virtual-overscan` | 可视区外额外渲染的行数，滚动越快可适当调大 |
 

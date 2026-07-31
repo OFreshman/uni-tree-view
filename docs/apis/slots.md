@@ -2,7 +2,7 @@
 
 | 插槽 | 作用域参数 | 说明 |
 | --- | --- | --- |
-| `default` | `{ node, data, path }` | 整个节点内容区（替换 icon + label + append） |
+| `default` | `{ node, data, path }` | 整个节点内容区（替换 icon + label + append，`show-path` 的路径行与 `highlight-filter` 高亮也随之失效） |
 | `label` | `{ node, data, path }` | 仅节点文本 |
 | `icon` | `{ node, data, path }` | 节点前置图标 |
 | `append` | `{ node, data, path }` | 节点尾部附加内容 |

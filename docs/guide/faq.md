@@ -52,7 +52,7 @@ treeData.value = [...treeData.value];
 监听 `load-error` 事件提示用户，并通过 ref 调用 `retryLoad(key)` 重试：
 
 ```vue
-<uni-tree-view ref="tree" load-mode :load-api="loadApi" @load-error="onError" />
+<uni-tree-view ref="treeRef" load-mode :load-api="loadApi" @load-error="onError" />
 ```
 
 ```ts

@@ -5,7 +5,7 @@ demoTitle: 搜索过滤
 
 # 搜索过滤
 
-组件不内置搜索框，把任意输入组件的值绑定到 `filter-value` 即可。命中节点及其祖先链保持可见。
+组件不内置搜索框，把任意输入组件的值绑定到 `filter-value` 即可。命中节点及其祖先链、全部后代保持可见。
 
 ## 配合 wd-search
 
@@ -65,7 +65,8 @@ function matchFn(value, node) {
 
 ```ts
 function onFilter({ value, keys }) {
-  console.log(`“${value}” 命中 ${keys.length} 个节点`);
+  // keys 为过滤后保持可见的节点（含命中节点的祖先与后代）
+  console.log(`“${value}” 找到 ${keys.length} 个相关节点`);
 }
 ```
 

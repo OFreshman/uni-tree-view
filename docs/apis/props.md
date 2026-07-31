@@ -51,7 +51,7 @@ interface TreeProps {
 
 | 属性 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
-| `filter-value` | `string` | `""` | 过滤关键词，命中节点及祖先链保持可见 |
+| `filter-value` | `string` | `""` | 过滤关键词，命中节点及其祖先链、后代节点保持可见 |
 | `filter-method` | `(value, node) => boolean` | - | 自定义匹配函数 |
 | `highlight-filter` | `boolean` | `true` | 内置 label 中高亮命中的关键词 |
 

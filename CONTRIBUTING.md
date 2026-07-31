@@ -31,7 +31,7 @@ playground      uni-app 演示工程
 docs            VitePress 文档站
 test            单元测试
 scripts         构建脚本（build:uni 生成 DCloud 发布文件）
-artifacts       本地发布产物（插件 ZIP、说明文档、示例工程 ZIP）
+artifacts       本地发布产物（插件 ZIP、说明文档、示例工程 ZIP、npm 包 tgz）
 ```
 
 ## 提交前检查

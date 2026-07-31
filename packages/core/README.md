@@ -1,7 +1,7 @@
 # uni-tree-view
 
 <p align="center">
-  <img src="./assets/uni-tree-view-logo.svg" alt="uni-tree-view Logo" width="180" />
+  <img src="https://raw.githubusercontent.com/OFreshman/uni-tree-view/main/assets/uni-tree-view-logo.svg" alt="uni-tree-view Logo" width="180" />
 </p>
 
 [![npm version](https://img.shields.io/npm/v/uni-tree-view.svg)](https://www.npmjs.com/package/uni-tree-view)
@@ -109,7 +109,7 @@ pnpm build       # 构建组件包
 pnpm docs        # 本地文档站
 ```
 
-贡献前请阅读 [CONTRIBUTING.md](./CONTRIBUTING.md)。
+贡献前请阅读 [CONTRIBUTING.md](https://github.com/OFreshman/uni-tree-view/blob/main/CONTRIBUTING.md)。
 
 ## License
 
