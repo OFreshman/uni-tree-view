@@ -134,6 +134,7 @@ import type {
   TreeNode,
   TreeScrollToOptions,
   UniTreeViewEmits,
+  UniTreeViewExposed,
   UniTreeViewProps,
   UniTreeViewSlots
 } from "./types";
@@ -174,7 +175,8 @@ const props = withDefaults(defineProps<UniTreeViewProps>(), {
   isLeafFn: undefined,
   alwaysFirstLoad: false,
   checkedDisabled: false,
-  packDisabledkey: true,
+  packDisabledKey: undefined,
+  packDisabledkey: undefined,
   nodeClass: "",
   indent: 40,
   selectionPlacement: "left",
@@ -446,7 +448,7 @@ function setCheckedKeys(keys: TreeKey | TreeKey[], checked = true) {
   commitSelectionChange(payload);
 }
 
-defineExpose({
+const exposed = {
   setCheckedKeys,
   getCheckedKeys,
   getHalfCheckedKeys,
@@ -468,7 +470,9 @@ defineExpose({
   loadNode,
   retryLoad,
   scrollToKey
-});
+} satisfies UniTreeViewExposed;
+
+defineExpose(exposed);
 </script>
 
 <style lang="scss">

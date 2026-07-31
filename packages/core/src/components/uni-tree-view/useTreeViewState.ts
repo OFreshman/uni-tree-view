@@ -29,6 +29,7 @@ export interface TreeViewStateProps {
   isLeafFn?: (item: TreeDataItem, node: TreeNode) => boolean;
   alwaysFirstLoad?: boolean;
   checkedDisabled?: boolean;
+  packDisabledKey?: boolean;
   packDisabledkey?: boolean;
 }
 
@@ -54,6 +55,9 @@ export function useTreeViewState(props: TreeViewStateProps) {
   });
 
   const isMultiple = computed(() => Boolean(props.multiple));
+  const resolvedPackDisabledKey = computed(() => {
+    return props.packDisabledKey ?? props.packDisabledkey ?? true;
+  });
 
   watch(
     () => [
@@ -76,9 +80,13 @@ export function useTreeViewState(props: TreeViewStateProps) {
   );
 
   watch(
-    () => getCheckedConfigSignature(),
-    () => {
-      applyConfiguredCheckedState(getInitialCheckedKeys());
+    () => [getCheckedValueSignature(), getCheckedBehaviorSignature()] as const,
+    ([, behaviorSignature], [, previousBehaviorSignature]) => {
+      const checkedKeys = getInitialCheckedKeys();
+      if (behaviorSignature === previousBehaviorSignature && isConfiguredCheckedStateCurrent(checkedKeys)) {
+        return;
+      }
+      applyConfiguredCheckedState(checkedKeys);
     }
   );
 
@@ -317,8 +325,6 @@ export function useTreeViewState(props: TreeViewStateProps) {
         }
       }
     }
-
-    updateVisibility();
   }
 
   function updateNodeAndDescendantsStatus(
@@ -527,16 +533,30 @@ export function useTreeViewState(props: TreeViewStateProps) {
     });
   }
 
-  function getCheckedConfigSignature() {
+  function getCheckedValueSignature() {
     return JSON.stringify({
-      modelValue: props.modelValue,
-      defaultCheckedKeys: props.defaultCheckedKeys,
+      controlled: props.modelValue !== undefined,
+      value: props.modelValue !== undefined ? props.modelValue : props.defaultCheckedKeys
+    });
+  }
+
+  function getCheckedBehaviorSignature() {
+    return JSON.stringify({
       multiple: props.multiple,
       checkStrictly: props.checkStrictly,
       onlyRadioLeaf: props.onlyRadioLeaf,
       checkedDisabled: props.checkedDisabled,
-      packDisabledkey: props.packDisabledkey
+      packDisabledKey: resolvedPackDisabledKey.value
     });
+  }
+
+  function isConfiguredCheckedStateCurrent(keys: TreeKey[]) {
+    const expectedKeySet = new Set(keys);
+    const currentKeySet = new Set([...getCheckedKeys(), ...pendingCheckedKeys]);
+    if (expectedKeySet.size !== currentKeySet.size) {
+      return false;
+    }
+    return [...expectedKeySet].every((key) => currentKeySet.has(key));
   }
 
   function getInitialCheckedKeys() {
@@ -582,7 +602,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
       if (node.checked !== CHECK_STATUS_MAP.checked) {
         return false;
       }
-      return props.packDisabledkey !== false || !node.disabled;
+      return resolvedPackDisabledKey.value || !node.disabled;
     });
   }
 
@@ -633,19 +653,13 @@ export function useTreeViewState(props: TreeViewStateProps) {
       .filter((node): node is TreeNode => Boolean(node));
   }
 
-  function getModelValue() {
-    if (isMultiple.value) {
-      return getCheckedKeys();
-    }
-
-    return getCheckedKeys()[0] ?? null;
-  }
-
   function buildCheckChangePayload(node: TreeNode): TreeCheckChangePayload {
+    const nodes = getCheckedNodes();
+    const keys = nodes.map((checkedNode) => checkedNode.id);
     return {
-      value: getModelValue(),
-      keys: getCheckedKeys(),
-      nodes: getCheckedNodes(),
+      value: isMultiple.value ? keys : (keys[0] ?? null),
+      keys,
+      nodes,
       node
     };
   }
