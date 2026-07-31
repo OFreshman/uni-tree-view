@@ -57,13 +57,12 @@ button.docs-demo-chip {
   height: 56rpx;
   padding: 0 16rpx;
   margin: 0;
-  color: #657069;
+  color: #5e6a63;
   font-size: 19rpx;
   line-height: 54rpx;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1rpx solid #dce7e0;
-  border-radius: 999rpx;
-  box-shadow: 0 5rpx 14rpx rgba(24, 72, 47, 0.04);
+  background: #fff;
+  border: 1rpx solid rgba(22, 52, 37, 0.12);
+  border-radius: 10rpx;
 }
 
 button.docs-demo-chip::after {
@@ -71,10 +70,10 @@ button.docs-demo-chip::after {
 }
 
 button.docs-demo-chip.is-active {
-  color: #217a51;
+  color: #1d7350;
   font-weight: 650;
-  background: #eaf7f0;
-  border-color: #abd9c0;
+  background: #e9f5ee;
+  border-color: rgba(41, 151, 100, 0.42);
 }
 
 .docs-demo-chip__dot {
@@ -92,9 +91,9 @@ button.docs-demo-chip.is-active {
 .docs-demo-segment {
   display: flex;
   gap: 6rpx;
-  padding: 6rpx;
-  background: #e8efeb;
-  border-radius: 16rpx;
+  padding: 5rpx;
+  background: #e9efeb;
+  border-radius: 12rpx;
 }
 
 button.docs-demo-segment__item {
@@ -107,7 +106,7 @@ button.docs-demo-segment__item {
   line-height: 52rpx;
   background: transparent;
   border: 0;
-  border-radius: 12rpx;
+  border-radius: 8rpx;
 }
 
 button.docs-demo-segment__item::after {
@@ -118,7 +117,7 @@ button.docs-demo-segment__item.is-active {
   color: #1f754f;
   font-weight: 650;
   background: #fff;
-  box-shadow: 0 5rpx 14rpx rgba(22, 69, 45, 0.09);
+  box-shadow: 0 2rpx 8rpx rgba(22, 69, 45, 0.08);
 }
 
 .docs-demo-card {
@@ -126,10 +125,10 @@ button.docs-demo-segment__item.is-active {
   box-sizing: border-box;
   padding: 17rpx 14rpx 18rpx;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.97);
-  border: 1rpx solid rgba(19, 55, 36, 0.08);
-  border-radius: 22rpx;
-  box-shadow: 0 12rpx 32rpx rgba(24, 72, 47, 0.07);
+  background: #fff;
+  border: 1rpx solid rgba(22, 52, 37, 0.1);
+  border-radius: 16rpx;
+  box-shadow: 0 2rpx 10rpx rgba(16, 35, 26, 0.04);
 }
 
 .docs-demo-card--flush {
@@ -176,9 +175,9 @@ button.docs-demo-segment__item.is-active {
   color: #5e6a63;
   font-size: 19rpx;
   line-height: 29rpx;
-  background: rgba(255, 255, 255, 0.76);
-  border: 1rpx solid rgba(41, 151, 100, 0.14);
-  border-radius: 16rpx;
+  background: #fff;
+  border: 1rpx solid rgba(22, 52, 37, 0.1);
+  border-radius: 12rpx;
 }
 
 .docs-demo-status__icon {
@@ -238,7 +237,7 @@ button.docs-demo-segment__item.is-active {
   text-overflow: ellipsis;
   white-space: nowrap;
   background: #edf8f2;
-  border-radius: 999rpx;
+  border-radius: 7rpx;
 }
 
 .docs-demo-node-icon {
@@ -278,7 +277,7 @@ button.docs-demo-segment__item.is-active {
   font-weight: 750;
   line-height: 22rpx;
   background: #fff0f0;
-  border-radius: 999rpx;
+  border-radius: 7rpx;
 }
 
 .docs-demo-append {
@@ -295,15 +294,17 @@ button.docs-demo-segment__item.is-active {
 .docs-demo-metric__item {
   flex: 1 1 0;
   padding: 14rpx 15rpx;
-  background: rgba(255, 255, 255, 0.82);
-  border: 1rpx solid rgba(19, 55, 36, 0.07);
-  border-radius: 16rpx;
+  background: #fff;
+  border: 1rpx solid rgba(22, 52, 37, 0.1);
+  border-radius: 12rpx;
 }
 
 .docs-demo-metric__value {
   color: #217a51;
-  font-size: 26rpx;
-  font-weight: 750;
+  font-family: var(--font-mono-global);
+  font-size: 25rpx;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
   line-height: 34rpx;
 }
 
