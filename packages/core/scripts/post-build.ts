@@ -1,3 +1,4 @@
+import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import process, { cwd } from "node:process";
 import chalk from "chalk";
@@ -29,10 +30,18 @@ async function main() {
   try {
     consola.info(chalk.cyan("Copying README"));
 
-    await copy(
-      r("..", "..", "README.md"),
-      r("README.md")
-    );
+    const readme = await readFile(r("..", "..", "README.md"), "utf8");
+    const packageReadme = readme
+      .replace(
+        "src=\"./assets/uni-tree-view-logo.svg\"",
+        "src=\"https://raw.githubusercontent.com/OFreshman/uni-tree-view/main/assets/uni-tree-view-logo.svg\""
+      )
+      .replace(
+        "[CONTRIBUTING.md](./CONTRIBUTING.md)",
+        "[CONTRIBUTING.md](https://github.com/OFreshman/uni-tree-view/blob/main/CONTRIBUTING.md)"
+      );
+
+    await writeFile(r("README.md"), packageReadme);
 
     consola.success(chalk.green("Copy succeeded for README"));
   } catch (error) {
