@@ -8,6 +8,10 @@
 - 支付宝小程序
 - H5
 
+::: tip 文档站入口
+文档站双线部署，内容一致：主入口 [Netlify](https://uni-tree-view.netlify.app/)；无法访问时可用备用镜像 [GitHub Pages](https://ofreshman.github.io/uni-tree-view/)。
+:::
+
 ## 特性
 
 - 🌲 展开收起、单选/多选、父子联动、`check-strictly` 严格模式
