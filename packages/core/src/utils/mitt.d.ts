@@ -21,12 +21,15 @@ export type EventHandlerMap<Events extends Record<EventType, unknown>> = Map<
 export interface Emitter<Events extends Record<EventType, unknown>> {
   events: EventHandlerMap<Events>;
 
-  on: (<Key extends keyof Events>(type: Key, handler: Handler<Events[Key]>) => void) & ((type: "*", handler: WildcardHandler<Events>) => void);
+  on: (<Key extends keyof Events>(
+    type: Key,
+    handler: Handler<Events[Key]>
+  ) => void) & ((type: "*", handler: WildcardHandler<Events>) => void);
 
   off: (<Key extends keyof Events>(
     type: Key,
     handler?: Handler<Events[Key]>
-  ) => void) & ((type: "*", handler: WildcardHandler<Events>) => void);
+  ) => void) & ((type: "*", handler?: WildcardHandler<Events>) => void);
 
   emit: (<Key extends keyof Events>(type: Key, event: Events[Key]) => void) & (<Key extends keyof Events>(
     type: undefined extends Events[Key] ? Key : never

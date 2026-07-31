@@ -41,7 +41,7 @@ export function mitt(events) {
 
       if (hdlrs) {
         for (const handler of hdlrs.slice()) {
-          handler(event);
+          handler(topic, event);
         }
       }
     }
