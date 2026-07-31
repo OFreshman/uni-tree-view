@@ -71,6 +71,9 @@ const AURORAS = [
 ];
 
 const { isDark } = useData();
+
+const MAX_CANVAS_PIXELS = 4_000_000;
+const FRAME_INTERVAL = 1000 / 30;
 const canvasRef = ref<HTMLCanvasElement>();
 
 let applyThemeRef: ((dark: boolean) => void) | null = null;
@@ -134,15 +137,16 @@ onMounted(() => {
   function applyTheme(dark: boolean) {
     preset = dark ? DARK : LIGHT;
     glowSprite = preset.glow ? buildGlowSprite() : null;
-    if (reducedQuery.matches) {
-      renderFrame(0);
-    }
+    renderFrame(0);
   }
 
   function resize() {
     w = window.innerWidth;
     h = window.innerHeight;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    /* 背景动效无需按超高 DPR 全分辨率绘制。限制像素总量，避免大屏/Retina
+       下每帧重复填充上千万像素，与滚动和路由切换争抢合成资源。 */
+    const pixelBudgetDpr = Math.sqrt(MAX_CANVAS_PIXELS / Math.max(w * h, 1));
+    const dpr = Math.min(window.devicePixelRatio || 1, 2, Math.max(pixelBudgetDpr, 0.75));
     canvas!.width = Math.round(w * dpr);
     canvas!.height = Math.round(h * dpr);
     ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -153,9 +157,9 @@ onMounted(() => {
       particles.push(makeParticle());
     }
     particles.length = target;
-    if (reducedQuery.matches) {
-      renderFrame(0);
-    }
+    /* 修改 canvas 宽高会立即清空位图。同步补画，避免 resize、滚动条变化
+       或移动端地址栏收放时出现一帧空白。 */
+    renderFrame(0);
   }
 
   function renderFrame(dt: number) {
@@ -265,11 +269,15 @@ onMounted(() => {
   }
 
   function loop(now: number) {
-    /* dt 封顶，标签页挂起恢复后不会瞬移 */
-    const dt = Math.min((now - lastT) / 1000, 0.05);
+    rafId = requestAnimationFrame(loop);
+    const frameElapsed = now - lastT;
+    if (frameElapsed < FRAME_INTERVAL) {
+      return;
+    }
+    /* 30fps 足以承载慢速背景运动；dt 封顶，标签页挂起恢复后不会瞬移。 */
+    const dt = Math.min(frameElapsed / 1000, 0.05);
     lastT = now;
     renderFrame(dt);
-    rafId = requestAnimationFrame(loop);
   }
 
   function start() {
@@ -348,15 +356,18 @@ onUnmounted(() => teardown?.());
 </script>
 
 <style scoped>
-/* 画布固定视口、置于所有内容之下；页面底色由 body 铺出，
-   正文区不自带背景，动效即可全屏透出 */
+/* 画布固定视口并留在 Layout 自己的隔离层内，避免负 z-index 穿到 body
+   背后后，在滚动或路由切换的合成层重建期间短暂消失。 */
 .utv-bg-canvas {
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: 0;
   display: block;
+  contain: strict;
   width: 100%;
   height: 100%;
   pointer-events: none;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 </style>
