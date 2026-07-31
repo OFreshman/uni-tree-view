@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+## 0.2.0 - 2026-07-31
+
 ### Changed
 
 - 规范组件内部 SCSS 元素类与状态类命名，保留 `nodeClass` 公开样式入口不变。
