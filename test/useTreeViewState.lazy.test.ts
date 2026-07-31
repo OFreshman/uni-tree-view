@@ -162,6 +162,26 @@ describe("useTreeViewState: lazy loading", () => {
     expect(replacementRoot.loading).toBe(false);
   });
 
+  it("clears stale pending selection after single-select model feedback", async () => {
+    const { props, state } = createState({
+      data: [
+        { id: "loaded-node", label: "Loaded node", leaf: true },
+        ...createLazyTreeData()
+      ],
+      loadMode: true,
+      loadApi: () => [{ id: "lazy-child", label: "Lazy child", leaf: true }],
+      modelValue: "lazy-child"
+    });
+
+    const payload = state.checkNode(node(state, "loaded-node"));
+    props.modelValue = payload?.value ?? null;
+    await nextTick();
+    await state.loadNode(node(state, "lazy-root"));
+
+    expect(node(state, "loaded-node").checked).toBe(CHECK_STATUS_MAP.checked);
+    expect(node(state, "lazy-child").checked).toBe(CHECK_STATUS_MAP.unchecked);
+  });
+
   it.each([
     { multiple: true, modelValue: ["lazy-child"] },
     { multiple: false, modelValue: "lazy-child" }
