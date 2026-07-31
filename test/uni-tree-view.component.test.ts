@@ -1,8 +1,16 @@
 // @vitest-environment happy-dom
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 import { nextTick } from "vue";
-import type { TreeCheckChangePayload, UniTreeViewExposed } from "../packages/core/src/components/uni-tree-view/types";
+import type {
+  TreeCheckChangePayload,
+  TreeExpandPayload,
+  TreeFilterPayload,
+  TreeLoadErrorPayload,
+  TreeLoadPayload,
+  TreeNodeClickPayload,
+  UniTreeViewExposed
+} from "../packages/core/src/components/uni-tree-view/types";
 import UniTreeView from "../packages/core/src/components/uni-tree-view/uni-tree-view.vue";
 
 const treeData = [
@@ -67,6 +75,138 @@ describe("uni-tree-view component", () => {
     });
     expect(payload?.nodes.map((node) => node.id)).toEqual(["root", "child"]);
     expect(wrapper.emitted("update:modelValue")?.[0]).toEqual([["root", "child"]]);
+  });
+
+  it("emits selection and node-click payloads through the row interaction chain", async () => {
+    const wrapper = mount(UniTreeView, {
+      props: {
+        data: treeData,
+        defaultExpandAll: true,
+        multiple: true,
+        selectable: true,
+        checkOnClickNode: true
+      }
+    });
+
+    await wrapper.findAll(".utv-tree-item")[1].trigger("click");
+
+    const checkPayload = wrapper.emitted<TreeCheckChangePayload[]>("check-change")?.[0]?.[0];
+    const clickPayload = wrapper.emitted<TreeNodeClickPayload[]>("node-click")?.[0]?.[0];
+    expect(checkPayload).toMatchObject({
+      value: ["root", "child"],
+      keys: ["root", "child"],
+      node: { id: "child" }
+    });
+    expect(checkPayload?.nodes.map((node) => node.id)).toEqual(["root", "child"]);
+    expect(clickPayload).toMatchObject({
+      id: "child",
+      node: { id: "child" }
+    });
+    expect(clickPayload?.path.map((node) => node.id)).toEqual(["root", "child"]);
+    expect(wrapper.emitted("update:modelValue")?.[0]).toEqual([["root", "child"]]);
+  });
+
+  it("emits expand-change payloads from the arrow interaction", async () => {
+    const wrapper = mount(UniTreeView, {
+      props: {
+        data: treeData
+      }
+    });
+
+    await wrapper.find(".utv-tree-item__arrow-icon").trigger("click");
+
+    const firstPayload = wrapper.emitted<TreeExpandPayload[]>("expand-change")?.[0]?.[0];
+    expect(firstPayload).toMatchObject({
+      expanded: true,
+      node: { id: "root" }
+    });
+    expect(wrapper.findAll(".utv-tree-item")).toHaveLength(2);
+
+    await wrapper.find(".utv-tree-item__arrow-icon").trigger("click");
+    const secondPayload = wrapper.emitted<TreeExpandPayload[]>("expand-change")?.[1]?.[0];
+    expect(secondPayload).toMatchObject({
+      expanded: false,
+      node: { id: "root" }
+    });
+  });
+
+  it("emits filter-change with the filtered visible nodes", async () => {
+    const wrapper = mount(UniTreeView, {
+      props: {
+        data: treeData
+      }
+    });
+
+    await wrapper.setProps({ filterValue: "child" });
+    await nextTick();
+
+    const filterEvents = wrapper.emitted<TreeFilterPayload[]>("filter-change") ?? [];
+    const payload = filterEvents[filterEvents.length - 1]?.[0];
+    expect(payload).toMatchObject({
+      value: "child",
+      keys: ["root", "child"]
+    });
+    expect(payload?.nodes.map((node) => node.id)).toEqual(["root", "child"]);
+  });
+
+  it("emits load payloads after lazy children resolve", async () => {
+    const wrapper = mount(UniTreeView, {
+      props: {
+        data: [{ id: "lazy-root", label: "Lazy root", leaf: false }],
+        loadMode: true,
+        loadApi: async () => [{ id: "lazy-child", label: "Lazy child", leaf: true }]
+      }
+    });
+
+    await wrapper.find(".utv-tree-item__arrow-icon").trigger("click");
+    await flushPromises();
+
+    const payload = wrapper.emitted<TreeLoadPayload[]>("load")?.[0]?.[0];
+    expect(payload).toMatchObject({
+      node: { id: "lazy-root" },
+      children: [{ id: "lazy-child", label: "Lazy child", leaf: true }]
+    });
+    expect(wrapper.text()).toContain("Lazy child");
+  });
+
+  it("emits load-error payloads and keeps failed lazy nodes retryable", async () => {
+    const loadError = new Error("lazy load failed");
+    const wrapper = mount(UniTreeView, {
+      props: {
+        data: [{ id: "lazy-root", label: "Lazy root", leaf: false }],
+        loadMode: true,
+        loadApi: () => Promise.reject(loadError)
+      }
+    });
+
+    await wrapper.find(".utv-tree-item__arrow-icon").trigger("click");
+    await flushPromises();
+
+    const payload = wrapper.emitted<TreeLoadErrorPayload[]>("load-error")?.[0]?.[0];
+    expect(payload?.node).toMatchObject({
+      id: "lazy-root",
+      loadError
+    });
+    expect(payload?.error).toBe(loadError);
+    expect(wrapper.find(".utv-tree-item__arrow-icon").classes()).toContain("is-load-error");
+  });
+
+  it("uses BEM element classes with conventional state classes", () => {
+    const wrapper = mount(UniTreeView, {
+      props: {
+        data: [{ id: "disabled", label: "Disabled", disabled: true }],
+        multiple: true,
+        selectable: true
+      }
+    });
+    const row = wrapper.find(".utv-tree-item");
+    const checkbox = row.find(".utv-tree-item__checkbox");
+
+    expect(row.classes()).toEqual(expect.arrayContaining(["is-disabled", "is-leaf"]));
+    expect(row.find(".utv-tree-item__arrow-placeholder").exists()).toBe(true);
+    expect(checkbox.classes()).toContain("is-disabled");
+    expect(row.find(".utv-tree-item__checkbox-icon").exists()).toBe(true);
+    expect(wrapper.find(".is--disabled").exists()).toBe(false);
   });
 
   it("passes node paths to slots and renders all filter matches", () => {
