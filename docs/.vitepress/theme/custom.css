@@ -175,20 +175,25 @@
 }
 
 /* ─── 全屏 Canvas 背景动效（画布实现见 DocsBackground.vue）───
-   画布固定视口、z-index 置底，正文区不自带背景可直接透出；
-   这里只负责"全屏感"：侧边栏改半透明毛玻璃、页脚透明，
-   让动效从整页透出而不是只在正文区可见。 */
+   Layout 建立独立堆叠上下文：Canvas 使用非负层级，正文显式位于其上，
+   避免 fixed + 负 z-index 在滚动/路由切换时被合成器短暂丢到 body 背后。 */
+.Layout {
+  isolation: isolate;
+}
+
+.Layout > .VPContent {
+  position: relative;
+  z-index: 1;
+}
+
+/* 侧栏保留半透明纸感，但不再对持续变化的 Canvas 做 backdrop-filter。
+   大面积 fixed blur 会在滚动时触发昂贵的逐帧重采样，是偶发闪烁的另一来源。 */
 :root {
-  --vp-sidebar-bg-color: rgba(246, 248, 247, 0.86);
+  --vp-sidebar-bg-color: rgba(246, 248, 247, 0.94);
 }
 
 .dark {
-  --vp-sidebar-bg-color: rgba(22, 22, 24, 0.8);
-}
-
-.VPSidebar {
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  --vp-sidebar-bg-color: rgba(22, 22, 24, 0.92);
 }
 
 .VPFooter {
