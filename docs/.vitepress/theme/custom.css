@@ -38,6 +38,91 @@
   --vp-c-brand-soft: rgba(41, 151, 100, 0.14);
   --vp-home-hero-image-background-image: linear-gradient(135deg, rgba(50, 218, 98, 0.28), rgba(8, 201, 212, 0.22));
   --vp-home-hero-image-filter: blur(52px);
+
+  /* 等宽工具字层：眉题、场景键名、编号等"工具感"细节统一走这套字体 */
+  --utv-font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+/* 侧边栏底色带一点纸感的绿灰，替换默认中性灰；暗色保持默认 */
+:root {
+  --vp-c-bg-alt: #f6f8f7;
+}
+
+.dark {
+  --vp-c-bg-alt: #161618;
+}
+
+/* ─── 排版细节：标题收紧字距，层级更"版式化" ──────────── */
+
+.vp-doc h1 {
+  letter-spacing: -0.02em;
+}
+
+.vp-doc h2 {
+  letter-spacing: -0.01em;
+}
+
+/* 侧边栏分组标题与右侧大纲标题：小号加字距，作为"规格表"式眉题 */
+.VPSidebar .VPSidebarItem.level-0 > .item > .text,
+.VPDocAsideOutline .outline-title {
+  color: var(--vp-c-text-2);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+/* ─── 签名元素：示例页"本页目录"以树形呈现 ─────────────
+   子菜单挂缩进导线，每个章节链接出一条水平刻度，
+   连起来即 ├─ 结构——文档导航本身就是一棵 tree view */
+.VPSidebar .VPSidebarItem.level-1 > .items {
+  position: relative;
+  padding-left: 14px;
+}
+
+.VPSidebar .VPSidebarItem.level-1 > .items::before {
+  position: absolute;
+  top: 2px;
+  bottom: 10px;
+  left: 1px;
+  width: 1px;
+  background: var(--vp-c-divider);
+  content: "";
+}
+
+.VPSidebar .VPSidebarItem.level-2 > .item {
+  position: relative;
+}
+
+.VPSidebar .VPSidebarItem.level-2 > .item::before {
+  position: absolute;
+  top: 50%;
+  left: -13px;
+  width: 8px;
+  height: 1px;
+  background: var(--vp-c-divider);
+  content: "";
+}
+
+.VPSidebar .VPSidebarItem.level-2 .link > .text {
+  font-size: 13px;
+  color: var(--vp-c-text-3);
+  transition: color 0.2s;
+}
+
+.VPSidebar .VPSidebarItem.level-2 .link:hover > .text,
+.VPSidebar .VPSidebarItem.level-2 .link.active > .text {
+  color: var(--vp-c-text-1);
+}
+
+/* ─── 示例页 960–1439px：大纲已并入左侧菜单，
+   隐藏空置的右侧 aside，把宽度还给正文 ─────────────── */
+@media (min-width: 960px) and (max-width: 1439px) {
+  .Layout.examples-page .VPDoc .aside {
+    display: none;
+  }
+
+  .Layout.examples-page .VPDoc .content-container {
+    max-width: 740px;
+  }
 }
 
 .VPNavBarTitle .logo {
@@ -87,6 +172,27 @@
     line-height: 56px;
     letter-spacing: -1px;
   }
+}
+
+/* ─── 全屏 Canvas 背景动效（画布实现见 DocsBackground.vue）───
+   画布固定视口、z-index 置底，正文区不自带背景可直接透出；
+   这里只负责"全屏感"：侧边栏改半透明毛玻璃、页脚透明，
+   让动效从整页透出而不是只在正文区可见。 */
+:root {
+  --vp-sidebar-bg-color: rgba(246, 248, 247, 0.86);
+}
+
+.dark {
+  --vp-sidebar-bg-color: rgba(22, 22, 24, 0.8);
+}
+
+.VPSidebar {
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+.VPFooter {
+  background-color: transparent;
 }
 
 @media (max-width: 767px) {

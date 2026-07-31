@@ -1,6 +1,8 @@
 ---
 demo: slots
 demoTitle: 自定义插槽
+outline: false
+pageClass: examples-page
 ---
 
 # 自定义插槽

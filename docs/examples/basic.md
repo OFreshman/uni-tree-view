@@ -1,6 +1,8 @@
 ---
 demo: basic
 demoTitle: 基础用法
+outline: false
+pageClass: examples-page
 ---
 
 # 基础用法

@@ -1,6 +1,8 @@
 ---
 demo: virtual
 demoTitle: 虚拟渲染
+outline: false
+pageClass: examples-page
 ---
 
 # 虚拟渲染

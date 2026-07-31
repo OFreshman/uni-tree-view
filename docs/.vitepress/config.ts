@@ -1,5 +1,42 @@
+import fs from "node:fs";
+import path from "node:path";
 import process from "node:process";
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitepress";
+import type { DefaultTheme } from "vitepress";
+
+const docsRoot = fileURLToPath(new URL("..", import.meta.url));
+
+/* 与 VitePress 内置（@mdit-vue/shared）完全一致的 slugify，
+   保证侧边栏锚点与正文标题 id 始终对得上 */
+// eslint-disable-next-line no-control-regex -- 对齐 @mdit-vue/shared 的原始实现
+const rControl = /[\u0000-\u001F]/g;
+const rSpecial = /[\s~`!@#$%^&*()\-_+=[\]{}|\\;:"'“”‘’<>,.?/]+/g;
+const rCombining = /[\u0300-\u036F]/g;
+
+function slugify(str: string): string {
+  return str
+    .normalize("NFKD")
+    .replace(rCombining, "")
+    .replace(rControl, "")
+    .replace(rSpecial, "-")
+    .replace(/-{2,}/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .replace(/^(\d)/, "_$1")
+    .toLowerCase();
+}
+
+/* 示例页在左侧菜单下挂"本页目录"子菜单：构建时从 md 提取二级标题，
+   文档增删章节后侧边栏自动跟随，无需手工维护 */
+function exampleItem(text: string, name: string): DefaultTheme.SidebarItem {
+  const source = fs.readFileSync(path.join(docsRoot, "examples", `${name}.md`), "utf8");
+  const body = source.replace(/```[\s\S]*?```/g, "");
+  const items = [...body.matchAll(/^##[ \t]+(\S.*)$/gm)].map(([, heading]) => ({
+    text: heading.trim(),
+    link: `/examples/${name}#${slugify(heading.trim())}`
+  }));
+  return { text, link: `/examples/${name}`, collapsed: true, items };
+}
 
 const siteBase = process.env.DOCS_BASE ?? "/uni-tree-view/";
 const demoBase = process.env.PLAYGROUND_DOCS_BASE ?? `${siteBase}ui/`;
@@ -59,12 +96,12 @@ export default defineConfig({
         {
           text: "示例",
           items: [
-            { text: "基础用法", link: "/examples/basic" },
-            { text: "单选与多选", link: "/examples/selection" },
-            { text: "搜索过滤", link: "/examples/filter" },
-            { text: "懒加载", link: "/examples/lazy-load" },
-            { text: "虚拟渲染", link: "/examples/virtual" },
-            { text: "自定义插槽", link: "/examples/slots" }
+            exampleItem("基础用法", "basic"),
+            exampleItem("单选与多选", "selection"),
+            exampleItem("搜索过滤", "filter"),
+            exampleItem("懒加载", "lazy-load"),
+            exampleItem("虚拟渲染", "virtual"),
+            exampleItem("自定义插槽", "slots")
           ]
         }
       ]
