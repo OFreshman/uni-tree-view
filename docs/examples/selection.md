@@ -1,6 +1,8 @@
 ---
 demo: selection
 demoTitle: 单选与多选
+outline: false
+pageClass: examples-page
 ---
 
 # 单选与多选

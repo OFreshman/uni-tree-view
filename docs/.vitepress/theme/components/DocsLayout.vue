@@ -1,5 +1,9 @@
 <template>
   <DefaultTheme.Layout>
+    <!-- 全屏 Canvas 背景动效："节点林"，实现见 DocsBackground.vue -->
+    <template #layout-top>
+      <DocsBackground></DocsBackground>
+    </template>
     <!-- 宽屏（≥1440px）：预览挂在右侧大纲栏上方，随 aside 一起固定 -->
     <template #aside-top>
       <DemoPreview v-if="demoVisible && isWide" variant="aside"></DemoPreview>
@@ -16,6 +20,7 @@ import { useData } from "vitepress";
 import DefaultTheme from "vitepress/theme";
 import { computed, onMounted, onUnmounted, shallowRef } from "vue";
 import DemoPreview from "./DemoPreview.vue";
+import DocsBackground from "./DocsBackground.vue";
 
 const { frontmatter, page } = useData();
 

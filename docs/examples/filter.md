@@ -1,6 +1,8 @@
 ---
 demo: filter
 demoTitle: 搜索过滤
+outline: false
+pageClass: examples-page
 ---
 
 # 搜索过滤

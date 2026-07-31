@@ -11,7 +11,7 @@
         <span class="DemoPreview__scene">{{ title }}</span>
       </div>
       <div class="DemoPreview__toolbar-actions">
-        <span class="DemoPreview__badge">H5</span>
+        <span class="DemoPreview__badge" :title="`当前场景 ${scene}`">{{ scene }}</span>
         <button
           v-if="expanded"
           class="DemoPreview__action"
@@ -143,8 +143,8 @@ function reloadPreview() {
   color: var(--vp-c-text-2);
   background: var(--vp-c-bg);
   border: 1px solid var(--vp-c-divider);
-  border-radius: 16px;
-  box-shadow: var(--vp-shadow-2);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(16, 35, 26, 0.04), 0 12px 32px rgba(16, 35, 26, 0.05);
 }
 
 /* aside 形态：回归文档流，跟随主题 aside-container（其本身已 fixed + 可滚动），
@@ -206,13 +206,14 @@ function reloadPreview() {
   flex-shrink: 0;
 }
 
-/* 状态点：纯色圆点传达"实时"含义 */
+/* 状态点：纯色圆点 + 呼吸脉冲传达"实时"含义 */
 .DemoPreview__status-dot {
   flex-shrink: 0;
   width: 6px;
   height: 6px;
   background: var(--vp-c-brand-1);
   border-radius: 50%;
+  animation: DemoPreviewPulse 2.4s ease-in-out infinite;
 }
 
 .DemoPreview__label {
@@ -230,13 +231,16 @@ function reloadPreview() {
   white-space: nowrap;
 }
 
+/* 场景键名徽标：等宽字体呼应"开发工具"气质，hairline 边框不抢焦点 */
 .DemoPreview__badge {
-  padding: 2px 7px;
+  padding: 2px 8px;
   color: var(--vp-c-text-3);
+  font-family: var(--utv-font-mono);
   font-size: 10px;
-  font-weight: 600;
-  background: var(--vp-c-bg-mute);
-  border-radius: 999px;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 6px;
 }
 
 /* ─── 工具按钮（重载 / 折叠）───────────────────────── */
@@ -371,12 +375,19 @@ function reloadPreview() {
   to   { transform: rotate(360deg); }
 }
 
+@keyframes DemoPreviewPulse {
+  0%,
+  100% { box-shadow: 0 0 0 0 rgba(41, 151, 100, 0.3); }
+  50%  { box-shadow: 0 0 0 4px rgba(41, 151, 100, 0); }
+}
+
 /* ─── 无障碍：减少动效 ────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
   .DemoPreview__iframe,
   .DemoPreview__action svg,
-  .DemoPreview__spinner {
+  .DemoPreview__spinner,
+  .DemoPreview__status-dot {
     transition: none;
     animation: none;
   }

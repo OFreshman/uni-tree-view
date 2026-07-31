@@ -1,6 +1,8 @@
 ---
 demo: lazy-load
 demoTitle: 懒加载
+outline: false
+pageClass: examples-page
 ---
 
 # 懒加载
