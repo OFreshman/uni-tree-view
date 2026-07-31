@@ -29,7 +29,7 @@
 
 - 主组件：`packages/core/src/components/uni-tree-view/uni-tree-view.vue`。
 - 对外类型：`packages/core/src/components/uni-tree-view/types.ts` 和 `packages/core/src/components/uni-tree-view/uni-tree-view.vue.d.ts`。
-- 当前基础能力：展开/收起、单选、多选、禁用节点、`v-model`、`check-change` 和 `expand-change`。
+- 当前能力：展开/收起、单选/多选（父子联动与严格模式）、禁用节点、`v-model`、关键词过滤与高亮、懒加载（含失败重试）、定高虚拟渲染；事件有 `check-change`、`expand-change`、`node-click`、`load`、`load-error`、`filter-change`，并通过 ref 暴露 `setCheckedKeys`、`scrollToKey` 等方法（完整清单见 `types.ts` 的 `UniTreeViewExposed`）。
 - `treeProps` 只用于映射 `id`、`label`、`children`、`disabled`、`leaf`、`append`、`icon` 字段名；节点行外部样式类使用一级 `nodeClass` prop。
 - 修改组件能力时，保持 `defineProps`/`withDefaults`/`defineEmits`、`types.ts` 和 `.d.ts` 类型同步。
 

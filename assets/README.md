@@ -5,6 +5,8 @@
 | `uni-tree-view-logo.svg` | 主 Logo，透明背景，网页与文档优先使用 |
 | `uni-tree-view-logo-mono.svg` | 单色 Logo，适合印刷、遮罩和主题色场景 |
 | `uni-tree-view-lockup.svg` | Logo 与项目名的横向组合 |
+| `uni-tree-view-lockup.png` | 980 × 300 横向组合图 PNG 版本 |
+| `uni-tree-view-social.svg` | 社交分享图 SVG 源文件 |
 | `uni-tree-view-social.png` | 1200 × 630 社交分享图 / Open Graph 图片 |
 | `uni-tree-view-logo-512.png` | 512 × 512 高清 PNG |
 | `uni-tree-view-logo-256.png` | 256 × 256 常规 PNG |

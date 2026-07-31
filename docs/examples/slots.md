@@ -39,7 +39,7 @@ demoTitle: 自定义插槽
 
 ## 完全接管节点内容
 
-`default` 插槽替换整个内容区（icon + label + append），缩进、箭头和选择控件仍由组件负责：
+`default` 插槽替换整个内容区（icon + label + append，含 `show-path` 路径行与 `highlight-filter` 高亮），缩进、箭头和选择控件仍由组件负责：
 
 ```vue
 <uni-tree-view :data="treeData" selectable multiple>
