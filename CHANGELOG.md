@@ -4,6 +4,21 @@
 
 ## Unreleased
 
+### Changed
+
+- 新增 `packDisabledKey` / `pack-disabled-key` 规范命名，并暂时保留旧 `packDisabledkey` / `pack-disabledkey` 作为废弃别名。
+- 优化选中事件 payload 构建与受控 `v-model` 等价回流，避免重复遍历和不必要的全量选中态重放。
+- 为组件公开实例方法增加 `UniTreeViewExposed` 编译期一致性校验，并补充懒加载公开方法的行为说明。
+- 明确 `uni-tree-view/shared` 继续提供共享运行时工具，并清理 resolver 中无关的模板注释。
+
+### Fixed
+
+- 修复 `mitt` 通配监听器未接收事件类型的问题。
+
+### Tests
+
+- 补充整行点击组合行为、空状态插槽、关键词高亮、普通模式滚动、属性兼容迁移、受控行为切换和共享工具契约测试。
+
 ## 0.2.0 - 2026-07-31
 
 ### Changed

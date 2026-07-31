@@ -45,6 +45,8 @@ function selectAll() {
 | `getExpandedNodes` | `() => TreeNode[]` | 获取已展开节点 |
 | `getUnexpandedNodes` | `() => TreeNode[]` | 获取未展开节点 |
 
+> 懒加载模式下，`setExpandedKeys`、`expandAll` 和 `collapseAll` 只处理当前已经进入状态树的节点，不会自动调用 `load-api` 加载未知后代。需要加载时请先调用 `loadNode` / `retryLoad`，或由用户展开节点触发加载。
+
 ## 查询
 
 | 方法 | 签名 | 说明 |
@@ -60,4 +62,6 @@ function selectAll() {
 | --- | --- | --- |
 | `loadNode` | `(node: TreeNode) => Promise<TreeDataItem[]>` | 手动触发节点加载 |
 | `retryLoad` | `(keyOrNode) => Promise<TreeDataItem[]>` | 重试加载失败的节点 |
-| `scrollToKey` | `(key, options?: { expandParents? }) => Promise<boolean>` | 滚动到指定节点（虚拟与普通模式均可用），`expandParents` 默认 `true`，先展开祖先链后定位 |
+| `scrollToKey` | `(key, options?: { expandParents? }) => Promise<boolean>` | 滚动到指定节点（虚拟与普通模式均可用），`expandParents` 默认 `true`，先展开已加载的祖先链后定位 |
+
+`scrollToKey` 只能定位当前已经进入状态树的节点；目标 key 尚未通过懒加载创建时返回 `false`，且不会为了查找目标而自动加载后代。

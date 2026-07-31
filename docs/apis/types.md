@@ -1,6 +1,8 @@
 # 类型定义
 
-包内所有公开类型均可从 `uni-tree-view/shared` 导入：
+`uni-tree-view/shared` 是共享入口：除公开类型外，也保留 `device`、`env`、`helpers`、`mitt` 和 `uni` 运行时工具导出。组件本身不依赖这些工具；使用者可按需导入。
+
+包内所有公开类型均可从该入口导入：
 
 ```ts
 import type {

@@ -27,6 +27,47 @@ treeData.value = [...treeData.value];
 
 `v-model` 只在启用选择时生效，确认传了 `selectable`。单选模式 `v-model` 是单个 key，多选模式（`multiple`）是 key 数组。
 
+## 父组件拒绝了选中值，如何回滚?
+
+组件的选中操作是“先更新内部状态，再发出事件”，不是严格受控模式。父组件即使不接受新的 `v-model` 值，组件内部状态也不会自动回滚。需要校验失败时，请通过 ref 调用 `setCheckedKeys` 恢复；注意该方法同样会触发 `update:modelValue` 和 `check-change`，回滚逻辑必须加防重入标记。下面示例使用 `check-strictly`，回滚单个节点：
+
+```vue
+<uni-tree-view
+  ref="treeRef"
+  v-model="value"
+  selectable
+  multiple
+  check-strictly
+  :data="data"
+  @check-change="handleCheckChange"
+/>
+```
+
+```ts
+import { ref } from "vue";
+import type { TreeCheckChangePayload, TreeKey, UniTreeViewExposed } from "uni-tree-view/shared";
+
+const treeRef = ref<UniTreeViewExposed>();
+const value = ref<TreeKey[]>([]);
+const maxChecked = 3;
+let rollingBack = false;
+
+function handleCheckChange(payload: TreeCheckChangePayload) {
+  if (rollingBack || payload.keys.length <= maxChecked) {
+    return;
+  }
+
+  rollingBack = true;
+  try {
+    treeRef.value?.setCheckedKeys(payload.node.id, false);
+  } finally {
+    rollingBack = false;
+  }
+}
+```
+
+如果需要恢复一组复杂的父子选中状态，请在同一个防重入区间内完成清空与重新设置，避免回滚事件再次进入校验逻辑。
+
 ## 父子联动不符合预期?
 
 默认父子联动（勾选父节点会勾选所有子节点）。如果希望父子状态互相独立，开启：
@@ -37,7 +78,7 @@ treeData.value = [...treeData.value];
 
 ## 禁用节点为什么出现在返回的 keys 里?
 
-默认 `pack-disabledkey` 为 `true`，被勾选的禁用节点会包含在返回值中。不需要时设为 `false`。
+默认 `pack-disabled-key` 为 `true`，被勾选的禁用节点会包含在返回 keys / nodes 与 `v-model` 中。不需要时设为 `false`。旧拼写 `pack-disabledkey` 暂时保留为废弃别名；两个属性同时传入时以 `pack-disabled-key` 为准。
 
 ## 虚拟渲染开启后滚动错位?
 
