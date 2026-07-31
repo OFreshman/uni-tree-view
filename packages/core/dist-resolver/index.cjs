@@ -3,12 +3,6 @@
 const INDEX = "uni-tree-view";
 const importsMap = {
   "UniTreeView": INDEX
-  // "provideEcharts": SHARED,
-  // "provideEchartsTheme": SHARED,
-  // "provideEchartsOption": SHARED,
-  // "provideEchartsInitOptions": SHARED,
-  // "provideEchartsUpdateOptions": SHARED,
-  // "provideEchartsLoadingOptions": SHARED
 };
 function UniTreeViewResolver(options = {}) {
   return {

@@ -1,16 +1,9 @@
 import type { ComponentResolverObject } from "@uni-helper/vite-plugin-uni-components";
 
 const INDEX = "uni-tree-view";
-// const SHARED = `${INDEX}/shared`;
 
 const importsMap: Record<string, string> = {
   "UniTreeView": INDEX
-  // "provideEcharts": SHARED,
-  // "provideEchartsTheme": SHARED,
-  // "provideEchartsOption": SHARED,
-  // "provideEchartsInitOptions": SHARED,
-  // "provideEchartsUpdateOptions": SHARED,
-  // "provideEchartsLoadingOptions": SHARED
 };
 
 export interface UniTreeViewResolverOptions {
