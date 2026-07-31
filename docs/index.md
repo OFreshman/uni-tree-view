@@ -14,7 +14,7 @@ hero:
       link: /guide/quick-start
     - theme: alt
       text: 在线演示
-      link: https://ofreshman.github.io/uni-tree-view/ui/#/
+      link: /ui/#/
     - theme: alt
       text: API 参考
       link: /apis/props
