@@ -7,6 +7,7 @@ yarn.lock
 .env.*.local
 *.local
 TodoList.md
+RELEASE.md
 
 # 日志文件
 *.log
