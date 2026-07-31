@@ -106,6 +106,57 @@ describe("uni-tree-view component", () => {
     expect(wrapper.emitted("update:modelValue")?.[0]).toEqual([["root", "child"]]);
   });
 
+  it("expands and checks a node when both row click behaviors are enabled", async () => {
+    const wrapper = mount(UniTreeView, {
+      props: {
+        data: treeData,
+        multiple: true,
+        selectable: true,
+        expandOnClickNode: true,
+        checkOnClickNode: true
+      }
+    });
+
+    await wrapper.find(".utv-tree-item").trigger("click");
+
+    expect(wrapper.findAll(".utv-tree-item")).toHaveLength(2);
+    expect(exposed(wrapper).getCheckedKeys()).toEqual(["root", "child"]);
+    expect(wrapper.emitted("node-click")).toHaveLength(1);
+    expect(wrapper.emitted("expand-change")).toHaveLength(1);
+    expect(wrapper.emitted("check-change")).toHaveLength(1);
+  });
+
+  it("renders the default empty state and forwards filterValue to the empty slot", () => {
+    const defaultWrapper = mount(UniTreeView, {
+      props: { data: [] }
+    });
+    expect(defaultWrapper.find(".utv-tree-empty").text()).toBe("暂无数据");
+
+    const slotWrapper = mount(UniTreeView, {
+      props: {
+        data: treeData,
+        filterValue: "missing"
+      },
+      slots: {
+        empty: ({ filterValue }) => `Empty:${filterValue}`
+      }
+    });
+    expect(slotWrapper.find(".utv-tree-empty").text()).toBe("Empty:missing");
+  });
+
+  it("highlights repeated case-insensitive matches at label boundaries", () => {
+    const wrapper = mount(UniTreeView, {
+      props: {
+        data: [{ id: "matches", label: "Alpha alpha ALPHA" }],
+        filterValue: "alpha"
+      }
+    });
+    const matches = wrapper.findAll(".utv-tree-node-label__match");
+
+    expect(matches).toHaveLength(3);
+    expect(matches.map((match) => match.text())).toEqual(["Alpha", "alpha", "ALPHA"]);
+  });
+
   it("emits expand-change payloads from the arrow interaction", async () => {
     const wrapper = mount(UniTreeView, {
       props: {
@@ -245,6 +296,18 @@ describe("uni-tree-view component", () => {
         expect.arrayContaining(["consumer-tree-node", "emphasized"])
       );
     }
+  });
+
+  it("scrolls to a key through scroll-into-view outside virtual mode", async () => {
+    const wrapper = mount(UniTreeView, {
+      props: { data: treeData }
+    });
+
+    expect(await exposed(wrapper).scrollToKey("child")).toBe(true);
+    await nextTick();
+
+    const childId = wrapper.findAll(".utv-tree-item")[1].attributes("id");
+    expect(wrapper.find("scroll-view").attributes("scroll-into-view")).toBe(childId);
   });
 
   it("uses stable collision-free DOM ids and scroll commands in virtual mode", async () => {
