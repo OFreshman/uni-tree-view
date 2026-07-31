@@ -10,7 +10,7 @@
 
 适用于 uni-app + Vue 3 的跨端树形列表/选择组件，一套代码运行在微信小程序、支付宝小程序和 H5。
 
-**📖 [完整文档](https://ofreshman.github.io/uni-tree-view/)** · [在线演示](https://ofreshman.github.io/uni-tree-view/ui/#/) · [快速上手](https://ofreshman.github.io/uni-tree-view/guide/quick-start) · [API 参考](https://ofreshman.github.io/uni-tree-view/apis/props) · [常见问题](https://ofreshman.github.io/uni-tree-view/guide/faq)
+**📖 [完整文档](https://uni-tree-view.netlify.app/)** · [在线演示](https://uni-tree-view.netlify.app/ui/#/) · [快速上手](https://uni-tree-view.netlify.app/guide/quick-start) · [API 参考](https://uni-tree-view.netlify.app/apis/props) · [常见问题](https://uni-tree-view.netlify.app/guide/faq)
 
 ## 特性
 
@@ -84,7 +84,7 @@ function handleCheckChange({ keys, nodes }) {
 
 `tree-props` 只负责数据字段映射，不包含样式配置。
 
-完整的 Props / Events / Slots / Methods 列表、懒加载与虚拟渲染示例请见 **[文档站](https://ofreshman.github.io/uni-tree-view/)**。
+完整的 Props / Events / Slots / Methods 列表、懒加载与虚拟渲染示例请见 **[文档站](https://uni-tree-view.netlify.app/)**。
 
 ## 平台兼容性
 
@@ -95,7 +95,7 @@ function handleCheckChange({ keys, nodes }) {
 | 支付宝小程序 | ✅ 构建验证 |
 | App / 其他小程序 | 理论可用，未充分验证 |
 
-实现层面的兼容性说明（hover-class、内联 iconfont、scroll-view 虚拟滚动等）见 [平台兼容性文档](https://ofreshman.github.io/uni-tree-view/guide/platforms)。
+实现层面的兼容性说明（hover-class、内联 iconfont、scroll-view 虚拟滚动等）见 [平台兼容性文档](https://uni-tree-view.netlify.app/guide/platforms)。
 
 ## 开发
 
