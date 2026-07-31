@@ -49,7 +49,8 @@ function buildPlugins(): PluginOption[] {
 }
 
 export default defineConfig(({ mode }) => {
-  const h5Base = mode === "docs" ? "/uni-tree-view/ui/" : "/ui/";
+  const docsH5Base = process.env.PLAYGROUND_DOCS_BASE ?? "/uni-tree-view/ui/";
+  const h5Base = mode === "docs" ? docsH5Base : "/ui/";
 
   return {
     root: process.cwd(),
