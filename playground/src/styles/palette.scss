@@ -34,7 +34,13 @@ page {
 
 // wot-ui v2 采用 Design Token 三层变量体系：
 // 品牌色通过覆盖语义变量 --wot-primary-N 生效（6 为主色，5 hover，7 active）
-page {
+// 注意：wot 主题包会在 .wot-theme-light / .wot-theme-dark（config-provider 根元素）上
+// 重新声明默认蓝，仅覆盖 page 会被内层盖回，因此这里需要一并覆盖主题类
+page,
+.wot-theme-light,
+.wot-theme-dark,
+.wot-theme-light .wd-root-portal,
+.wot-theme-dark .wd-root-portal {
   --wot-primary-5: #34a973;
   --wot-primary-6: rgb(var(--color-primary));
   --wot-primary-7: #1f7a4f;

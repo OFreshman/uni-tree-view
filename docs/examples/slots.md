@@ -7,61 +7,160 @@ pageClass: examples-page
 
 # 自定义插槽
 
-## 自定义节点文本
+组件提供 5 个插槽，作用域参数统一为 `{ node, data, path }`（`empty` 除外）：
 
-`label` 插槽只替换文本部分，保留缩进、箭头、选择控件：
+| 插槽 | 覆盖范围 |
+| --- | --- |
+| `icon` | 节点前置图标 |
+| `label` | 仅节点文本（缩进、箭头、选择控件仍由组件负责） |
+| `append` | 节点尾部内容 |
+| `default` | 整个内容区，等于同时接管 icon + label + append |
+| `empty` | 无数据 / 过滤无结果 |
+
+本页代码与右侧实时预览共用[基础用法中的示例数据](/examples/basic#示例数据)。
+
+## 实时预览对应代码
+
+右侧预览组合了 `icon`、`label`、`append` 三个插槽：部门用 `folder` 图标、成员用 `user` 图标，名字后面按 `isNew` 挂 NEW 徽标，尾部用弱化文本显示 `append` 字段里的人数。
+
+```vue
+<template>
+  <uni-tree-view
+    v-model="checkedValue"
+    selectable
+    multiple
+    default-expand-all
+    :data="treeData"
+    theme-color="#299764"
+  >
+    <template #icon="{ node }">
+      <wd-icon :name="node.isLeaf ? 'user' : 'folder'" size="32rpx" color="#299764" />
+    </template>
+
+    <template #label="{ node, data }">
+      <view class="demo-node-label">
+        <!-- node.isLeaf 区分部门与成员，部门加粗 -->
+        <text :class="{ 'is-group': !node.isLeaf }">{{ node.label }}</text>
+        <!-- isNew 是数据里的业务自定义字段，组件不认识，只在这里用 -->
+        <text v-if="data.isNew" class="demo-badge">NEW</text>
+      </view>
+    </template>
+
+    <template #append="{ data }">
+      <text v-if="data.append" class="demo-append">{{ data.append }}</text>
+    </template>
+  </uni-tree-view>
+</template>
+
+<script setup>
+import { ref } from "vue";
+
+// 多选下 v-model 为 key 数组
+const checkedValue = ref([]);
+</script>
+
+<style lang="scss">
+.demo-node-label {
+  display: flex;
+  gap: 8rpx;
+  align-items: center;
+  min-width: 0;
+}
+
+.demo-node-label .is-group {
+  font-weight: 700;
+}
+
+/* NEW 徽标：小面积高饱和，只在成员名字后面点一下 */
+.demo-badge {
+  padding: 1rpx 7rpx;
+  color: #b63f3f;
+  font-size: 14rpx;
+  font-weight: 750;
+  line-height: 22rpx;
+  background: #fff0f0;
+  border-radius: 7rpx;
+}
+
+/* 人数文案做弱化处理，不加标签底色，避免抢节点主文案 */
+.demo-append {
+  color: #87918b;
+  font-size: 17rpx;
+  white-space: nowrap;
+}
+</style>
+```
+
+`icon` 换成 `node.isLeaf ? 'file' : 'folder'` 就是文件目录风格；`append` 里想放标签、按钮、数字都可以，只是行高变化时要留意虚拟渲染（见文末警告）。
+
+## 只替换文本
+
+只用 `label` 插槽时，缩进、箭头、选择控件、`show-path` 的路径行都保持原样：
 
 ```vue
 <uni-tree-view :data="treeData" selectable multiple>
   <template #label="{ node, data }">
-    <text :style="{ fontWeight: node.level === 0 ? 600 : 400 }">
-      {{ node.label }}
-    </text>
-    <text v-if="data.isNew" style="color: #fa4350; font-size: 20rpx;">
-      NEW
-    </text>
-  </template>
-</uni-tree-view>
-```
-
-## 图标与尾部内容
-
-```vue
-<uni-tree-view :data="treeData">
-  <template #icon="{ node }">
-    <wd-icon :name="node.isLeaf ? 'file' : 'folder'" size="32rpx" />
-  </template>
-  <template #append="{ data }">
-    <wd-tag v-if="data.count" type="primary" variant="plain">
-      {{ data.count }}
-    </wd-tag>
-  </template>
-</uni-tree-view>
-```
-
-## 完全接管节点内容
-
-`default` 插槽替换整个内容区（icon + label + append，含 `show-path` 路径行与 `highlight-filter` 高亮），缩进、箭头和选择控件仍由组件负责：
-
-```vue
-<uni-tree-view :data="treeData" selectable multiple>
-  <template #default="{ node, data }">
-    <view class="custom-node">
-      <wd-img v-if="data.avatar" :src="data.avatar" width="48rpx" height="48rpx" round />
-      <view class="custom-node__body">
-        <text class="custom-node__title">{{ node.label }}</text>
-        <text class="custom-node__desc">{{ data.description }}</text>
-      </view>
-    </view>
+    <text :style="{ fontWeight: node.level === 0 ? 600 : 400 }">{{ node.label }}</text>
+    <text v-if="data.isNew" style="color: #fa4350; font-size: 20rpx;">NEW</text>
   </template>
 </uni-tree-view>
 ```
 
 ::: warning
-自定义内容改变了行高时，若同时开启 `virtual`，记得同步 `virtual-item-height`。
+自定义 `label` 插槽后 `highlight-filter` 的关键词高亮失效（高亮只作用于组件内置的 label 渲染）。需要同时要过滤高亮和自定义文本时，请在插槽里自行拆分关键词。
 :::
 
+## 完全接管节点内容
+
+`default` 插槽替换整个内容区（icon + label + append，同时带走 `show-path` 的路径行与 `highlight-filter` 高亮），缩进、箭头和选择控件仍由组件负责：
+
+```vue
+<template>
+  <uni-tree-view :data="treeData" selectable multiple default-expand-all>
+    <template #default="{ node, data }">
+      <view class="custom-node">
+        <view class="custom-node__body">
+          <text class="custom-node__title">{{ node.label }}</text>
+          <!-- description 是数据里的业务自定义字段：成员写岗位，部门没有该字段时不渲染 -->
+          <text v-if="data.description" class="custom-node__desc">{{ data.description }}</text>
+        </view>
+        <text v-if="data.append" class="custom-node__count">{{ data.append }}</text>
+      </view>
+    </template>
+  </uni-tree-view>
+</template>
+
+<style lang="scss">
+.custom-node {
+  display: flex;
+  flex: 1;
+  gap: 12rpx;
+  align-items: center;
+  min-width: 0;
+}
+
+.custom-node__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.custom-node__desc {
+  display: block;
+  color: #87918b;
+  font-size: 17rpx;
+}
+
+.custom-node__count {
+  flex: 0 0 auto;
+  color: #87918b;
+  font-size: 17rpx;
+}
+</style>
+```
+
 ## 空状态
+
+`empty` 插槽同时覆盖「没有数据」和「过滤没命中」，用作用域参数 `filterValue` 区分：
 
 ```vue
 <uni-tree-view :data="treeData" :filter-value="keyword">
@@ -70,3 +169,7 @@ pageClass: examples-page
   </template>
 </uni-tree-view>
 ```
+
+::: warning 与虚拟渲染同用
+自定义内容改变了行高时，若同时开启 `virtual`，必须把 `virtual-item-height` 调到与实际行高一致，并保证所有行等高——虚拟模式按该值固定行高，超出部分会被裁掉。
+:::

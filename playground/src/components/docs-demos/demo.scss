@@ -208,6 +208,12 @@ button.docs-demo-segment__item.is-active {
   font-size: 17rpx;
 }
 
+.docs-demo-status__actions {
+  display: flex;
+  gap: 10rpx;
+  margin-top: 10rpx;
+}
+
 .docs-demo-caption {
   color: #657069;
   font-size: 19rpx;
@@ -240,25 +246,6 @@ button.docs-demo-segment__item.is-active {
   border-radius: 7rpx;
 }
 
-.docs-demo-node-icon {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 25rpx;
-  height: 25rpx;
-  color: #299764;
-  font-size: 16rpx;
-  font-weight: 700;
-  background: #e7f6ee;
-  border-radius: 7rpx;
-}
-
-.docs-demo-node-icon.is-leaf {
-  background: #f1f4f2;
-  border-radius: 50%;
-}
-
 .docs-demo-node-label {
   display: flex;
   gap: 8rpx;
@@ -280,6 +267,7 @@ button.docs-demo-segment__item.is-active {
   border-radius: 7rpx;
 }
 
+/* append 插槽的人数文案：只做弱化文本，不加标签底色，避免抢节点主文案 */
 .docs-demo-append {
   color: #87918b;
   font-size: 17rpx;

@@ -25,6 +25,7 @@ onHide(() => {
 @use "@wot-ui/ui/styles/theme/index.scss";
 @use "@/styles/rebot.scss";
 @use "@/styles/palette.scss";
+@use "@/styles/demo-ui.scss";
 // @import "@/styles/global.scss";
 // @import "@/styles/helpers.scss";
 </style>

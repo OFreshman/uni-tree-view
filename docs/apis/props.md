@@ -34,10 +34,8 @@ interface TreeProps {
 | `check-strictly` | `boolean` | `false` | 父子选中状态是否互相独立 |
 | `only-radio-leaf` | `boolean` | `false` | 单选模式是否只允许选叶子节点 |
 | `check-on-click-node` | `boolean` | `false` | 点击整行是否切换选中 |
-| `checked-disabled` | `boolean` | `false` | 禁用节点是否允许被选中操作 |
+| `checked-disabled` | `boolean` | `false` | 禁用节点是否允许参与选中状态变更；关闭时全选、清空、父子联动和受控值回放都保持其状态不变 |
 | `pack-disabled-key` | `boolean` | `true` | 已选禁用节点是否包含在返回 keys / nodes 与 `v-model` 中 |
-
-> `pack-disabledkey` 是旧拼写，当前仅作为废弃别名兼容；新代码请使用 `pack-disabled-key`。当两个属性同时传入时，以 `pack-disabled-key` 为准。
 
 ## 展开
 

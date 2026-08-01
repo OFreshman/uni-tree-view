@@ -16,22 +16,26 @@
 
 ## 示例
 
-### 自定义 label 与尾部徽标
+### 自定义 label 与尾部内容
 
 ```vue
 <uni-tree-view :data="treeData" selectable multiple>
   <template #label="{ node }">
+    <!-- node.level 为层级，根节点是 0 -->
     <text :style="node.level === 0 ? 'font-weight:600' : ''">
       {{ node.label }}
     </text>
   </template>
   <template #append="{ data }">
-    <wd-tag v-if="data.count" type="primary" variant="plain">
-      {{ data.count }}
-    </wd-tag>
+    <!-- data 是你传入的原始数据项，可读任意业务字段 -->
+    <text v-if="data.append" style="color:#87918b; font-size:17rpx;">
+      {{ data.append }}
+    </text>
   </template>
 </uni-tree-view>
 ```
+
+完整可运行写法见[自定义插槽示例](/examples/slots#实时预览对应代码)。
 
 ### 自定义空状态
 

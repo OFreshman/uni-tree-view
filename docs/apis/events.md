@@ -27,8 +27,8 @@ interface TreeCheckChangePayload {
 
 ```ts
 interface TreeExpandPayload {
-  expanded: boolean;
-  node: TreeNode;
+  expanded: boolean; // 变化后的展开状态：true 展开，false 收起
+  node: TreeNode;    // 本次展开/收起的节点
 }
 ```
 
@@ -36,9 +36,9 @@ interface TreeExpandPayload {
 
 ```ts
 interface TreeNodeClickPayload {
-  id: TreeKey;
-  node: TreeNode;
-  path: TreeNode[]; // 根到该节点的路径
+  id: TreeKey;      // 被点击节点的 key
+  node: TreeNode;   // 被点击的节点
+  path: TreeNode[]; // 根到该节点的路径（含自身）
 }
 ```
 
@@ -46,13 +46,13 @@ interface TreeNodeClickPayload {
 
 ```ts
 interface TreeLoadPayload {
-  node: TreeNode;
-  children: TreeDataItem[];
+  node: TreeNode;           // 完成加载的节点
+  children: TreeDataItem[]; // load-api 本次返回的子节点数据
 }
 
 interface TreeLoadErrorPayload {
-  node: TreeNode;
-  error: unknown;
+  node: TreeNode; // 加载失败的节点，停留在失败态可重试
+  error: unknown; // load-api 抛出/reject 的错误
 }
 ```
 

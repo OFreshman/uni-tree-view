@@ -50,7 +50,7 @@
       <view class="docs-demo-status__icon"></view>
       <view class="docs-demo-status__content">
         <text class="docs-demo-status__title">{{ locateMessage }}</text>
-        <text class="docs-demo-status__detail">实时预览与 pnpm play 共用同一份数据生成器</text>
+        <text class="docs-demo-status__detail">{{ locateDetail }}</text>
       </view>
     </view>
   </view>
@@ -69,12 +69,18 @@ const checkedValue = shallowRef<DemoTreeKey[]>([]);
 const treeData = shallowRef(largeTree.data);
 const nodeCount = largeTree.count.toLocaleString();
 const depthText = `${largeTree.minDepth}-${largeTree.maxDepth} 层`;
-const locateMessage = shallowRef(`可定位目标：${largeTree.targetLabel}`);
+const locateMessage = shallowRef(`可定位目标：第 6 层「${largeTree.targetLabel}」`);
+const locateDetail = shallowRef(`节点名里的「${largeTree.targetLabel.split(" ")[1]}」是从根节点数下来的逐层序号`);
 const selectedText = computed(() => checkedValue.value.length ? `${checkedValue.value.length} 项` : "0 项");
 
 async function locateTarget() {
   const located = await treeRef.value?.scrollToKey(largeTree.targetKey, { expandParents: true });
-  locateMessage.value = located ? `已定位：${largeTree.targetLabel}` : "目标节点定位失败";
+  locateMessage.value = located
+    ? `已定位：第 6 层「${largeTree.targetLabel}」`
+    : "目标节点定位失败";
+  locateDetail.value = located
+    ? "序号路径逐层对应「第 1 个区域 → 第 1 个城市 → …」，因此该节点稳定存在"
+    : "目标 key 不在当前状态树中，scrollToKey 返回 false";
 }
 </script>
 

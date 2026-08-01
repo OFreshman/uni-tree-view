@@ -76,6 +76,8 @@ function handleCheckChange({ keys, nodes }) {
 | `selectable` | 单选（radio） |
 | `selectable multiple` | 多选（checkbox，父子联动） |
 
+禁用节点默认锁定当前选中状态，全选、清空、父子联动、实例方法和受控值回放都不会改变它；需要允许变更时传入 `checked-disabled`。
+
 普通 `class` 作用于组件根容器；需要使用自己的类名定制每个节点行时，传入 `node-class`：
 
 ```vue

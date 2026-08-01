@@ -71,9 +71,15 @@ const resultTitle = computed(() => {
   }
   return resultCount.value ? `找到 ${resultCount.value} 个相关节点` : "没有匹配的节点";
 });
-const resultDetail = computed(() => keyword.value
-  ? `关键词「${keyword.value}」会在节点中高亮显示`
-  : "输入部门或成员名称，祖先节点会自动保留");
+const resultDetail = computed(() => {
+  if (!keyword.value) {
+    return "输入部门或成员名称，祖先节点会自动保留";
+  }
+  if (!resultCount.value) {
+    return "没有节点命中该关键词，可试试「前端」「设计」或「顾宁」";
+  }
+  return `关键词「${keyword.value}」已在命中节点中高亮显示`;
+});
 
 function applyKeyword(value: string) {
   keyword.value = keyword.value === value ? "" : value;
