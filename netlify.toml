@@ -8,3 +8,8 @@ PNPM_VERSION = "10.11.0"
 DOCS_BASE = "/"
 DOCS_SITE_URL = "https://uni-tree-view.netlify.app"
 PLAYGROUND_DOCS_BASE = "/ui/"
+
+[[redirects]]
+from = "/ui/*"
+to = "/ui/index.html"
+status = 200
