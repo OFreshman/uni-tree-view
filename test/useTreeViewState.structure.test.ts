@@ -205,13 +205,13 @@ describe("useTreeViewState: structure, expansion and filtering", () => {
     await nextTick();
 
     expect(checkedKeys(state)).toEqual([
-      "floor-a-2",
       "room-a-201",
-      "room-a-202",
       "building-b",
       "floor-b-1",
       "floor-b-2"
     ]);
+    expect(state.getHalfCheckedKeys()).toEqual(["building-a", "floor-a-2"]);
+    expect(node(state, "room-a-202").checked).toBe(CHECK_STATUS_MAP.unchecked);
     expect(node(state, "building-b").expanded).toBe(false);
     expect(visibleKeys(state)).not.toContain("floor-b-1");
   });

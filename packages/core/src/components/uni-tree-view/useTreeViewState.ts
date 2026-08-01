@@ -234,21 +234,21 @@ export function useTreeViewState(props: TreeViewStateProps) {
       if (props.checkStrictly) {
         for (const key of keys) {
           const node = nodeMap.value.get(key);
-          if (node) {
+          if (node && canSelectDisabledNode(node)) {
             node.checked = CHECK_STATUS_MAP.checked;
           }
         }
         return;
       }
 
-      updateNodeAndDescendantsStatus(keys, CHECK_STATUS_MAP.checked, true);
+      updateNodeAndDescendantsStatus(keys, CHECK_STATUS_MAP.checked, Boolean(props.checkedDisabled));
       updateParentNodesStatus(keys);
       return;
     }
 
     const firstSelectableKey = keys.find((key) => {
       const node = nodeMap.value.get(key);
-      return node && (!props.onlyRadioLeaf || node.isLeaf);
+      return node && canSelectDisabledNode(node) && (!props.onlyRadioLeaf || node.isLeaf);
     });
     if (firstSelectableKey !== undefined) {
       const node = nodeMap.value.get(firstSelectableKey);
@@ -277,12 +277,12 @@ export function useTreeViewState(props: TreeViewStateProps) {
       if (props.checkStrictly) {
         for (const key of resolvedKeys) {
           const node = nodeMap.value.get(key);
-          if (node) {
+          if (node && canSelectDisabledNode(node)) {
             node.checked = CHECK_STATUS_MAP.checked;
           }
         }
       } else {
-        updateNodeAndDescendantsStatus(resolvedKeys, CHECK_STATUS_MAP.checked, true);
+        updateNodeAndDescendantsStatus(resolvedKeys, CHECK_STATUS_MAP.checked, Boolean(props.checkedDisabled));
         updateParentNodesStatus(resolvedKeys);
       }
       return;
@@ -290,7 +290,9 @@ export function useTreeViewState(props: TreeViewStateProps) {
 
     const node = resolvedKeys
       .map((key) => nodeMap.value.get(key))
-      .find((item): item is TreeNode => item !== undefined && (!props.onlyRadioLeaf || item.isLeaf));
+      .find((item): item is TreeNode => item !== undefined
+        && canSelectDisabledNode(item)
+        && (!props.onlyRadioLeaf || item.isLeaf));
     if (node) {
       clearCheckedStatus();
       node.checked = CHECK_STATUS_MAP.checked;
@@ -485,7 +487,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
   }
 
   function canSelectNode(node: TreeNode) {
-    if (node.disabled && !props.checkedDisabled) {
+    if (!canSelectDisabledNode(node)) {
       return false;
     }
 
@@ -496,8 +498,15 @@ export function useTreeViewState(props: TreeViewStateProps) {
     return true;
   }
 
+  function canSelectDisabledNode(node: TreeNode) {
+    return !node.disabled || Boolean(props.checkedDisabled);
+  }
+
   function clearCheckedStatus() {
     for (const node of treeList.value) {
+      if (!canSelectDisabledNode(node)) {
+        continue;
+      }
       node.checked = CHECK_STATUS_MAP.unchecked;
     }
   }

@@ -53,6 +53,49 @@ describe("useTreeViewState: selection", () => {
     expect(node(state, "room-a-202").checked).toBe(CHECK_STATUS_MAP.unchecked);
   });
 
+  it("keeps disabled nodes unchanged while applying configured linked selection", () => {
+    const blocked = createState({
+      multiple: true,
+      modelValue: ["floor-a-2"]
+    });
+
+    expect(node(blocked.state, "room-a-202").checked).toBe(CHECK_STATUS_MAP.unchecked);
+    expect(checkedKeys(blocked.state)).toEqual(["room-a-201"]);
+    expect(blocked.state.getHalfCheckedKeys()).toEqual(["building-a", "floor-a-2"]);
+
+    const allowed = createState({
+      multiple: true,
+      checkedDisabled: true,
+      modelValue: ["floor-a-2"]
+    });
+
+    expect(node(allowed.state, "room-a-202").checked).toBe(CHECK_STATUS_MAP.checked);
+    expect(checkedKeys(allowed.state)).toEqual(["floor-a-2", "room-a-201", "room-a-202"]);
+  });
+
+  it("preserves locked disabled states during method select-all and clear", async () => {
+    const blocked = createState({
+      multiple: true
+    });
+
+    blocked.state.setCheckedKeys(blocked.state.getUncheckedKeys(), true);
+    expect(node(blocked.state, "room-a-202").checked).toBe(CHECK_STATUS_MAP.unchecked);
+
+    const locked = createState({
+      multiple: true,
+      checkedDisabled: true,
+      modelValue: ["room-a-202"]
+    });
+
+    locked.props.checkedDisabled = false;
+    await nextTick();
+    expect(node(locked.state, "room-a-202").checked).toBe(CHECK_STATUS_MAP.checked);
+
+    locked.state.setCheckedKeys(locked.state.getCheckedKeys(), false);
+    expect(node(locked.state, "room-a-202").checked).toBe(CHECK_STATUS_MAP.checked);
+    expect(locked.state.getHalfCheckedKeys()).toEqual(["building-a", "floor-a-2"]);
+  });
+
   it("keeps parent and children independent in checkStrictly mode", () => {
     const { state } = createState({
       multiple: true,

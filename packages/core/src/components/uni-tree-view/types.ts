@@ -145,7 +145,7 @@ export interface UniTreeViewProps {
   isLeafFn?: (item: TreeDataItem, node: TreeNode) => boolean;
   /** Load once on first expand even when static children exist. */
   alwaysFirstLoad?: boolean;
-  /** Whether disabled nodes can be checked by user/method operations. */
+  /** Whether disabled nodes can participate in selection state changes. */
   checkedDisabled?: boolean;
   /** Whether checked disabled nodes are included in returned keys/nodes. */
   packDisabledKey?: boolean;
