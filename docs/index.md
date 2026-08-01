@@ -14,7 +14,8 @@ hero:
       link: /guide/quick-start
     - theme: alt
       text: 在线演示
-      link: /ui/#/
+      link: /ui/
+      target: _self
     - theme: alt
       text: API 参考
       link: /apis/props

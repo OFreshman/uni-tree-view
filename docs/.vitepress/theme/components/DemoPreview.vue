@@ -97,7 +97,7 @@ const scene = computed(() => frontmatter.value.demo ?? routeScene.value);
 const title = computed(() => frontmatter.value.demoTitle ?? "组件演示");
 const iframeKey = computed(() => `${scene.value}-${reloadKey.value}`);
 const href = computed(() => {
-  const path = `/#/pages/docs-preview/index?scene=${encodeURIComponent(scene.value)}`;
+  const path = `/pages/docs-preview/index?scene=${encodeURIComponent(scene.value)}`;
 
   if (import.meta.env.DEV) {
     const base = import.meta.env.VITE_DEMO_URL || "http://localhost:9861/ui";
