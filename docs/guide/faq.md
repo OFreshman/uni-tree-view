@@ -76,9 +76,14 @@ function handleCheckChange(payload: TreeCheckChangePayload) {
 <uni-tree-view selectable multiple check-strictly :data="data" />
 ```
 
-## 禁用节点为什么出现在返回的 keys 里?
+## 禁用节点为什么出现在 keys 里，为什么全选/清空不改变它?
 
-默认 `pack-disabled-key` 为 `true`，被勾选的禁用节点会包含在返回 keys / nodes 与 `v-model` 中。不需要时设为 `false`。旧拼写 `pack-disabledkey` 暂时保留为废弃别名；两个属性同时传入时以 `pack-disabled-key` 为准。
+`checked-disabled` 和 `pack-disabled-key` 控制的是两件事：
+
+- `checked-disabled` 决定禁用节点是否允许改变选中状态。默认是 `false`，因此用户点击、全选、清空、父子联动、实例方法和受控值回放都会保持禁用节点的当前状态；需要改变时显式设为 `true`。
+- `pack-disabled-key` 只决定**已经选中的**禁用节点是否包含在返回 keys / nodes 与 `v-model` 中，默认是 `true`；不需要返回时设为 `false`。
+
+因此，一个禁用节点可能保留此前的选中状态并继续出现在结果中，但默认不会被后续全选或清空改变。
 
 ## 虚拟渲染开启后滚动错位?
 

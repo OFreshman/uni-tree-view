@@ -8,20 +8,24 @@
 </template>
 
 <script setup>
-const treeData = [
+import { ref } from "vue";
+
+// 最小结构只需要 id / label / children 三个字段
+const treeData = ref([
   {
-    id: "building-a",
-    label: "A 栋",
+    id: "product",
+    label: "产品研发中心",
     children: [
-      { id: "floor-a-1", label: "1 层" },
-      { id: "floor-a-2", label: "2 层" }
+      { id: "frontend", label: "前端组" },
+      { id: "backend", label: "后端组" }
     ]
-  }
-];
+  },
+  { id: "operations", label: "运营中心" }
+]);
 </script>
 ```
 
-不传 `selectable` 时是纯展示树，点击箭头展开收起。
+不传 `selectable` 时是纯展示树，点击箭头展开收起。文档[示例页](/examples/basic)全程使用这套组织架构数据，右侧实时预览与代码一一对应。
 
 ## 多选 + v-model
 
@@ -39,8 +43,10 @@ const treeData = [
 <script setup>
 import { ref } from "vue";
 
-const checkedValue = ref(["floor-a-1"]);
+// 多选时 v-model 是 key 数组；这里预选「前端组」，组内子节点会一起被选中
+const checkedValue = ref(["frontend"]);
 
+// keys 为当前全部选中 key，nodes 为对应的节点对象
 function handleCheckChange({ keys, nodes }) {
   console.log("当前选中:", keys);
 }
@@ -71,6 +77,22 @@ function handleCheckChange({ keys, nodes }) {
     }"
   />
 </template>
+
+<script setup>
+import { ref } from "vue";
+
+// 字段名全部与默认约定不同，靠上面的 tree-props 映射
+const treeData = ref([
+  {
+    code: "product",
+    name: "产品研发中心",
+    items: [
+      { code: "frontend", name: "前端组" },
+      { code: "backend", name: "后端组", readonly: true } // readonly 映射为 disabled
+    ]
+  }
+]);
+</script>
 ```
 
 `tree-props` 只声明数据字段名。映射配置发生响应式变化时，组件会重新解析树数据。

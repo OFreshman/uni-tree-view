@@ -1,0 +1,217 @@
+// playground 页面级演示 UI：卡片 / 工具条 / 状态条 / 色板
+// 与 docs-demos/demo.scss（文档 iframe 专用的紧凑尺寸）区分，本文件面向真机页面尺寸，
+// 通过 App.vue 全局引入，首页与 examples 页共用同一套视觉结构
+
+.demo-card {
+  padding: 24rpx;
+  background: var(--wot-filled-oppo, #ffffff);
+  border-radius: 24rpx;
+  box-shadow: 0 2rpx 12rpx rgba(16, 24, 40, 0.04);
+
+  & + .demo-card {
+    margin-top: 24rpx;
+  }
+}
+
+.demo-card__header {
+  display: flex;
+  gap: 24rpx;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.demo-card__header-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.demo-card__actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 12rpx;
+  align-items: center;
+}
+
+.demo-card__title {
+  display: block;
+  color: var(--wot-text-main, #111827);
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
+.demo-card__desc {
+  display: block;
+  margin-top: 8rpx;
+  color: var(--wot-text-auxiliary, #667085);
+  font-size: 24rpx;
+  line-height: 36rpx;
+}
+
+.demo-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  align-items: center;
+  margin-top: 20rpx;
+}
+
+.demo-toolbar__spacer {
+  flex: 1;
+}
+
+button.demo-chip {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 8rpx;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-width: auto;
+  height: 60rpx;
+  padding: 0 22rpx;
+  margin: 0;
+  color: var(--wot-text-content, #374151);
+  font-size: 24rpx;
+  line-height: 58rpx;
+  background: var(--wot-filled-oppo, #ffffff);
+  border: 1rpx solid var(--wot-border-light, #e4e7ec);
+  border-radius: 14rpx;
+
+  &::after {
+    display: none;
+  }
+
+  &:active {
+    opacity: var(--opacity-active, 0.6);
+  }
+
+  &.is-active {
+    color: #1d7350;
+    font-weight: 600;
+    background: #e9f5ee;
+    border-color: rgba(41, 151, 100, 0.42);
+  }
+}
+
+.demo-chip__dot {
+  width: 10rpx;
+  height: 10rpx;
+  background: #aab4ae;
+  border-radius: 50%;
+}
+
+button.demo-chip.is-active .demo-chip__dot {
+  background: var(--wot-primary-6, #299764);
+  box-shadow: 0 0 0 4rpx rgba(41, 151, 100, 0.12);
+}
+
+// 主题色色板：色值由行内样式提供（background 与 color 同值，
+// 选中态的描边环通过 currentColor 拿到同一颜色）
+.demo-swatches {
+  display: flex;
+  gap: 20rpx;
+  align-items: center;
+}
+
+.demo-swatch {
+  position: relative;
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+
+  &.is-active::after {
+    position: absolute;
+    top: -8rpx;
+    right: -8rpx;
+    bottom: -8rpx;
+    left: -8rpx;
+    border: 3rpx solid currentColor;
+    border-radius: 50%;
+    content: "";
+  }
+}
+
+// 状态反馈条：每个案例底部统一的「结果 + 说明」区
+.demo-status {
+  display: flex;
+  gap: 16rpx;
+  align-items: flex-start;
+  padding: 20rpx 24rpx;
+  margin-top: 20rpx;
+  background: var(--wot-filled-bottom, #f6f7fb);
+  border-radius: 16rpx;
+}
+
+.demo-status__dot {
+  flex: 0 0 auto;
+  width: 12rpx;
+  height: 12rpx;
+  margin-top: 12rpx;
+  background: var(--wot-primary-6, #299764);
+  border-radius: 50%;
+  box-shadow: 0 0 0 6rpx rgba(41, 151, 100, 0.12);
+}
+
+.demo-status__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.demo-status__title {
+  display: block;
+  color: var(--wot-text-main, #111827);
+  font-size: 26rpx;
+  font-weight: 600;
+  line-height: 38rpx;
+  word-break: break-all;
+}
+
+.demo-status__detail {
+  display: block;
+  margin-top: 2rpx;
+  color: var(--wot-text-auxiliary, #667085);
+  font-size: 22rpx;
+  line-height: 34rpx;
+  word-break: break-all;
+}
+
+.demo-status__actions {
+  display: flex;
+  gap: 12rpx;
+  margin-top: 12rpx;
+}
+
+// 结果回显标签（弹窗选择等场景）
+.demo-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 20rpx;
+}
+
+.demo-tag {
+  max-width: 240rpx;
+  padding: 6rpx 16rpx;
+  overflow: hidden;
+  color: #247d53;
+  font-size: 22rpx;
+  line-height: 34rpx;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: #edf8f2;
+  border-radius: 10rpx;
+}
+
+// wd-cell-group 外层圆角（能力目录等）
+.demo-cells {
+  overflow: hidden;
+  border-radius: 24rpx;
+}
+
+// 虚拟渲染等需要边框限高的树容器
+.demo-tree-frame {
+  margin-top: 20rpx;
+  overflow: hidden;
+  border: 1rpx solid var(--wot-border-light, #e4e7ec);
+  border-radius: 16rpx;
+}

@@ -13,10 +13,12 @@ import { ref } from "vue";
 const treeRef = ref();
 
 function selectAll() {
-  treeRef.value.setCheckedKeys(
-    treeRef.value.getVisibleKeys(),
-    true
-  );
+  const selectableKeys = treeRef.value
+    .getVisibleNodes()
+    .filter((node) => !node.disabled)
+    .map((node) => node.id);
+
+  treeRef.value.setCheckedKeys(selectableKeys, true);
 }
 </script>
 ```
@@ -25,13 +27,15 @@ function selectAll() {
 
 | 方法 | 签名 | 说明 |
 | --- | --- | --- |
-| `setCheckedKeys` | `(keys: TreeKey \| TreeKey[], checked = true) => void` | 设置指定 keys 的选中状态 |
+| `setCheckedKeys` | `(keys: TreeKey \| TreeKey[], checked = true) => void` | 设置指定 keys 的选中状态；默认跳过禁用节点 |
 | `getCheckedKeys` | `() => TreeKey[]` | 获取全部选中 keys |
 | `getHalfCheckedKeys` | `() => TreeKey[]` | 获取半选 keys |
 | `getUncheckedKeys` | `() => TreeKey[]` | 获取未选 keys |
 | `getCheckedNodes` | `() => TreeNode[]` | 获取全部选中节点 |
 | `getHalfCheckedNodes` | `() => TreeNode[]` | 获取半选节点 |
 | `getUncheckedNodes` | `() => TreeNode[]` | 获取未选节点 |
+
+`checked-disabled` 默认为 `false`，此时禁用节点的当前选中状态会被锁定：通过 `setCheckedKeys` 实现的全选、清空，以及父子联动和受控值回放都不会改变它。只有显式开启 `checked-disabled`，禁用节点才允许参与状态变更。
 
 ## 展开
 

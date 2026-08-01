@@ -27,7 +27,7 @@
         <text class="docs-demo-card__title">部门结构</text>
         <view class="docs-demo-card__meta">
           <view class="docs-demo-card__meta-dot"></view>
-          默认展开 2 层
+          默认展开指定节点
         </view>
       </view>
       <uni-tree-view

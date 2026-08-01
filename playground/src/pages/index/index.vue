@@ -21,59 +21,106 @@
         </wd-tag>
       </view>
 
-      <wd-search
-        v-model="filterValue"
-        placeholder="搜索节点"
-        hide-cancel
-        placeholder-left></wd-search>
-
-      <view class="page__card">
-        <view class="page__card-header">
-          <text class="page__card-title">
-            基础多选
-          </text>
-          <wd-tag v-if="checkedValue.length" type="primary" variant="plain">
+      <view class="demo-card">
+        <view class="demo-card__header">
+          <view class="demo-card__header-main">
+            <text class="demo-card__title">
+              组织架构 · 综合演示
+            </text>
+            <text class="demo-card__desc">
+              搜索过滤 · 多选联动 · 实例方法 · 主题色
+            </text>
+          </view>
+          <wd-tag v-if="filterValue" type="primary" variant="plain">
+            命中 {{ filterCount }}
+          </wd-tag>
+          <wd-tag v-else-if="checkedValue.length" type="primary" variant="plain">
             已选 {{ checkedValue.length }}
           </wd-tag>
         </view>
+
+        <wd-search
+          v-model="filterValue"
+          custom-style="--wot-search-padding: 20rpx 0 0; --wot-search-bg: transparent;"
+          placeholder="搜索部门或成员"
+          hide-cancel
+          placeholder-left></wd-search>
+
+        <view class="demo-toolbar">
+          <button class="demo-chip" @click="treeRef?.expandAll()">
+            展开全部
+          </button>
+          <button class="demo-chip" @click="treeRef?.collapseAll()">
+            收起全部
+          </button>
+          <button class="demo-chip" @click="checkAll">
+            全选
+          </button>
+          <button class="demo-chip" @click="clearChecked">
+            清空
+          </button>
+          <view class="demo-toolbar__spacer"></view>
+          <view class="demo-swatches">
+            <view
+              v-for="color in themeColors"
+              :key="color"
+              class="demo-swatch"
+              :class="{ 'is-active': themeColor === color }"
+              :style="{ background: color, color }"
+              @click="themeColor = color"></view>
+          </view>
+        </view>
+
         <uni-tree-view
+          ref="treeRef"
           v-model="checkedValue"
           selectable
           multiple
           check-on-click-node
           expand-on-click-node
-          theme-color="#299764"
-          :data="treeData"
-          :filter-value="filterValue"
-          :default-expanded-keys="['building-a']"
           expand-checked
-          :tree-props="treeProps"
+          :theme-color="themeColor"
+          :data="orgTreeData"
+          :tree-props="demoTreeProps"
+          :filter-value="filterValue"
+          :show-path="Boolean(filterValue)"
+          path-separator=" / "
+          :default-expanded-keys="['rd', 'rd-fe']"
           @check-change="handleCheckChange"
-          @expand-change="handleExpandChange"></uni-tree-view>
+          @expand-change="handleExpandChange"
+          @filter-change="filterCount = $event.keys.length"></uni-tree-view>
+
+        <view class="demo-status">
+          <view class="demo-status__dot" :style="{ background: themeColor, boxShadow: 'none' }"></view>
+          <view class="demo-status__content">
+            <text class="demo-status__title">{{ checkedSummary }}</text>
+            <text class="demo-status__detail">{{ latestAction }}</text>
+          </view>
+        </view>
       </view>
 
-      <wd-cell-group border custom-class="page__cells">
-        <wd-cell title="当前选中" :value="checkedText"></wd-cell>
-        <wd-cell title="最近事件" :value="latestAction"></wd-cell>
+      <wd-cell-group border custom-class="demo-cells page__cells">
         <wd-cell
-          title="更多示例"
-          value="懒加载 / 插槽 / 弹窗选择"
+          v-for="item in exampleEntries"
+          :key="item.tab"
+          :title="item.title"
+          :label="item.label"
           is-link
           clickable
-          @click="goExamples"></wd-cell>
+          @click="goExamples(item.tab)"></wd-cell>
       </wd-cell-group>
 
-      <view class="page__card">
-        <view class="page__card-header">
-          <view class="page__card-header-main">
-            <text class="page__card-title">
+      <view class="demo-card page__virtual-card">
+        <view class="demo-card__header">
+          <view class="demo-card__header-main">
+            <text class="demo-card__title">
               大数据虚拟渲染
             </text>
-            <text class="page__card-desc">
+            <text class="demo-card__desc">
               {{ largeTreeSummary }}
             </text>
           </view>
-          <view class="page__card-actions">
+          <view class="demo-card__actions">
             <wd-button
               v-if="showLargeTree"
               size="small"
@@ -92,7 +139,7 @@
           </view>
         </view>
 
-        <view v-if="showLargeTree" class="page__large-tree">
+        <view v-if="showLargeTree" class="demo-tree-frame page__large-tree">
           <uni-tree-view
             ref="largeTreeRef"
             v-model="largeCheckedValue"
@@ -102,12 +149,12 @@
             expand-on-click-node
             virtual
             default-expand-all
-            theme-color="#299764"
+            :theme-color="themeColor"
             :virtual-height="560"
             :virtual-item-height="36"
             :virtual-overscan="12"
             :data="largeTreeData"
-            :tree-props="treeProps"
+            :tree-props="demoTreeProps"
             @check-change="handleLargeChange"
             @expand-change="handleLargeExpandChange"></uni-tree-view>
         </view>
@@ -123,6 +170,7 @@ import UniTreeView from "uni-tree-view";
 import type { UniTreeViewExposed } from "uni-tree-view";
 import { computed, shallowRef } from "vue";
 import AppPage from "@/components/appPage/index.vue";
+import { demoTreeProps, findTreeLabels, orgTreeData } from "@/mockData/demoTrees";
 import { createLargeTreeData, LARGE_TREE_DEFAULTS } from "@/utils/largeTreeData";
 
 interface DemoTreeNode {
@@ -132,9 +180,71 @@ interface DemoTreeNode {
 }
 
 const version = __UNI_TREE_VIEW_VERSION__;
+
+// ==================== 综合演示 ====================
+const themeColors = ["#299764", "#2563eb", "#ea580c", "#7c3aed"];
+const themeColor = shallowRef(themeColors[0]);
+const treeRef = shallowRef<UniTreeViewExposed | null>(null);
 const filterValue = shallowRef("");
-const checkedValue = shallowRef<Array<string | number>>(["floor-a-2"]);
+const filterCount = shallowRef(0);
+const checkedValue = shallowRef<Array<string | number>>(["rd-fe-1"]);
 const latestAction = shallowRef("等待操作");
+
+const exampleEntries = [
+  { tab: "selection", title: "选择模式", label: "单选 / 叶子单选 / 父子联动 / 严格模式" },
+  { tab: "lazy", title: "懒加载", label: "load-api / is-leaf-fn / 失败重试" },
+  { tab: "slots", title: "插槽定制", label: "icon / label / append / empty" },
+  { tab: "popup", title: "弹窗选择", label: "右侧勾选 / 草稿确认回填" }
+] as const;
+
+const checkedSummary = computed(() => {
+  const count = checkedValue.value.length;
+  if (!count) {
+    return "暂未选中节点";
+  }
+  const labels = findTreeLabels(orgTreeData, checkedValue.value);
+  const shown = labels.slice(0, 3).join("、");
+  return count > 3 ? `已选 ${count} 项：${shown} 等` : `已选 ${count} 项：${shown}`;
+});
+
+function handleCheckChange(payload: any) {
+  latestAction.value = `check-change：「${payload.node.label}」，共 ${payload.keys.length} 项`;
+}
+
+function handleExpandChange(payload: any) {
+  latestAction.value = `${payload.expanded ? "展开" : "收起"}「${payload.node.label}」`;
+}
+
+function checkAll() {
+  if (!treeRef.value) {
+    return;
+  }
+
+  const selectableKeys = [
+    ...treeRef.value.getUncheckedNodes(),
+    ...treeRef.value.getHalfCheckedNodes()
+  ]
+    .filter((node) => !node.disabled)
+    .map((node) => node.id);
+  treeRef.value.setCheckedKeys(selectableKeys, true);
+}
+
+function clearChecked() {
+  if (!treeRef.value) {
+    return;
+  }
+
+  const selectableKeys = treeRef.value.getCheckedNodes()
+    .filter((node) => !node.disabled)
+    .map((node) => node.id);
+  treeRef.value.setCheckedKeys(selectableKeys, false);
+}
+
+function goExamples(tab: string) {
+  uni.navigateTo({ url: `/pages/examples/index?tab=${tab}` });
+}
+
+// ==================== 大数据虚拟渲染 ====================
 const showLargeTree = shallowRef(false);
 const largeTreeRef = shallowRef<UniTreeViewExposed | null>(null);
 const largeTreeData = shallowRef<DemoTreeNode[]>([]);
@@ -144,50 +254,6 @@ const largeTargetKey = shallowRef("");
 const largeTargetLabel = shallowRef("");
 const largeLatestAction = shallowRef("未开启");
 
-const treeProps = {
-  id: "id",
-  label: "label",
-  children: "children",
-  disabled: "disabled"
-};
-
-const treeData = [
-  {
-    id: "building-a",
-    label: "A 栋",
-    children: [
-      {
-        id: "floor-a-1",
-        label: "1 层",
-        children: [
-          { id: "room-a-101", label: "101 会议室" },
-          { id: "room-a-102", label: "102 办公区" }
-        ]
-      },
-      {
-        id: "floor-a-2",
-        label: "2 层",
-        children: [
-          { id: "room-a-201", label: "201 展厅" },
-          { id: "room-a-202", label: "202 设备间", disabled: true }
-        ]
-      }
-    ]
-  },
-  {
-    id: "building-b",
-    label: "B 栋",
-    children: [
-      { id: "floor-b-1", label: "1 层" },
-      { id: "floor-b-2", label: "2 层" }
-    ]
-  }
-];
-
-const checkedText = computed(() => {
-  return checkedValue.value.join(", ") || "暂无";
-});
-
 const largeTreeSummary = computed(() => {
   if (!showLargeTree.value) {
     return `点击生成 ${LARGE_TREE_DEFAULTS.total.toLocaleString()} 个节点 / 2-6 层随机分支`;
@@ -195,18 +261,6 @@ const largeTreeSummary = computed(() => {
 
   return `${largeNodeCount.value.toLocaleString()} 个节点 / 2-6 层 · ${largeLatestAction.value}`;
 });
-
-function handleCheckChange(payload: any) {
-  latestAction.value = `change: ${payload.keys.join(", ") || "none"}`;
-}
-
-function goExamples() {
-  uni.navigateTo({ url: "/pages/examples/index" });
-}
-
-function handleExpandChange(payload: any) {
-  latestAction.value = `${payload.expanded ? "expand" : "collapse"}: ${payload.node.id}`;
-}
 
 function toggleLargeTree() {
   if (showLargeTree.value) {
@@ -290,60 +344,15 @@ async function locateLargeTarget() {
   font-size: 26rpx;
 }
 
-.page__card {
+.page__virtual-card {
   margin-top: 24rpx;
-  padding: 24rpx;
-  background: var(--wot-filled-oppo, #ffffff);
-  border-radius: 24rpx;
-  box-shadow: 0 2rpx 12rpx rgba(16, 24, 40, 0.04);
-}
-
-.page__card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24rpx;
-  margin-bottom: 16rpx;
-}
-
-.page__card-header-main {
-  flex: 1;
-  min-width: 0;
-}
-
-.page__card-actions {
-  display: flex;
-  flex: 0 0 auto;
-  gap: 12rpx;
-  align-items: center;
-}
-
-.page__card-title {
-  display: block;
-  color: var(--wot-text-main, #111827);
-  font-size: 30rpx;
-  font-weight: 600;
-}
-
-.page__card-desc {
-  display: block;
-  margin-top: 8rpx;
-  color: var(--wot-text-auxiliary, #667085);
-  font-size: 24rpx;
 }
 
 .page__large-tree {
   height: 560px;
-  margin-top: 16rpx;
-  overflow: hidden;
-  border: 1rpx solid var(--wot-border-light, #e4e7ec);
-  border-radius: 16rpx;
 }
 
-// wd-cell-group 外层圆角
 :deep(.page__cells) {
   margin-top: 24rpx;
-  overflow: hidden;
-  border-radius: 24rpx;
 }
 </style>

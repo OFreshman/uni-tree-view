@@ -21,9 +21,10 @@
         :data="demoTreeData"
         theme-color="#299764">
         <template #icon="{ node }">
-          <text class="docs-demo-node-icon" :class="{ 'is-leaf': node.isLeaf }">
-            {{ node.isLeaf ? '·' : 'T' }}
-          </text>
+          <wd-icon
+            :name="node.isLeaf ? 'user' : 'folder'"
+            size="32rpx"
+            color="#299764"></wd-icon>
         </template>
         <template #label="{ node, data }">
           <view class="docs-demo-node-label">

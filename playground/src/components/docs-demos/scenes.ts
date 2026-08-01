@@ -28,9 +28,9 @@ export const demoSceneMeta: Record<DemoScene, DemoSceneMeta> = {
   selection: {
     index: "02",
     title: "选择策略",
-    description: "在单选、父子联动和严格模式之间切换，实时查看选择结果。",
+    description: "在单选、叶子单选、父子联动和严格模式之间切换，也可通过 ref 方法操作选中。",
     eyebrow: "SELECTION",
-    tags: ["v-model", "半选状态"]
+    tags: ["v-model", "半选状态", "ref 方法"]
   },
   filter: {
     index: "03",
@@ -42,9 +42,9 @@ export const demoSceneMeta: Record<DemoScene, DemoSceneMeta> = {
   "lazy-load": {
     index: "04",
     title: "按需加载",
-    description: "展开区域节点时异步获取下一层数据，并反馈实时加载状态。",
+    description: "展开区域节点时异步获取下一层数据，可模拟首次加载失败并重试。",
     eyebrow: "ASYNC LOAD",
-    tags: ["load-api", "状态反馈"]
+    tags: ["load-api", "失败重试"]
   },
   virtual: {
     index: "05",

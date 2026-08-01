@@ -39,8 +39,8 @@ function exampleItem(text: string, name: string): DefaultTheme.SidebarItem {
 }
 
 const siteBase = process.env.DOCS_BASE ?? "/uni-tree-view/";
-const demoBase = process.env.PLAYGROUND_DOCS_BASE ?? `${siteBase}ui/`;
-const demoLink = `${demoBase}#/`;
+// VitePress 会自动为站内链接补上 base；这里保持根相对路径，避免默认构建重复拼接 /uni-tree-view/。
+const demoLink = "/ui/#/";
 const siteUrl = process.env.DOCS_SITE_URL ?? "https://ofreshman.github.io/uni-tree-view";
 
 export default defineConfig({
