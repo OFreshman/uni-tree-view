@@ -41,7 +41,7 @@ interface PlaygroundPackageJson extends PackageJson {
 
 const NpmPackageName = "uni-tree-view";
 const PluginId = "KieranYin9527-tree";
-const PluginDisplayName = "keryin-tree-view";
+const PluginDisplayName = "Uni Tree View";
 
 function r(...paths: string[]) {
   return resolve(cwd(), ".", ...paths);
