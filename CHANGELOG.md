@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+## 0.3.0 - 2026-08-01
+
 ### Changed
 
 - 新增 `packDisabledKey` / `pack-disabled-key` 规范命名，并暂时保留旧 `packDisabledkey` / `pack-disabledkey` 作为废弃别名。
