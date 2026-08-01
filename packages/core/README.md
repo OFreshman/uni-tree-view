@@ -31,7 +31,7 @@
 pnpm add uni-tree-view
 ```
 
-或在 [DCloud 插件市场](https://ext.dcloud.net.cn/) 导入插件 `KieranYin9527-tree`（显示名称：`keryin-tree-view`，easycom 免配置）。
+或在 [DCloud 插件市场](https://ext.dcloud.net.cn/) 导入插件 `KieranYin9527-tree`（显示名称：`Uni Tree View`，easycom 免配置）。
 
 ## 使用
 
