@@ -97,7 +97,8 @@ const scene = computed(() => frontmatter.value.demo ?? routeScene.value);
 const title = computed(() => frontmatter.value.demoTitle ?? "组件演示");
 const iframeKey = computed(() => `${scene.value}-${reloadKey.value}`);
 const href = computed(() => {
-  const path = `/pages/docs-preview/index?scene=${encodeURIComponent(scene.value)}`;
+  // iframe 内使用 hash 路由以兼容 GitHub Pages；不会改变父级 VitePress 页面地址。
+  const path = `/#/pages/docs-preview/index?scene=${encodeURIComponent(scene.value)}`;
 
   if (import.meta.env.DEV) {
     const base = import.meta.env.VITE_DEMO_URL || "http://localhost:9861/ui";
