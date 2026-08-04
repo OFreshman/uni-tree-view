@@ -64,6 +64,9 @@ jobs:
             exit 1
           fi
 
+      - name: Extract release notes
+        run: pnpm changelog:notes "$RELEASE_TAG" "$RUNNER_TEMP/release-notes.md"
+
       - name: Check
         run: pnpm check
 
@@ -100,9 +103,12 @@ jobs:
           assets=(artifacts/npm/* artifacts/dcloud/*)
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
             gh release upload "$RELEASE_TAG" "${assets[@]}" --clobber
+            gh release edit "$RELEASE_TAG" \
+              --notes-file "$RUNNER_TEMP/release-notes.md" \
+              --title "$RELEASE_TAG"
           else
             gh release create "$RELEASE_TAG" "${assets[@]}" \
-              --generate-notes \
+              --notes-file "$RUNNER_TEMP/release-notes.md" \
               --title "$RELEASE_TAG" \
               --verify-tag
           fi

@@ -4,7 +4,11 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import process from "node:process";
 import chalk from "chalk";
-import { assertUnreleasedHasContent } from "./changelog-utils";
+import { readReleaseCommits } from "./changelog-git";
+import {
+  assertChangelogCanBePrepared,
+  createChangelogPreparation
+} from "./changelog-utils";
 
 function getCurrentHead(): string {
   return execFileSync("git", ["rev-parse", "HEAD"], {
@@ -34,8 +38,10 @@ function assertCleanWorkingTree(): void {
   }
 }
 
-function assertChangelogReady(): void {
-  assertUnreleasedHasContent(readFileSync("CHANGELOG.md", "utf8"));
+function assertReleaseNotesCanBePrepared(): void {
+  const source = readFileSync("CHANGELOG.md", "utf8");
+  const { commits, latestTag } = readReleaseCommits();
+  assertChangelogCanBePrepared(createChangelogPreparation(source, commits, latestTag));
 }
 
 function formatCommand(command: string, args: string[]): string {
@@ -64,7 +70,7 @@ function restoreFailedRelease(originalHead: string): void {
 function main(): void {
   const branch = assertReleaseBranch();
   assertCleanWorkingTree();
-  assertChangelogReady();
+  assertReleaseNotesCanBePrepared();
   const originalHead = getCurrentHead();
 
   const pnpmCommand = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
