@@ -37,10 +37,15 @@
     "test:coverage": "vitest run --coverage",
     "check": "pnpm lint && pnpm lint:type && pnpm test && pnpm build:play && git diff --check",
     "check:platforms": "pnpm -C playground build:mp-weixin && pnpm -C playground build:mp-alipay",
-    "changelog": "tsx scripts/update-changelog.ts",
+    "commit:check": "tsx scripts/check-commit-message.ts",
+    "changelog": "pnpm changelog:generate",
+    "changelog:check": "tsx scripts/generate-changelog.ts --check",
+    "changelog:generate": "tsx scripts/generate-changelog.ts",
+    "changelog:notes": "tsx scripts/extract-changelog-notes.ts",
     "changelog:package": "tsx scripts/sync-package-changelog.ts",
+    "changelog:promote": "tsx scripts/update-changelog.ts",
     "release": "tsx scripts/release.ts",
-    "release:prepare": "pnpm changelog && pnpm check && pnpm check:platforms",
+    "release:prepare": "pnpm changelog:generate && pnpm changelog:promote && pnpm check && pnpm check:platforms",
     "release:push": "git push origin main --follow-tags"
   },
   "devDependencies": {
@@ -80,6 +85,7 @@
     "vue-tsc": "catalog:dev"
   },
   "simple-git-hooks": {
+    "commit-msg": "pnpm exec tsx scripts/check-commit-message.ts --allow-merge \"$1\"",
     "pre-commit": "npx lint-staged"
   },
   "lint-staged": {
