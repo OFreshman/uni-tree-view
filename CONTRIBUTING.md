@@ -47,7 +47,7 @@ pnpm build      # 构建组件包
 
 - 运行时 props/emits 与 `types.ts`、`uni-tree-view.vue.d.ts` 保持同步
 - 补充对应的单元测试（按展开/选中/禁用/事件 payload 等行为分组）
-- 更新 `docs/` 对应 API 文档和 `CHANGELOG.md` 的 Unreleased 段落
+- 更新 `docs/` 对应 API 文档；需要人工整理发布说明时再填写根目录 `CHANGELOG.md` 的 Unreleased 段落
 
 ## 提交规范
 
@@ -59,11 +59,13 @@ fix: 修复 xxx 在支付宝小程序下的表现
 docs: 补充 xxx 示例
 ```
 
+提交标题会由本地 `commit-msg` hook 校验，CI 还会检查 PR 标题以及变更范围内的全部非 merge 提交，格式为 `<type>(<scope>)!: <description>`。允许的类型包括 `build`、`chore`、`ci`、`docs`、`feat`、`fix`、`perf`、`refactor`、`revert`、`style` 和 `test`；其中 `feat`、`fix`、`perf`、`refactor` 以及带破坏性标记的提交会进入自动发布说明。使用 squash merge 时，PR 标题也必须遵循同一格式。
+
 ## 发布流程（维护者）
 
-变更日志只维护仓库根目录 `CHANGELOG.md` 的 `Unreleased`；npm 包内的 `CHANGELOG.md` 会在打包前自动生成。执行发布前必须确保 `Unreleased` 非空，并先提交所有功能、文档和发布流程修复。
+变更日志只维护仓库根目录 `CHANGELOG.md`；npm 包内的 `CHANGELOG.md` 会在打包前自动生成。发布流程会从最近版本 tag 后的 `feat:`、`fix:`、`perf:`、`refactor:` 和破坏性提交自动生成 `Unreleased`；如果已经手写 `Unreleased`，则优先保留手写内容，并在终端打印被跳过的自动条目供核对。需要放弃手写内容并重新生成时，使用 `pnpm changelog:generate --force`。执行发布前应先提交所有功能、文档和发布流程修复。
 
-发布脚本会在修改版本号前检查分支、工作区和变更日志；如果 bumpp 在创建 release commit 前失败，会自动恢复本次发布改动的跟踪文件。
+发布脚本会在修改版本号前检查分支、工作区以及是否存在可生成的发布说明；如果 bumpp 在创建 release commit 前失败，会自动恢复本次发布改动的跟踪文件。可用 `pnpm changelog:check` 做只读预检。
 
 ```bash
 pnpm check           # 提交功能代码前完整检查
@@ -74,7 +76,7 @@ git tag --points-at HEAD
 pnpm release:push    # 最后一次性推送 main 和 tag
 ```
 
-推送 tag 后，GitHub Actions 会再次检查、验证微信/支付宝 playground 构建、发布 npm，并将 DCloud ZIP 上传到 GitHub Release。DCloud 插件市场仍需维护者下载该 ZIP 后手动上传。
+推送 tag 后，GitHub Actions 会再次检查、验证微信/支付宝 playground 构建、发布 npm，并从对应版本的 `CHANGELOG.md` 段落生成 GitHub Release 说明，同时上传 DCloud ZIP。DCloud 插件市场仍需维护者下载该 ZIP 后手动上传。
 
 npm 发布使用 Trusted Publishing。首次配置时，在 npm 的 `uni-tree-view` 包设置中添加 GitHub Actions Trusted Publisher：
 
