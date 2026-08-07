@@ -83,13 +83,13 @@ describe("useTreeViewState: structure, expansion and filtering", () => {
     expect(state.getNode("mapped-id")?.label).toBe("Mapped label");
   });
 
-  it("applies default expanded keys and expand/collapse methods", () => {
+  it("expands all ancestors of default expanded keys and supports expand/collapse methods", () => {
     const { state } = createState({
-      defaultExpandedKeys: ["building-a"]
+      defaultExpandedKeys: ["floor-a-2"]
     });
 
-    expect(visibleKeys(state)).toEqual(["building-a", "floor-a-1", "floor-a-2", "building-b"]);
-    expect(state.getExpandedKeys()).toEqual(["building-a"]);
+    expect(visibleKeys(state)).toEqual(["building-a", "floor-a-1", "floor-a-2", "room-a-201", "room-a-202", "building-b"]);
+    expect(state.getExpandedKeys()).toEqual(["building-a", "floor-a-2"]);
 
     state.setExpandedKeys(["floor-a-2"], true);
     expect(visibleKeys(state)).toEqual([
@@ -107,6 +107,21 @@ describe("useTreeViewState: structure, expansion and filtering", () => {
 
     state.expandAll();
     expect(state.getExpandedKeys()).toEqual(["building-a", "floor-a-1", "floor-a-2", "building-b"]);
+  });
+
+  it("can keep default expanded keys explicit without expanding their ancestors", async () => {
+    const { props, state } = createState({
+      defaultExpandedKeys: ["floor-a-2"],
+      defaultExpandParent: false
+    });
+
+    expect(state.getExpandedKeys()).toEqual(["floor-a-2"]);
+    expect(visibleKeys(state)).toEqual(["building-a", "building-b"]);
+
+    props.defaultExpandParent = true;
+    await nextTick();
+    expect(state.getExpandedKeys()).toEqual(["building-a", "floor-a-2"]);
+    expect(visibleKeys(state)).toContain("room-a-201");
   });
 
   it("expands checked ancestors only during initialization or expansion config changes", () => {

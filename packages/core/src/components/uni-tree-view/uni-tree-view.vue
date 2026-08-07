@@ -167,6 +167,7 @@ const props = withDefaults(defineProps<UniTreeViewProps>(), {
   onlyRadioLeaf: false,
   defaultExpandAll: false,
   defaultExpandedKeys: () => [],
+  defaultExpandParent: true,
   expandChecked: false,
   cacheExpandedKeys: false,
   defaultCheckedKeys: () => [],

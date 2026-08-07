@@ -133,6 +133,8 @@ export interface UniTreeViewProps {
   defaultExpandAll?: boolean;
   /** Default expanded node keys. */
   defaultExpandedKeys?: TreeKey[];
+  /** Whether default expanded keys also expand all their ancestors. */
+  defaultExpandParent?: boolean;
   /** Expand ancestors of checked nodes initially. */
   expandChecked?: boolean;
   /** Preserve runtime expanded state when tree data is rebuilt. */

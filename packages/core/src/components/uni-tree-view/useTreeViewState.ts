@@ -22,6 +22,7 @@ export interface TreeViewStateProps {
   onlyRadioLeaf?: boolean;
   defaultExpandAll?: boolean;
   defaultExpandedKeys?: TreeKey[] | null;
+  defaultExpandParent?: boolean;
   expandChecked?: boolean;
   cacheExpandedKeys?: boolean;
   loadMode?: boolean;
@@ -303,6 +304,19 @@ export function useTreeViewState(props: TreeViewStateProps) {
     const defaultExpandedKeys = normalizeKeys(props.defaultExpandedKeys);
     const expandedKeySet = new Set<TreeKey>(defaultExpandedKeys);
 
+    if (props.defaultExpandParent !== false) {
+      for (const key of defaultExpandedKeys) {
+        const node = nodeMap.value.get(key);
+        if (!node) {
+          continue;
+        }
+
+        for (const parentId of node.parentIds) {
+          expandedKeySet.add(parentId);
+        }
+      }
+    }
+
     for (const node of treeList.value) {
       node.expanded = Boolean(props.defaultExpandAll)
         || expandedKeySet.has(node.id)
@@ -537,6 +551,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
     return JSON.stringify({
       defaultExpandAll: props.defaultExpandAll,
       defaultExpandedKeys: normalizeKeys(props.defaultExpandedKeys),
+      defaultExpandParent: props.defaultExpandParent,
       expandChecked: props.expandChecked,
       cacheExpandedKeys: props.cacheExpandedKeys
     });
