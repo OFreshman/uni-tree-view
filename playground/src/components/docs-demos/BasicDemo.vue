@@ -32,7 +32,7 @@
       </view>
       <uni-tree-view
         :data="demoTreeData"
-        :default-expanded-keys="['product', 'frontend']"
+        :default-expanded-keys="['frontend']"
         :expand-on-click-node="wholeRow"
         :show-path="showPath"
         path-separator=" / "

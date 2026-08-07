@@ -85,7 +85,7 @@
           :filter-value="filterValue"
           :show-path="Boolean(filterValue)"
           path-separator=" / "
-          :default-expanded-keys="['rd', 'rd-fe']"
+          :default-expanded-keys="['rd-fe']"
           @check-change="handleCheckChange"
           @expand-change="handleExpandChange"
           @filter-change="filterCount = $event.keys.length"></uni-tree-view>

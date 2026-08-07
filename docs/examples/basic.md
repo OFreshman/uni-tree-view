@@ -63,10 +63,10 @@ const treeData = ref([
 <uni-tree-view :data="treeData" default-expand-all />
 
 <!-- 只展开指定节点：右侧实时预览用的就是这一行 -->
-<uni-tree-view :data="treeData" :default-expanded-keys="['product', 'frontend']" />
+<uni-tree-view :data="treeData" :default-expanded-keys="['frontend']" />
 ```
 
-`default-expanded-keys` 在初始化时应用一次；之后该数组的值发生变化会**重新按新值整体应用**，用户手动展开/收起的状态会被覆盖。想在运行时增量控制展开，请用 [`setExpandedKeys`](/apis/methods#展开)。
+`default-expanded-keys` 在初始化时应用一次；指定某个后代节点时，组件默认会自动展开它的所有祖先。之后该数组的值发生变化会**重新按新值整体应用**，用户手动展开/收起的状态会被覆盖；如需保持显式 key 语义，可设置 `default-expand-parent="false"`。想在运行时增量控制展开，请用 [`setExpandedKeys`](/apis/methods#展开)。
 
 ## 禁用节点
 

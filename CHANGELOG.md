@@ -4,6 +4,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- 修复 `default-expanded-keys` 指定后代节点时未自动展开所有祖先的问题，并新增 `default-expand-parent` 关闭该行为。
+
 ## 0.3.2 - 2026-08-04
 
 ### Fixed

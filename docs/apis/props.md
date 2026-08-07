@@ -42,7 +42,8 @@ interface TreeProps {
 | 属性 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
 | `default-expand-all` | `boolean` | `false` | 初始是否展开全部 |
-| `default-expanded-keys` | `TreeKey[]` | `[]` | 初始展开的 keys |
+| `default-expanded-keys` | `TreeKey[]` | `[]` | 初始展开的 keys；指定任意层级节点时，其所有祖先也会展开 |
+| `default-expand-parent` | `boolean` | `true` | 是否自动展开 `default-expanded-keys` 中节点的所有祖先；设为 `false` 时仅展开指定节点 |
 | `expand-checked` | `boolean` | `false` | 初始是否展开已选节点的祖先链 |
 | `expand-on-click-node` | `boolean` | `false` | 点击整行是否展开/收起 |
 | `cache-expanded-keys` | `boolean` | `false` | 数据重建时保留运行时展开状态 |
