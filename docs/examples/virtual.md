@@ -46,9 +46,41 @@ const { data, count } = createLargeTreeData({
 
 | 参数 | 说明 |
 | --- | --- |
-| `virtual-height` | 滚动容器高度（px），默认 400，建议按容器实际高度显式指定 |
-| `virtual-item-height` | 每行高度（px）；组件会据此固定虚拟行高度 |
+| `virtual-height` | 滚动视口高度，只接受数值，单位固定为 **px**；默认 400 |
+| `virtual-item-height` | 每行高度，只接受数值，单位固定为 **px**；组件会据此固定虚拟行高度 |
 | `virtual-overscan` | 可视区外额外渲染的行数，滚动越快可适当调大 |
+
+`virtual-height` 当前不能传 `rpx`、`%`、`vh` 或 `calc()`。虚拟列表需要用明确的像素高度计算起止索引；小程序端也请传换算后的 px 数值。
+
+节点较少、内容不足 `virtual-height` 时，组件会渲染全部节点，但仍保留固定高度视口，剩余区域留空。若页面需要随内容高度自适应，请关闭 `virtual`。
+
+## 与懒加载组合
+
+`virtual` 与 `load-mode` 可以同时开启，两者职责不同：懒加载控制“数据何时进入状态树”，虚拟渲染控制“当前可见节点中哪些行进入视图”。懒加载完成后，可见列表和虚拟窗口会自动重新计算。
+
+```vue
+<uni-tree-view
+  virtual
+  load-mode
+  :virtual-height="320"
+  :virtual-item-height="36"
+  :data="rootData"
+  :load-api="loadChildren"
+/>
+```
+
+右侧实时预览和 `pnpm play` 首页都包含”虚拟渲染 + 懒加载”案例：
+
+- 首屏提供 80 个异步根节点
+- 每次展开按需加载 16 个子节点
+- **”异步区域 1”首次展开会故意失败**，再次点击箭头即可验证重试功能
+- 其他节点正常加载
+
+右侧预览底部的状态提示会实时显示加载结果。共享数据和 loader 如下：
+
+<<< ../../playground/src/utils/lazyVirtualTreeData.ts
+
+需要注意：`scrollToKey` 只能定位已经加载进状态树的 key，未知后代不会因为定位操作而自动请求。懒加载的完整约定见[懒加载](/examples/lazy-load)。
 
 ## 滚动到指定节点
 

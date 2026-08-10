@@ -9,6 +9,10 @@ pageClass: examples-page
 
 节点子级按需加载，适合层级深、数据量大的异步数据源（如组织架构、地区选择）。
 
+::: warning 启用条件与失败重试
+懒加载必须同时提供 `load-mode` 和 `load-api`。只传 `load-api`、只监听 `load/load-error`，或只写 `is-leaf-fn` 都不会启用懒加载。加载失败后可再次点击节点箭头，或通过 ref 调用 `retryLoad` 重试。
+:::
+
 本页示例是一棵「区域 → 城市」两级地区树，与右侧实时预览用的是同一份数据：根节点只有三个区域，城市在展开时才请求。
 
 ## 实时预览对应代码
@@ -142,11 +146,17 @@ function onError({ node }) {
 
 ## 带静态 children 也强制走一次加载
 
-节点在数据里自带静态 `children` 时，默认会被视为已加载，展开不会调用 `load-api`。开启 `always-first-load` 后，这类节点首次展开时也会强制调用一次 `load-api`（加载成功后同样不再重复请求）：
+节点在数据里自带静态 `children` 时，默认会被视为已加载，展开不会调用 `load-api`。这里的“已加载”只表示不再请求，**不代表默认展开**；初始展开仍由 `default-expand-all`、`default-expanded-keys` 等展开属性控制。
+
+开启 `always-first-load` 后，这类节点首次展开时也会强制调用一次 `load-api`（加载成功后同样不再重复请求）：
 
 ```vue
 <uni-tree-view load-mode always-first-load :data="rootData" :load-api="loadChildren" />
 ```
+
+## 与虚拟渲染组合
+
+懒加载可以和 `virtual` 同时使用：加载成功后新增节点会进入可见列表，虚拟窗口随之重新计算。组合示例、失败重试和共享 loader 见[虚拟渲染：与懒加载组合](/examples/virtual#与懒加载组合)。
 
 ::: warning
 懒加载模式下，`setExpandedKeys`、`expandAll`、`collapseAll` 只处理已经进入状态树的节点，不会为了展开而自动触发请求；`scrollToKey` 同理，目标节点尚未加载出来时返回 `false`。

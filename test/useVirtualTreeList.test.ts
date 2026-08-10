@@ -23,6 +23,27 @@ describe("useVirtualTreeList", () => {
     scope.stop();
   });
 
+  it("keeps the fixed virtual viewport when the item list does not fill it", () => {
+    const scope = effectScope();
+    const result = scope.run(() => {
+      return useVirtualTreeList({
+        items: shallowRef([1, 2, 3]),
+        virtual: true,
+        itemHeight: 20,
+        height: 100,
+        overscan: 2
+      });
+    });
+
+    expect(result).toBeTruthy();
+    expect(result!.renderedItems.value).toEqual([1, 2, 3]);
+    expect(result!.topPadding.value).toBe(0);
+    expect(result!.bottomPadding.value).toBe(0);
+    expect(result!.scrollViewStyle.value).toEqual({ height: "100px" });
+
+    scope.stop();
+  });
+
   it("calculates the rendered window from scroll-view scrollTop", () => {
     const scope = effectScope();
     const items = shallowRef(Array.from({ length: 100 }, (_, index) => index));

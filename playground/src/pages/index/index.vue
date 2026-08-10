@@ -88,7 +88,7 @@
           :default-expanded-keys="['rd-fe']"
           @check-change="handleCheckChange"
           @expand-change="handleExpandChange"
-          @filter-change="filterCount = $event.keys.length"></uni-tree-view>
+          @filter-change="filterCount = $event.matchedKeys.length"></uni-tree-view>
 
         <view class="demo-status">
           <view class="demo-status__dot" :style="{ background: themeColor, boxShadow: 'none' }"></view>
@@ -160,6 +160,51 @@
         </view>
       </view>
 
+      <view class="demo-card page__virtual-card">
+        <view class="demo-card__header">
+          <view class="demo-card__header-main">
+            <text class="demo-card__title">
+              虚拟渲染 + 懒加载
+            </text>
+            <text class="demo-card__desc">
+              80 个异步根节点 · 展开时按需加载 16 个子节点
+            </text>
+          </view>
+          <wd-tag type="primary" variant="plain">
+            virtual + load-mode
+          </wd-tag>
+        </view>
+
+        <view class="demo-tree-frame page__lazy-virtual-tree">
+          <uni-tree-view
+            v-model="lazyVirtualCheckedValue"
+            selectable
+            multiple
+            check-on-click-node
+            expand-on-click-node
+            virtual
+            load-mode
+            :theme-color="themeColor"
+            :virtual-height="320"
+            :virtual-item-height="36"
+            :virtual-overscan="8"
+            :data="lazyVirtualTreeData"
+            :load-api="lazyVirtualLoader.load"
+            @load="handleLazyVirtualLoad"
+            @load-error="handleLazyVirtualLoadError"></uni-tree-view>
+        </view>
+
+        <view class="demo-status">
+          <view class="demo-status__dot" :style="{ background: themeColor, boxShadow: 'none' }"></view>
+          <view class="demo-status__content">
+            <text class="demo-status__title">{{ lazyVirtualMessage }}</text>
+            <text class="demo-status__detail">
+              “异步区域 1”首次加载会失败，再点箭头即可重试。
+            </text>
+          </view>
+        </view>
+      </view>
+
       <wd-gap height="48rpx" bg-color="transparent"></wd-gap>
     </view>
   </app-page>
@@ -167,11 +212,20 @@
 
 <script setup lang='ts'>
 import UniTreeView from "uni-tree-view";
-import type { UniTreeViewExposed } from "uni-tree-view";
+import type {
+  TreeKey,
+  TreeLoadErrorPayload,
+  TreeLoadPayload,
+  UniTreeViewExposed
+} from "uni-tree-view";
 import { computed, shallowRef } from "vue";
 import AppPage from "@/components/appPage/index.vue";
 import { demoTreeProps, findTreeLabels, orgTreeData } from "@/mockData/demoTrees";
 import { createLargeTreeData, LARGE_TREE_DEFAULTS } from "@/utils/largeTreeData";
+import {
+  createVirtualLazyLoader,
+  createVirtualLazyRootData
+} from "@/utils/lazyVirtualTreeData";
 
 interface DemoTreeNode {
   id: string;
@@ -187,7 +241,7 @@ const themeColor = shallowRef(themeColors[0]);
 const treeRef = shallowRef<UniTreeViewExposed | null>(null);
 const filterValue = shallowRef("");
 const filterCount = shallowRef(0);
-const checkedValue = shallowRef<Array<string | number>>(["rd-fe-1"]);
+const checkedValue = shallowRef<TreeKey[]>(["rd-fe-1"]);
 const latestAction = shallowRef("等待操作");
 
 const exampleEntries = [
@@ -248,7 +302,7 @@ function goExamples(tab: string) {
 const showLargeTree = shallowRef(false);
 const largeTreeRef = shallowRef<UniTreeViewExposed | null>(null);
 const largeTreeData = shallowRef<DemoTreeNode[]>([]);
-const largeCheckedValue = shallowRef<Array<string | number>>([]);
+const largeCheckedValue = shallowRef<TreeKey[]>([]);
 const largeNodeCount = shallowRef(0);
 const largeTargetKey = shallowRef("");
 const largeTargetLabel = shallowRef("");
@@ -294,6 +348,20 @@ function handleLargeExpandChange(payload: any) {
 async function locateLargeTarget() {
   const located = await largeTreeRef.value?.scrollToKey(largeTargetKey.value, { expandParents: true });
   largeLatestAction.value = located ? `已定位 ${largeTargetLabel.value}` : "目标节点定位失败";
+}
+
+// ==================== 虚拟渲染 + 懒加载 ====================
+const lazyVirtualTreeData = shallowRef(createVirtualLazyRootData());
+const lazyVirtualCheckedValue = shallowRef<TreeKey[]>([]);
+const lazyVirtualLoader = createVirtualLazyLoader();
+const lazyVirtualMessage = shallowRef("展开任一异步区域，仅请求该节点的子级");
+
+function handleLazyVirtualLoad(payload: TreeLoadPayload) {
+  lazyVirtualMessage.value = `已加载「${payload.node.label}」的 ${payload.children.length} 个子节点`;
+}
+
+function handleLazyVirtualLoadError(payload: TreeLoadErrorPayload) {
+  lazyVirtualMessage.value = `「${payload.node.label}」加载失败，等待重试`;
 }
 </script>
 
@@ -350,6 +418,10 @@ async function locateLargeTarget() {
 
 .page__large-tree {
   height: 560px;
+}
+
+.page__lazy-virtual-tree {
+  height: 320px;
 }
 
 :deep(.page__cells) {

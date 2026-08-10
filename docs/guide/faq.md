@@ -83,11 +83,21 @@ function handleCheckChange(payload: TreeCheckChangePayload) {
 - `checked-disabled` 决定禁用节点是否允许改变选中状态。默认是 `false`，因此用户点击、全选、清空、父子联动、实例方法和受控值回放都会保持禁用节点的当前状态；需要改变时显式设为 `true`。
 - `pack-disabled-key` 只决定**已经选中的**禁用节点是否包含在返回 keys / nodes 与 `v-model` 中，默认是 `true`；不需要返回时设为 `false`。
 
-因此，一个禁用节点可能保留此前的选中状态并继续出现在结果中，但默认不会被后续全选或清空改变。
+`pack-disabled-key` 影响的返回位置包括：
+
+- `v-model`
+- `check-change` 的 `keys/nodes`
+- `getCheckedKeys()` / `getCheckedNodes()`
+
+设为 `false` 只是不打包返回，不会清除节点内部和视觉上的 checked 状态。
+
+禁用父节点在非严格多选中仍是一个**只读汇总节点**：父节点不能直接点击选中，但子节点仍可选；部分子节点选中时父节点半选，全部子节点选中时父节点全选。此时 `pack-disabled-key=false` 可让该父节点不进入结果。开启 `check-strictly` 后父子独立，不再汇总。
 
 ## 虚拟渲染开启后滚动错位?
 
-虚拟模式要求**行高固定**。内置节点会使用 `virtual-item-height`（单位 px）作为实际行高；若插槽内容更高，请同步调大该值，且不要使用可变行高内容。
+虚拟模式要求**视口高度和行高都是固定的 px 数值**。`virtual-height` / `virtual-item-height` 当前不接受 `rpx`、`%`、`vh` 或 `calc()`；内置节点会使用 `virtual-item-height` 作为实际行高。若插槽内容更高，请同步调大该值，且不要使用可变行高内容。
+
+节点数量较少、内容不足 `virtual-height` 时会渲染全部节点，但滚动视口仍保持固定高度，剩余区域留空。这是定高虚拟列表的预期行为；需要内容自适应时关闭 `virtual`。
 
 ## 小程序上样式没生效?
 

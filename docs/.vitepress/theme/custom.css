@@ -125,6 +125,13 @@
   }
 }
 
+/* ─── 示例页右侧预览：与左侧正文顶部对齐，避免视觉间隙 ─── */
+@media (min-width: 1440px) {
+  .Layout.examples-page .VPDoc .aside {
+    padding-top: 0;
+  }
+}
+
 .VPNavBarTitle .logo {
   width: 30px;
   height: 30px;

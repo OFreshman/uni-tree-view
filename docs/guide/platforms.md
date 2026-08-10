@@ -26,7 +26,7 @@
 虚拟滚动通过 `scroll-view` 的 scroll 事件 + 上下 padding 占位实现，不依赖 `IntersectionObserver`，因此在低版本小程序基础库上也能工作。
 
 ::: tip 虚拟模式的两个前提
-1. `virtual-height`（容器高度，px，默认 400）需与实际布局一致，否则滚动定位会错位
+1. `virtual-height`（容器高度，只接受 number，单位固定 px，默认 400）需与实际布局一致，否则滚动定位会错位
 2. 行高固定，由 `virtual-item-height` 声明并应用到节点（px）
 :::
 
@@ -37,7 +37,7 @@
 ### 单位约定
 
 - `indent` 缩进使用 **rpx**（跟随屏幕宽度缩放）
-- `virtual-height` / `virtual-item-height` 使用 **px**（滚动计算需要物理像素）
+- `virtual-height` / `virtual-item-height` 只接受数值并使用 **px**（滚动计算需要明确像素）；不能直接传 `rpx`、`%`、`vh`、`calc()`
 
 ## App 端
 

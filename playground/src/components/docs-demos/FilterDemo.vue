@@ -38,7 +38,7 @@
         highlight-filter
         show-path
         theme-color="#299764"
-        @filter-change="resultCount = $event.keys.length">
+        @filter-change="handleFilterChange">
         <template #empty="{ filterValue }">
           <view class="docs-demo-empty">
             没有找到“{{ filterValue }}”
@@ -59,17 +59,19 @@
 
 <script setup lang="ts">
 import UniTreeView from "uni-tree-view";
+import type { TreeFilterPayload } from "uni-tree-view";
 import { computed, shallowRef } from "vue";
 import { demoTreeData } from "./data";
 
 const quickKeywords = ["前端", "设计", "顾宁"];
 const keyword = shallowRef("");
 const resultCount = shallowRef(0);
+const visibleCount = shallowRef(0);
 const resultTitle = computed(() => {
   if (!keyword.value) {
     return "当前展示全部节点";
   }
-  return resultCount.value ? `找到 ${resultCount.value} 个相关节点` : "没有匹配的节点";
+  return resultCount.value ? `直接命中 ${resultCount.value} 个节点` : "没有匹配的节点";
 });
 const resultDetail = computed(() => {
   if (!keyword.value) {
@@ -78,8 +80,13 @@ const resultDetail = computed(() => {
   if (!resultCount.value) {
     return "没有节点命中该关键词，可试试「前端」「设计」或「顾宁」";
   }
-  return `关键词「${keyword.value}」已在命中节点中高亮显示`;
+  return `连同祖先和后代，共显示 ${visibleCount.value} 个相关节点`;
 });
+
+function handleFilterChange(payload: TreeFilterPayload) {
+  resultCount.value = payload.matchedKeys.length;
+  visibleCount.value = payload.keys.length;
+}
 
 function applyKeyword(value: string) {
   keyword.value = keyword.value === value ? "" : value;
