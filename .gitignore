@@ -46,3 +46,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# 本地规划与调研记录
+.local/
