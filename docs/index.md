@@ -41,5 +41,5 @@ features:
     details: 零运行时依赖，主题色一个 prop 搞定，label/icon/append/empty 插槽自由扩展。
   - icon: 📦
     title: 双通道分发
-    details: npm 包 + uni_modules 插件市场双通道，easycom 自动注册，也支持手动导入。
+    details: npm 包 + DCloud 插件市场双通道；市场发布形态与导入目录见安装说明。
 ---

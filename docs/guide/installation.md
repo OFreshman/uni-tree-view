@@ -1,6 +1,6 @@
 # 安装
 
-支持 npm 与 uni-app 插件市场（uni_modules）两种方式，二选一即可。
+支持 npm 与 DCloud 插件市场两种方式，二选一即可。
 
 ## 方式一：npm
 
@@ -58,17 +58,35 @@ export default defineConfig({
 }
 ```
 
-## 方式二：uni-app 插件市场
+## 方式二：DCloud 插件市场
 
-在 [DCloud 插件市场](https://ext.dcloud.net.cn/) 导入插件 `KieranYin9527-tree`（显示名称：`Uni Tree View`）后，组件会安装到项目的 `uni_modules/KieranYin9527-tree`。
+从 [Uni Tree View 插件页](https://ext.dcloud.net.cn/plugin?id=28897) 点击“下载插件并导入 HBuilderX”。
 
-uni_modules 遵循 easycom 规范，**无需任何配置**，直接在模板中使用：
+::: warning 当前 0.3.2 的导入目录
+当前插件市场条目仍按**普通组件**形态导入，实际目录为：
+
+```text
+src/components/uni-tree-view
+```
+
+这不是 Vue 2 / Vue 3 的区别，也不是“下载插件并导入 HBuilderX”按钮决定的；落到 `components` 还是 `uni_modules`，由插件市场条目的**发布类型**决定。
+:::
+
+当前目录符合 easycom 的组件目录约定，可直接在模板中使用：
 
 ```vue
 <template>
   <uni-tree-view :data="treeData" />
 </template>
 ```
+
+标准 `uni_modules` 发布形态对应的目录应为：
+
+```text
+src/uni_modules/KieranYin9527-tree
+```
+
+Vue 3 项目同样可以使用 `uni_modules` 组件；`uni_modules` 并非 Vue 2 专属。后续若插件市场条目迁移为 `uni_modules` 发布，HBuilderX 的导入目录会随发布类型变化，组件标签仍保持 `<uni-tree-view>`。迁移前请勿在同一项目同时保留 `src/components/uni-tree-view` 与 `src/uni_modules/KieranYin9527-tree` 两份组件，以免 easycom 匹配到重复实现。
 
 ## 环境要求
 

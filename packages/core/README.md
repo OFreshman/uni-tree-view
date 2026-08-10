@@ -23,7 +23,7 @@
 - ⚡ 固定行高虚拟渲染，万级节点流畅滚动
 - 🔌 懒加载子节点，内置加载态与失败重试
 - 🎨 主题色、`node-class` 与 label/icon/append/empty 插槽自由定制
-- 📦 零运行时依赖，npm 与 uni_modules（插件市场）双通道分发
+- 📦 零运行时依赖，npm 与 DCloud 插件市场双通道分发
 
 ## 安装
 
@@ -31,7 +31,7 @@
 pnpm add uni-tree-view
 ```
 
-或在 [DCloud 插件市场](https://ext.dcloud.net.cn/) 导入插件 `KieranYin9527-tree`（显示名称：`Uni Tree View`，easycom 免配置）。
+或在 [DCloud 插件市场](https://ext.dcloud.net.cn/plugin?id=28897) 导入 `Uni Tree View`。当前市场版本按普通组件形态安装到 `src/components/uni-tree-view`，可通过 easycom 使用；目录差异见[安装说明](https://ofreshman.github.io/uni-tree-view/guide/installation)。
 
 ## 使用
 
