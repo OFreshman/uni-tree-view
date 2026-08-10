@@ -76,7 +76,9 @@ const treeData = ref([
 { id: "backend-2", label: "顾宁", disabled: true }
 ```
 
-如果业务需要改变禁用节点的选中状态，可显式开启 `checked-disabled`。字段名不叫 `disabled` 时用 `tree-props` 映射：
+如果禁用的是父节点，父节点仍可在非严格多选中汇总子节点状态：子节点可正常选择，部分选中时父节点半选，全部选中时父节点全选，但父节点自身不可直接操作。`pack-disabled-key="false"` 只会把这个已选禁用父节点从返回结果中排除，不改变其视觉状态。
+
+如果业务需要直接改变禁用节点的选中状态，可显式开启 `checked-disabled`。字段名不叫 `disabled` 时用 `tree-props` 映射：
 
 ```vue
 <uni-tree-view :data="treeData" :tree-props="{ disabled: 'readonly' }" />
@@ -97,8 +99,30 @@ const treeData = ref([
 | --- | --- |
 | `expand-on-click-node` | 点击节点行任意位置展开/收起 |
 | `check-on-click-node` | 点击节点行任意位置切换选中（需配合 `selectable`） |
+| `check-on-click-leaf` | 仅点击叶子节点行时切换选中（需配合 `selectable`）；适合保留父节点行的展开/导航语义 |
 
-右侧实时预览顶部的「整行展开 / 箭头展开」按钮切换的就是 `expand-on-click-node`；`check-on-click-node` 的效果见[单选与多选](/examples/selection)。
+右侧实时预览顶部的「整行展开 / 箭头展开」按钮切换的就是 `expand-on-click-node`；`check-on-click-node` 的效果见[单选与多选](/examples/selection)。如果只希望点击叶子节点选中，可改用：
+
+```vue
+<uni-tree-view
+  :data="treeData"
+  selectable
+  multiple
+  check-on-click-leaf
+/>
+```
+
+需要同级节点保持手风琴式展开时，可额外开启 `accordion`：
+
+```vue
+<uni-tree-view
+  :data="treeData"
+  expand-on-click-node
+  accordion
+/>
+```
+
+`accordion` 只在用户展开节点时收起同级已展开节点，默认展开属性仍按显式配置应用。
 
 ## 节点路径
 

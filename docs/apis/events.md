@@ -17,9 +17,11 @@
 ```ts
 interface TreeCheckChangePayload {
   value: TreeModelValue; // 新的 v-model 值
-  keys: TreeKey[];       // 当前全部选中 keys
-  nodes: TreeNode[];     // 当前全部选中节点
-  node: TreeNode;        // 本次触发变化的节点
+  keys: TreeKey[];             // 当前全部选中 keys
+  nodes: TreeNode[];           // 当前全部选中节点
+  halfCheckedKeys: TreeKey[];  // 当前半选 keys（严格模式或单选时为空）
+  halfCheckedNodes: TreeNode[]; // 当前半选节点
+  node: TreeNode;              // 本次触发变化的节点
 }
 ```
 
@@ -60,8 +62,12 @@ interface TreeLoadErrorPayload {
 
 ```ts
 interface TreeFilterPayload {
-  value: string;      // 当前关键词
-  keys: TreeKey[];    // 过滤后可见 keys
-  nodes: TreeNode[];  // 过滤后可见节点
+  value: string;             // 当前关键词
+  keys: TreeKey[];           // 最终可见 keys：直接命中 + 祖先 + 后代
+  nodes: TreeNode[];         // 最终可见节点
+  matchedKeys: TreeKey[];    // 仅直接通过默认/自定义规则命中的 keys
+  matchedNodes: TreeNode[];  // 仅直接命中的节点
 }
 ```
+
+关键词为空时不过滤，`keys/nodes` 表示当前展开状态下的可见节点，`matchedKeys/matchedNodes` 为空数组。

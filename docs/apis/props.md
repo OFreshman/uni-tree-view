@@ -32,10 +32,11 @@ interface TreeProps {
 | `multiple` | `boolean` | `false` | 是否多选。`false` 时为单选（radio） |
 | `show-radio-icon` | `boolean` | `true` | 单选模式是否展示 radio 图标 |
 | `check-strictly` | `boolean` | `false` | 父子选中状态是否互相独立 |
-| `only-radio-leaf` | `boolean` | `false` | 单选模式是否只允许选叶子节点 |
-| `check-on-click-node` | `boolean` | `false` | 点击整行是否切换选中 |
+| `only-radio-leaf` | `boolean` | `false` | 仅单选模式生效，限制为只允许选择叶子节点；`multiple=true` 时忽略 |
+| `check-on-click-node` | `boolean` | `false` | 点击任意节点行是否切换选中；开启后同时覆盖叶子和非叶子节点 |
+| `check-on-click-leaf` | `boolean` | `false` | 是否仅允许通过点击叶子节点行切换选中；可与 `check-on-click-node` 同时开启，后者优先覆盖全部节点 |
 | `checked-disabled` | `boolean` | `false` | 禁用节点是否允许参与选中状态变更；关闭时全选、清空、父子联动和受控值回放都保持其状态不变 |
-| `pack-disabled-key` | `boolean` | `true` | 已选禁用节点是否包含在返回 keys / nodes 与 `v-model` 中 |
+| `pack-disabled-key` | `boolean` | `true` | 已选禁用节点是否打包进 `v-model`、`check-change.keys/nodes`、`getCheckedKeys/getCheckedNodes`；不改变节点内部或视觉选中状态 |
 
 ## 展开
 
@@ -46,6 +47,7 @@ interface TreeProps {
 | `default-expand-parent` | `boolean` | `true` | 是否自动展开 `default-expanded-keys` 中节点的所有祖先；设为 `false` 时仅展开指定节点 |
 | `expand-checked` | `boolean` | `false` | 初始是否展开已选节点的祖先链 |
 | `expand-on-click-node` | `boolean` | `false` | 点击整行是否展开/收起 |
+| `accordion` | `boolean` | `false` | 展开一个节点时是否自动收起同级已展开节点；只影响运行时展开操作，不改变默认展开配置的语义 |
 | `cache-expanded-keys` | `boolean` | `false` | 数据重建时保留运行时展开状态 |
 
 ## 过滤
@@ -54,14 +56,14 @@ interface TreeProps {
 | --- | --- | --- | --- |
 | `filter-value` | `string` | `""` | 过滤关键词，命中节点及其祖先链、后代节点保持可见 |
 | `filter-method` | `(value, node) => boolean` | - | 自定义匹配函数 |
-| `highlight-filter` | `boolean` | `true` | 内置 label 中高亮命中的关键词 |
+| `highlight-filter` | `boolean` | `true` | 仅在内置 label 中高亮关键词；使用 `label` 或 `default` 插槽后需自行实现高亮，但过滤仍正常生效 |
 
 ## 懒加载
 
 | 属性 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
-| `load-mode` | `boolean` | `false` | 懒加载模式，节点可在子节点未就绪时展开 |
-| `load-api` | `(node) => TreeDataItem[] \| Promise<...>` | - | 子节点加载函数 |
+| `load-mode` | `boolean` | `false` | 开启懒加载模式，需配合 `load-api`；仅提供加载函数或仅监听事件不会启用懒加载 |
+| `load-api` | `(node) => TreeDataItem[] \| Promise<...>` | - | 子节点加载函数，只有 `load-mode=true` 时才会在展开节点时调用 |
 | `is-leaf-fn` | `(item, node) => boolean` | - | 自定义叶子节点判断 |
 | `always-first-load` | `boolean` | `false` | 首次展开时即使已有静态 children 也执行加载 |
 
@@ -100,6 +102,8 @@ interface TreeProps {
 | 属性 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
 | `virtual` | `boolean` | `false` | 开启定高虚拟渲染 |
-| `virtual-height` | `number` | `400` | 滚动容器高度，单位 **px** |
+| `virtual-height` | `number` | `400` | 虚拟滚动视口高度，只接受数值，单位固定为 **px**；不支持 `rpx`、`%`、`vh`、`calc()` |
 | `virtual-item-height` | `number` | `36` | 行高，单位 **px**；虚拟模式会据此固定内置节点行高 |
 | `virtual-overscan` | `number` | `8` | 可视区上下额外渲染的行数 |
+
+`virtual-height` 和 `virtual-item-height` 会直接参与可视窗口计算，因此当前必须提供像素数值。节点较少、内容不足 `virtual-height` 时，组件会渲染全部节点，但仍保留固定高度视口，剩余区域留空；需要内容高度自适应时不要开启 `virtual`。

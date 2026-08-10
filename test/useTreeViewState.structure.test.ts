@@ -109,6 +109,33 @@ describe("useTreeViewState: structure, expansion and filtering", () => {
     expect(state.getExpandedKeys()).toEqual(["building-a", "floor-a-1", "floor-a-2", "building-b"]);
   });
 
+  it("collapses expanded siblings when accordion mode is enabled", () => {
+    const { state } = createState({
+      accordion: true,
+      defaultExpandAll: false
+    });
+
+    state.toggleExpand(node(state, "building-a"));
+    state.toggleExpand(node(state, "building-b"));
+
+    expect(node(state, "building-a").expanded).toBe(false);
+    expect(node(state, "building-b").expanded).toBe(true);
+    expect(state.getExpandedKeys()).toEqual(["building-b"]);
+  });
+
+  it("only collapses direct siblings in accordion mode", () => {
+    const { state } = createState({
+      accordion: true,
+      defaultExpandedKeys: ["building-a", "floor-a-1"]
+    });
+
+    state.toggleExpand(node(state, "floor-a-2"));
+
+    expect(node(state, "building-a").expanded).toBe(true);
+    expect(node(state, "floor-a-1").expanded).toBe(false);
+    expect(node(state, "floor-a-2").expanded).toBe(true);
+  });
+
   it("can keep default expanded keys explicit without expanding their ancestors", async () => {
     const { props, state } = createState({
       defaultExpandedKeys: ["floor-a-2"],
@@ -143,11 +170,14 @@ describe("useTreeViewState: structure, expansion and filtering", () => {
     await nextTick();
     expect(visibleKeys(state)).toEqual(["building-a", "floor-a-2", "room-a-201"]);
     expect(state.getVisibleKeys()).toEqual(["building-a", "floor-a-2", "room-a-201"]);
+    expect(state.getMatchedKeys()).toEqual(["room-a-201"]);
+    expect(state.getMatchedNodes().map((item) => item.id)).toEqual(["room-a-201"]);
     expect(state.getExpandedKeys()).toEqual(["building-a"]);
 
     props.filterValue = "";
     await nextTick();
     expect(visibleKeys(state)).toEqual(["building-a", "floor-a-1", "floor-a-2", "building-b"]);
+    expect(state.getMatchedKeys()).toEqual([]);
   });
 
   it("supports custom filter matching", async () => {

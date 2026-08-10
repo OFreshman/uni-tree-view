@@ -19,6 +19,7 @@ export interface TreeViewStateProps {
   defaultCheckedKeys?: TreeKey | TreeKey[] | null;
   multiple?: boolean;
   checkStrictly?: boolean;
+  accordion?: boolean;
   onlyRadioLeaf?: boolean;
   defaultExpandAll?: boolean;
   defaultExpandedKeys?: TreeKey[] | null;
@@ -37,6 +38,7 @@ export interface TreeViewStateProps {
 export function useTreeViewState(props: TreeViewStateProps) {
   const treeList = ref<TreeNode[]>([]);
   const visibleTreeList = ref<TreeNode[]>([]);
+  const matchedTreeList = ref<TreeNode[]>([]);
   const childrenMap = ref<Map<TreeKey, TreeNode[]>>(new Map());
   const nodeMap = ref<Map<TreeKey, TreeNode>>(new Map());
   const cachedExpandedKeys = ref<Set<TreeKey>>(new Set());
@@ -121,7 +123,20 @@ export function useTreeViewState(props: TreeViewStateProps) {
       return null;
     }
 
-    node.expanded = !node.expanded;
+    const nextExpanded = !node.expanded;
+    if (nextExpanded && props.accordion) {
+      const siblings = node.parentId === undefined
+        ? treeList.value.filter((item) => item.level === 0)
+        : childrenMap.value.get(node.parentId) ?? [];
+      for (const sibling of siblings) {
+        if (sibling !== node && sibling.expanded) {
+          sibling.expanded = false;
+          syncExpandedCacheForNode(sibling);
+        }
+      }
+    }
+
+    node.expanded = nextExpanded;
     if (props.cacheExpandedKeys) {
       if (node.expanded) {
         cachedExpandedKeys.value.add(node.id);
@@ -440,6 +455,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
 
     if (rawFilterValue) {
       const visibleKeySet = new Set<TreeKey>();
+      const matchedNodes: TreeNode[] = [];
       for (const node of treeList.value) {
         const matched = props.filterMethod
           ? props.filterMethod(rawFilterValue, node)
@@ -448,6 +464,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
           continue;
         }
 
+        matchedNodes.push(node);
         visibleKeySet.add(node.id);
         for (const parentId of node.parentIds) {
           visibleKeySet.add(parentId);
@@ -462,8 +479,11 @@ export function useTreeViewState(props: TreeViewStateProps) {
         }
       }
       visibleTreeList.value = visibleNodes;
-      return buildFilterPayload(visibleNodes);
+      matchedTreeList.value = matchedNodes;
+      return buildFilterPayload(visibleNodes, matchedNodes);
     }
+
+    matchedTreeList.value = [];
 
     // treeList is pre-order flattened, so parent visibility is already resolved here.
     for (const node of treeList.value) {
@@ -478,11 +498,16 @@ export function useTreeViewState(props: TreeViewStateProps) {
     return buildFilterPayload(visibleNodes);
   }
 
-  function buildFilterPayload(nodes = visibleTreeList.value) {
+  function buildFilterPayload(
+    nodes = visibleTreeList.value,
+    matchedNodes = matchedTreeList.value
+  ) {
     return {
       value: String(props.filterValue ?? ""),
       keys: nodes.map((node) => node.id),
-      nodes
+      nodes,
+      matchedKeys: matchedNodes.map((node) => node.id),
+      matchedNodes
     };
   }
 
@@ -650,6 +675,10 @@ export function useTreeViewState(props: TreeViewStateProps) {
     return getVisibleNodes().map((node) => node.id);
   }
 
+  function getMatchedKeys() {
+    return getMatchedNodes().map((node) => node.id);
+  }
+
   function getExpandedNodes() {
     return treeList.value.filter((node) => !node.isLeaf && node.expanded);
   }
@@ -660,6 +689,10 @@ export function useTreeViewState(props: TreeViewStateProps) {
 
   function getVisibleNodes() {
     return visibleTreeList.value;
+  }
+
+  function getMatchedNodes() {
+    return matchedTreeList.value;
   }
 
   function getNode(key: TreeKey) {
@@ -684,6 +717,8 @@ export function useTreeViewState(props: TreeViewStateProps) {
       value: isMultiple.value ? keys : (keys[0] ?? null),
       keys,
       nodes,
+      halfCheckedKeys: getHalfCheckedKeys(),
+      halfCheckedNodes: getHalfCheckedNodes(),
       node
     };
   }
@@ -901,6 +936,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
     resolvedTreeProps,
     isMultiple,
     visibleTreeList,
+    matchedTreeList,
     initializeTree,
     toggleExpand,
     checkNode,
@@ -920,9 +956,11 @@ export function useTreeViewState(props: TreeViewStateProps) {
     getExpandedKeys,
     getUnexpandedKeys,
     getVisibleKeys,
+    getMatchedKeys,
     getExpandedNodes,
     getUnexpandedNodes,
     getVisibleNodes,
+    getMatchedNodes,
     getNode,
     getNodePath,
     expandAll,

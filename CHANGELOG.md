@@ -4,9 +4,18 @@
 
 ## Unreleased
 
+### Added
+
+- 为 `check-change` 事件 payload 增加 `halfCheckedKeys` / `halfCheckedNodes` 字段，便于直接读取父子联动模式下的半选状态。
+- 为 `filter-change` 事件 payload 增加 `matchedKeys` / `matchedNodes` 字段，区分直接命中节点与包含祖先后代的最终可见节点。
+- 新增 `check-on-click-leaf` 属性，支持仅点击叶子节点行时切换选中状态，默认 `false`。
+- 新增 `accordion` 属性，支持手风琴模式（展开节点时自动收起同级已展开节点），默认 `false`。
+- 新增 `empty-filter` 插槽，用于筛选无结果时的专用空状态，未提供时自动回退到 `empty` 插槽。
+
 ### Fixed
 
-- 修复 `default-expanded-keys` 指定后代节点时未自动展开所有祖先的问题，并新增 `default-expand-parent` 关闭该行为。
+- 修复 `default-expanded-keys` 指定后代节点时未自动展开所有祖先的问题。
+- 新增 `default-expand-parent` 属性控制是否自动展开祖先，默认 `true`（保持修复后的行为）。
 
 ## 0.3.2 - 2026-08-04
 

@@ -74,6 +74,8 @@ describe("uni-tree-view component", () => {
       node: { id: "child" }
     });
     expect(payload?.nodes.map((node) => node.id)).toEqual(["root", "child"]);
+    expect(payload?.halfCheckedKeys).toEqual([]);
+    expect(payload?.halfCheckedNodes).toEqual([]);
     expect(wrapper.emitted("update:modelValue")?.[0]).toEqual([["root", "child"]]);
   });
 
@@ -124,6 +126,42 @@ describe("uni-tree-view component", () => {
     expect(wrapper.emitted("node-click")).toHaveLength(1);
     expect(wrapper.emitted("expand-change")).toHaveLength(1);
     expect(wrapper.emitted("check-change")).toHaveLength(1);
+  });
+
+  it("checks leaf nodes from row clicks without enabling parent row checks", async () => {
+    const wrapper = mount(UniTreeView, {
+      props: {
+        data: treeData,
+        defaultExpandAll: true,
+        multiple: true,
+        selectable: true,
+        checkOnClickLeaf: true
+      }
+    });
+
+    await wrapper.findAll(".utv-tree-item")[0].trigger("click");
+    expect(exposed(wrapper).getCheckedKeys()).toEqual([]);
+    expect(wrapper.emitted("check-change")).toBeUndefined();
+
+    await wrapper.findAll(".utv-tree-item")[1].trigger("click");
+
+    expect(exposed(wrapper).getCheckedKeys()).toEqual(["root", "child"]);
+    expect(wrapper.emitted("check-change")).toHaveLength(1);
+  });
+
+  it("supports a dedicated empty-filter slot without changing the empty slot fallback", () => {
+    const wrapper = mount(UniTreeView, {
+      props: {
+        data: treeData,
+        filterValue: "missing"
+      },
+      slots: {
+        "empty-filter": ({ filterValue }) => `No matches:${filterValue}`,
+        empty: () => "Generic empty"
+      }
+    });
+
+    expect(wrapper.find(".utv-tree-empty").text()).toBe("No matches:missing");
   });
 
   it("renders the default empty state and forwards filterValue to the empty slot", () => {
@@ -195,9 +233,18 @@ describe("uni-tree-view component", () => {
     const payload = filterEvents[filterEvents.length - 1]?.[0];
     expect(payload).toMatchObject({
       value: "child",
-      keys: ["root", "child"]
+      keys: ["root", "child"],
+      matchedKeys: ["child"]
     });
     expect(payload?.nodes.map((node) => node.id)).toEqual(["root", "child"]);
+    expect(payload?.matchedNodes.map((node) => node.id)).toEqual(["child"]);
+
+    await wrapper.setProps({ filterValue: "" });
+    await nextTick();
+    const clearedEvents = wrapper.emitted<TreeFilterPayload[]>("filter-change") ?? [];
+    const clearedPayload = clearedEvents[clearedEvents.length - 1]?.[0];
+    expect(clearedPayload?.matchedKeys).toEqual([]);
+    expect(clearedPayload?.matchedNodes).toEqual([]);
   });
 
   it("emits load payloads after lazy children resolve", async () => {
@@ -240,6 +287,54 @@ describe("uni-tree-view component", () => {
     });
     expect(payload?.error).toBe(loadError);
     expect(wrapper.find(".utv-tree-item__arrow-icon").classes()).toContain("is-load-error");
+  });
+
+  it("combines virtual rendering with lazy loading, retry and scrolling", async () => {
+    let attempts = 0;
+    const wrapper = mount(UniTreeView, {
+      props: {
+        data: [
+          { id: "lazy-root", label: "Lazy root", leaf: false },
+          { id: "static-root", label: "Static root", leaf: true }
+        ],
+        loadMode: true,
+        loadApi: async () => {
+          attempts += 1;
+          if (attempts === 1) {
+            throw new Error("temporary failure");
+          }
+          return Array.from({ length: 6 }, (_, index) => ({
+            id: `lazy-child-${index}`,
+            label: `Lazy child ${index}`,
+            leaf: true
+          }));
+        },
+        virtual: true,
+        virtualHeight: 72,
+        virtualItemHeight: 36,
+        virtualOverscan: 0
+      }
+    });
+
+    expect(await exposed(wrapper).scrollToKey("lazy-child-5")).toBe(false);
+
+    await wrapper.find(".utv-tree-item__arrow-icon").trigger("click");
+    await flushPromises();
+    expect(wrapper.find(".utv-tree-item__arrow-icon").classes()).toContain("is-load-error");
+
+    await wrapper.find(".utv-tree-item__arrow-icon").trigger("click");
+    await flushPromises();
+
+    expect(attempts).toBe(2);
+    expect(wrapper.emitted("load-error")).toHaveLength(1);
+    expect(wrapper.emitted("load")).toHaveLength(1);
+    expect(wrapper.findAll(".utv-tree-item")).toHaveLength(2);
+    expect(wrapper.text()).toContain("Lazy child 0");
+
+    expect(await exposed(wrapper).scrollToKey("lazy-child-5")).toBe(true);
+    await nextTick();
+    expect(wrapper.find("scroll-view").attributes("scroll-top")).toBe("216");
+    expect(wrapper.text()).toContain("Lazy child 5");
   });
 
   it("uses BEM element classes with conventional state classes", () => {

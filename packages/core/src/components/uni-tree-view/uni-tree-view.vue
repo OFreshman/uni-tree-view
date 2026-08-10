@@ -10,7 +10,14 @@
       :style="scrollViewStyle"
       @scroll="handleVirtualScroll">
       <view v-if="visibleTreeList.length === 0" class="utv-tree-empty">
-        <slot name="empty" :filter-value="props.filterValue">
+        <template v-if="hasFilterValue">
+          <slot name="empty-filter" :filter-value="props.filterValue">
+            <slot name="empty" :filter-value="props.filterValue">
+              {{ props.emptyText }}
+            </slot>
+          </slot>
+        </template>
+        <slot v-else name="empty" :filter-value="props.filterValue">
           {{ props.emptyText }}
         </slot>
       </view>
@@ -162,7 +169,9 @@ const props = withDefaults(defineProps<UniTreeViewProps>(), {
   showRadioIcon: true,
   multiple: false,
   checkOnClickNode: false,
+  checkOnClickLeaf: false,
   expandOnClickNode: false,
+  accordion: false,
   checkStrictly: false,
   onlyRadioLeaf: false,
   defaultExpandAll: false,
@@ -216,9 +225,11 @@ const {
   getExpandedKeys,
   getUnexpandedKeys,
   getVisibleKeys,
+  getMatchedKeys,
   getExpandedNodes,
   getUnexpandedNodes,
   getVisibleNodes,
+  getMatchedNodes,
   getNode,
   getNodePath,
   expandAll,
@@ -228,6 +239,8 @@ const {
 const showSelectionControl = computed(() => {
   return Boolean(props.selectable && (isMultiple.value || props.showRadioIcon));
 });
+
+const hasFilterValue = computed(() => String(props.filterValue ?? "").trim().length > 0);
 
 const {
   virtualEnabled,
@@ -294,7 +307,7 @@ function handleNodeClick(node: TreeNode) {
   if (props.expandOnClickNode && isExpandable(node)) {
     void handleToggleExpand(node);
   }
-  if (props.selectable && props.checkOnClickNode) {
+  if (props.selectable && (props.checkOnClickNode || (props.checkOnClickLeaf && node.isLeaf))) {
     handleCheckChange(node);
   }
 }
@@ -414,7 +427,9 @@ function emitFilterChange() {
   emit("filter-change", {
     value: props.filterValue,
     keys: getVisibleKeys(),
-    nodes: getVisibleNodes()
+    nodes: getVisibleNodes(),
+    matchedKeys: getMatchedKeys(),
+    matchedNodes: getMatchedNodes()
   });
 }
 

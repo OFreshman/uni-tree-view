@@ -38,6 +38,20 @@ describe("useTreeViewState: selection", () => {
     expect(node(state, "building-a").checked).toBe(CHECK_STATUS_MAP.indeterminate);
   });
 
+  it("includes half-checked keys and nodes in selection payloads", () => {
+    const { state } = createState({
+      multiple: true
+    });
+
+    const payload = state.checkNode(node(state, "room-a-201"));
+
+    expect(payload?.halfCheckedKeys).toEqual(["building-a", "floor-a-2"]);
+    expect(payload?.halfCheckedNodes.map((item) => item.id)).toEqual([
+      "building-a",
+      "floor-a-2"
+    ]);
+  });
+
   it("skips disabled nodes during user selection but keeps parent state consistent", () => {
     const { state } = createState({
       multiple: true
@@ -51,6 +65,56 @@ describe("useTreeViewState: selection", () => {
     expect(checkedKeys(state)).toEqual(["room-a-201"]);
     expect(state.getHalfCheckedKeys()).toEqual(["building-a", "floor-a-2"]);
     expect(node(state, "room-a-202").checked).toBe(CHECK_STATUS_MAP.unchecked);
+  });
+
+  it("treats a disabled parent as a read-only summary of selectable children", () => {
+    const data = [
+      {
+        id: "disabled-parent",
+        label: "Disabled parent",
+        disabled: true,
+        children: [
+          { id: "child-1", label: "Child 1" },
+          { id: "child-2", label: "Child 2" }
+        ]
+      }
+    ];
+    const { state } = createState({ data, multiple: true });
+
+    expect(state.checkNode(node(state, "disabled-parent"))).toBeNull();
+    expect(state.checkNode(node(state, "child-1"))?.keys).toEqual(["child-1"]);
+    expect(node(state, "disabled-parent").checked).toBe(CHECK_STATUS_MAP.indeterminate);
+
+    expect(state.checkNode(node(state, "child-2"))?.keys).toEqual([
+      "disabled-parent",
+      "child-1",
+      "child-2"
+    ]);
+    expect(node(state, "disabled-parent").checked).toBe(CHECK_STATUS_MAP.checked);
+  });
+
+  it("can omit a checked disabled parent from packed results without changing its visual state", () => {
+    const { state } = createState({
+      data: [
+        {
+          id: "disabled-parent",
+          label: "Disabled parent",
+          disabled: true,
+          children: [
+            { id: "child-1", label: "Child 1" },
+            { id: "child-2", label: "Child 2" }
+          ]
+        }
+      ],
+      multiple: true,
+      packDisabledKey: false
+    });
+
+    state.checkNode(node(state, "child-1"));
+    state.checkNode(node(state, "child-2"));
+
+    expect(node(state, "disabled-parent").checked).toBe(CHECK_STATUS_MAP.checked);
+    expect(state.getCheckedKeys()).toEqual(["child-1", "child-2"]);
   });
 
   it("keeps disabled nodes unchanged while applying configured linked selection", () => {

@@ -19,6 +19,10 @@ pageClass: examples-page
 
 本页代码与右侧实时预览共用[基础用法中的示例数据](/examples/basic#示例数据)。
 
+::: tip 示例数据从哪里来？
+下方代码中的 `treeData` 就是[基础用法的完整示例数据](/examples/basic#示例数据)：`append` 是组件内置字段，`description`、`isNew` 是演示用业务字段，可通过插槽作用域的 `data` 读取。
+:::
+
 ## 实时预览对应代码
 
 右侧预览组合了 `icon`、`label`、`append` 三个插槽：部门用 `folder` 图标、成员用 `user` 图标，名字后面按 `isNew` 挂 NEW 徽标，尾部用弱化文本显示 `append` 字段里的人数。
@@ -107,7 +111,7 @@ const checkedValue = ref([]);
 ```
 
 ::: warning
-自定义 `label` 插槽后 `highlight-filter` 的关键词高亮失效（高亮只作用于组件内置的 label 渲染）。需要同时要过滤高亮和自定义文本时，请在插槽里自行拆分关键词。
+自定义 `label` 插槽后会接管内置 `highlight-filter` 关键词高亮（`filter-value` 过滤仍正常生效）。需要同时过滤、高亮和自定义文本时，请在插槽里自行拆分关键词。
 :::
 
 ## 完全接管节点内容

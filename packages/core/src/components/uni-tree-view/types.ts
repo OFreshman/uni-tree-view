@@ -45,6 +45,10 @@ export interface TreeCheckChangePayload {
   value: TreeModelValue;
   keys: TreeKey[];
   nodes: TreeNode[];
+  /** Current half-checked keys in linked multiple-selection mode. */
+  halfCheckedKeys: TreeKey[];
+  /** Current half-checked nodes in linked multiple-selection mode. */
+  halfCheckedNodes: TreeNode[];
   node: TreeNode;
 }
 
@@ -76,8 +80,14 @@ export interface TreeNodeClickPayload {
 
 export interface TreeFilterPayload {
   value: string;
+  /** Visible keys after filtering, including direct matches, ancestors and descendants. */
   keys: TreeKey[];
+  /** Visible nodes after filtering, including direct matches, ancestors and descendants. */
   nodes: TreeNode[];
+  /** Keys directly matched by the built-in or custom filter rule. */
+  matchedKeys: TreeKey[];
+  /** Nodes directly matched by the built-in or custom filter rule. */
+  matchedNodes: TreeNode[];
 }
 
 export interface TreeSlotProps {
@@ -96,6 +106,7 @@ export interface UniTreeViewSlots {
   icon?: (props: TreeSlotProps) => unknown;
   append?: (props: TreeSlotProps) => unknown;
   empty?: (props: TreeEmptySlotProps) => unknown;
+  "empty-filter"?: (props: TreeEmptySlotProps) => unknown;
 }
 
 export interface UniTreeViewProps {
@@ -123,11 +134,15 @@ export interface UniTreeViewProps {
   multiple?: boolean;
   /** Whether clicking a node row changes its selection state. */
   checkOnClickNode?: boolean;
+  /** Whether clicking a leaf node row changes its selection state. */
+  checkOnClickLeaf?: boolean;
   /** Whether clicking a node row expands or collapses it. */
   expandOnClickNode?: boolean;
+  /** Whether expanding a node collapses its expanded siblings. */
+  accordion?: boolean;
   /** Whether parent and child checked states are independent. */
   checkStrictly?: boolean;
-  /** Single-select mode can only select leaf nodes. */
+  /** Single-select mode can only select leaf nodes. Ignored when `multiple` is true. */
   onlyRadioLeaf?: boolean;
   /** Whether all nodes are expanded initially. */
   defaultExpandAll?: boolean;

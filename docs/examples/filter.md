@@ -24,6 +24,10 @@ pageClass: examples-page
     placeholder-left
   />
 
+  <text v-if="keyword">
+    直接命中 {{ resultCount }} 个，相关可见 {{ visibleCount }} 个
+  </text>
+
   <uni-tree-view
     :data="treeData"
     :filter-value="keyword"
@@ -31,7 +35,7 @@ pageClass: examples-page
     highlight-filter
     show-path
     theme-color="#299764"
-    @filter-change="resultCount = $event.keys.length"
+    @filter-change="onFilterChange"
   >
     <template #empty="{ filterValue }">
       <view class="demo-empty">没有找到“{{ filterValue }}”</view>
@@ -44,8 +48,14 @@ import { ref } from "vue";
 
 // 关键词为空字符串时不过滤，展示全部节点
 const keyword = ref("");
-// 过滤后仍然可见的节点数，由 filter-change 事件回填
+// 直接命中数与最终可见数由 filter-change 事件回填
 const resultCount = ref(0);
+const visibleCount = ref(0);
+
+function onFilterChange({ matchedKeys, keys }) {
+  resultCount.value = matchedKeys.length;
+  visibleCount.value = keys.length;
+}
 </script>
 ```
 
@@ -106,15 +116,18 @@ function matchFn(value, node) {
 </template>
 
 <script setup>
-function onFilter({ value, keys }) {
-  // keys 为过滤后保持可见的节点（含命中节点的祖先与后代）
-  console.log(`“${value}” 找到 ${keys.length} 个相关节点`);
+function onFilter({ value, keys, matchedKeys, matchedNodes }) {
+  console.log(`“${value}” 直接命中 ${matchedKeys.length} 个节点`);
+  console.log(`连同祖先和后代，共显示 ${keys.length} 个相关节点`);
+  console.log("直接命中的原始数据", matchedNodes.map(node => node.source));
 }
 </script>
 ```
 
 ::: tip
-`keys` 是「可见节点」而不是「命中节点」：搜「前端」时，祖先「产品研发中心」和组内成员都会一起留在结果里，所以数量通常大于直觉。只要命中节点本身，用 `filter-method` 自行记录即可。
+- `keys/nodes`：过滤后的最终可见集合，包含直接命中节点、其祖先和全部后代。
+- `matchedKeys/matchedNodes`：只包含直接通过默认规则或 `filter-method` 命中的节点。
+- 关键词为空时，`matchedKeys/matchedNodes` 为空数组。
 :::
 
 ## 无结果空状态

@@ -56,7 +56,9 @@ const selectedLeaf = ref("frontend-1");
 </script>
 ```
 
-`only-radio-leaf` 仅约束单选模式，不会改变节点原有的展开、收起行为。
+::: tip
+`only-radio-leaf` **仅在单选模式生效**，不会改变节点原有的展开、收起行为；开启 `multiple` 后该属性会被忽略。
+:::
 
 ## 多选（父子联动）
 
@@ -88,6 +90,8 @@ function onChange({ keys, node }) {
 ```
 
 被 `disabled` 标记的「顾宁」不会因为父节点联动而被选中。
+
+禁用父节点的行为是“只读汇总”：父节点本身不能直接操作，但未禁用的子节点仍可选择；选择部分子节点时父节点显示半选，全部子节点选中时父节点显示全选。若不希望这个已选禁用父节点进入返回结果，可设置 `pack-disabled-key="false"`，其视觉汇总状态不会因此改变。严格模式下父子状态互相独立，不产生该汇总。
 
 ## 严格模式（父子独立）
 
@@ -121,6 +125,7 @@ const checked = ref(["backend"]);
 <template>
   <button @click="checkDesignTeam">选中设计组</button>
   <button @click="clearChecked">清空选中</button>
+  <text>当前选中：{{ checked.join(", ") || "无" }}</text>
 
   <uni-tree-view
     ref="treeRef"
@@ -136,6 +141,7 @@ const checked = ref(["backend"]);
 import { ref } from "vue";
 
 const treeRef = ref();
+// 用于 v-model，并在模板中实时展示实例方法执行后的选中 keys
 const checked = ref([]);
 
 function checkDesignTeam() {
@@ -156,7 +162,9 @@ function clearChecked() {
 ```
 
 ::: tip
-`checked-disabled` 默认为 `false`，禁用节点的选中状态会被锁定；全选、清空、父子联动和受控值回放都不会改变它。需要允许禁用节点参与状态变更时，显式开启 `checked-disabled`。
+`checked-disabled` 默认为 `false`，禁用节点的选中状态会被锁定；全选、清空、父子联动和受控值回放都不会直接改变它。需要允许禁用节点参与状态变更时，显式开启 `checked-disabled`。
+
+`pack-disabled-key` 只控制已选禁用节点是否进入 `v-model`、事件和查询方法的返回结果，不会清除内部/视觉选中状态。
 
 `setCheckedKeys` 会同步更新 `v-model` 并触发一次 `check-change`，因此 `@check-change` 里的逻辑对手动调用同样生效。传入的 key 全部不存在（或全部被禁用规则拦下）时方法直接返回，不发事件。完整方法列表见 [Methods](/apis/methods)。
 :::
