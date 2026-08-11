@@ -27,6 +27,7 @@ describe("assertValidCommitSubject", () => {
     "feat: 增加拖拽能力",
     "fix(tree): 修复禁用节点状态",
     "refactor(core)!: 移除旧属性",
+    "✨ feat: 更新虚拟渲染说明",
     "chore: release v0.3.2"
   ])("accepts Conventional Commit subject %s", (subject) => {
     expect(() => assertValidCommitSubject(subject)).not.toThrow();
@@ -59,6 +60,17 @@ describe("parseConventionalCommit", () => {
       description: "修复 GitHub Pages 示例预览 404。",
       scope: "docs",
       section: "Fixed"
+    });
+  });
+
+  it("parses an optional emoji prefix", () => {
+    expect(parseConventionalCommit({
+      subject: "✨ feat(docs): 更新虚拟渲染说明"
+    })).toEqual({
+      breaking: false,
+      description: "更新虚拟渲染说明。",
+      scope: "docs",
+      section: "Added"
     });
   });
 

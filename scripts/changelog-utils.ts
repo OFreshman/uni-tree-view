@@ -67,6 +67,7 @@ const AllowedCommitTypes = [
   "style",
   "test"
 ] as const;
+const LeadingEmojiPattern = /^\p{Extended_Pictographic}[\uFE0E\uFE0F]?(?:\u200D\p{Extended_Pictographic}[\uFE0E\uFE0F]?)*\s+/u;
 const ConventionalCommitSubjectPattern = new RegExp(
   `^(?:${AllowedCommitTypes.join("|")})(?:\\([^()\\s]+\\))?!?: \\S.*$`
 );
@@ -125,11 +126,15 @@ function assertUnreleasedSectionHasContent(section: UnreleasedSection): void {
   }
 }
 
+function normalizeCommitSubject(subject: string): string {
+  return subject.replace(LeadingEmojiPattern, "");
+}
+
 export function assertValidCommitSubject(
   subject: string,
   options: ValidateCommitSubjectOptions = {}
 ): void {
-  const normalizedSubject = subject.trim();
+  const normalizedSubject = normalizeCommitSubject(subject.trim());
   if (options.allowMerge && normalizedSubject.startsWith("Merge ")) {
     return;
   }
@@ -140,7 +145,7 @@ export function assertValidCommitSubject(
 
   throw new Error(
     `Invalid commit subject: ${JSON.stringify(normalizedSubject)}. `
-    + "Use `<type>(<scope>)!: <description>` with one of: "
+    + "Use `[emoji ]<type>(<scope>)!: <description>` with one of: "
     + `${AllowedCommitTypes.join(", ")}.`
   );
 }
@@ -169,7 +174,7 @@ function punctuateDescription(description: string): string {
 }
 
 export function parseConventionalCommit(commit: ConventionalCommit): ChangelogEntry | undefined {
-  const subject = commit.subject.trim();
+  const subject = normalizeCommitSubject(commit.subject.trim());
   const separatorIndex = subject.indexOf(":");
   if (separatorIndex === -1) {
     return undefined;
