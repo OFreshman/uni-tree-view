@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+## 0.4.0 - 2026-08-11
+
 ### Added
 
 - 为 `check-change` 事件 payload 增加 `halfCheckedKeys` / `halfCheckedNodes` 字段，便于直接读取父子联动模式下的半选状态。
