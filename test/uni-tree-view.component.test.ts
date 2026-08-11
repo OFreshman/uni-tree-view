@@ -248,6 +248,38 @@ describe("uni-tree-view component", () => {
     expect(wrapper.emitted("expand-change")).toBeUndefined();
   });
 
+  it("keeps rapid nested control clicks isolated from row behavior", async () => {
+    const wrapper = mount(UniTreeView, {
+      props: {
+        data: treeData,
+        defaultExpandAll: true,
+        multiple: true,
+        selectable: true,
+        checkOnClickNode: true,
+        expandOnClickNode: true
+      }
+    });
+
+    const arrow = wrapper.find(".utv-tree-item__arrow-icon");
+    await Promise.all([
+      arrow.trigger("click"),
+      arrow.trigger("click")
+    ]);
+
+    expect(wrapper.emitted("expand-change")).toHaveLength(2);
+    expect(wrapper.findAll(".utv-tree-item")).toHaveLength(2);
+
+    const checkbox = wrapper.find(".utv-tree-item__checkbox-icon");
+    await Promise.all([
+      checkbox.trigger("click"),
+      checkbox.trigger("click")
+    ]);
+
+    expect(wrapper.emitted("check-change")).toHaveLength(2);
+    expect(exposed(wrapper).getCheckedKeys()).toEqual([]);
+    expect(wrapper.emitted("node-click")).toBeUndefined();
+  });
+
   it("emits filter-change with the filtered visible nodes", async () => {
     const wrapper = mount(UniTreeView, {
       props: {
