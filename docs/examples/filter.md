@@ -132,7 +132,7 @@ function onFilter({ value, keys, matchedKeys, matchedNodes }) {
 
 ## 无结果空状态
 
-`empty` 插槽同时覆盖「无数据」和「过滤无结果」两种情况，靠作用域参数 `filterValue` 区分：
+未提供 `empty-filter` 插槽时，`empty` 插槽会同时覆盖「无数据」和「过滤无结果」两种情况，可用作用域参数 `filterValue` 区分：
 
 ```vue
 <uni-tree-view :data="treeData" :filter-value="keyword">
@@ -141,3 +141,5 @@ function onFilter({ value, keys, matchedKeys, matchedNodes }) {
   </template>
 </uni-tree-view>
 ```
+
+若要单独定制过滤无结果的空状态，可使用 `empty-filter` 插槽。详见 [API 参考 - Slots](/apis/slots)。

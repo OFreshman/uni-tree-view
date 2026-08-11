@@ -7,7 +7,7 @@ pageClass: examples-page
 
 # 自定义插槽
 
-组件提供 5 个插槽，作用域参数统一为 `{ node, data, path }`（`empty` 除外）：
+组件提供 6 个插槽，作用域参数统一为 `{ node, data, path }`（`empty` 和 `empty-filter` 除外）：
 
 | 插槽 | 覆盖范围 |
 | --- | --- |
@@ -15,7 +15,8 @@ pageClass: examples-page
 | `label` | 仅节点文本（缩进、箭头、选择控件仍由组件负责） |
 | `append` | 节点尾部内容 |
 | `default` | 整个内容区，等于同时接管 icon + label + append |
-| `empty` | 无数据 / 过滤无结果 |
+| `empty` | 无数据或过滤无结果时的空状态（未提供 `empty-filter` 时，过滤无结果也会回退到此插槽） |
+| `empty-filter` | 仅在过滤无结果时的空状态 |
 
 本页代码与右侧实时预览共用[基础用法中的示例数据](/examples/basic#示例数据)。
 
@@ -164,12 +165,25 @@ const checkedValue = ref([]);
 
 ## 空状态
 
-`empty` 插槽同时覆盖「没有数据」和「过滤没命中」，用作用域参数 `filterValue` 区分：
+`empty` 插槽覆盖「没有数据」的情况，也可用作「过滤没命中」的回退（未提供 `empty-filter` 时）。用作用域参数 `filterValue` 区分：
 
 ```vue
 <uni-tree-view :data="treeData" :filter-value="keyword">
   <template #empty="{ filterValue }">
     <wd-empty :description="filterValue ? '无匹配结果' : '暂无数据'" />
+  </template>
+</uni-tree-view>
+```
+
+若要单独定制过滤无结果的空状态，可使用 `empty-filter` 插槽：
+
+```vue
+<uni-tree-view :data="treeData" :filter-value="keyword">
+  <template #empty-filter="{ filterValue }">
+    <wd-empty description="无匹配结果" />
+  </template>
+  <template #empty>
+    <wd-empty description="暂无数据" />
   </template>
 </uni-tree-view>
 ```

@@ -140,7 +140,7 @@ const keyword = ref("");
 </script>
 ```
 
-命中节点及其祖先链保持可见，`highlight-filter` 开启关键词高亮。
+命中节点及其祖先链、全部后代保持可见，`highlight-filter` 开启关键词高亮。
 
 ## 下一步
 

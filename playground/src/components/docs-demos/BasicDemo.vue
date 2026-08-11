@@ -58,7 +58,7 @@ import { computed, shallowRef } from "vue";
 import { demoTreeData } from "./data";
 
 const showPath = shallowRef(false);
-const wholeRow = shallowRef(true);
+const wholeRow = shallowRef(false);
 const latestAction = shallowRef("等待操作");
 const interactionText = computed(() => wholeRow.value ? "整行展开" : "箭头展开");
 const pathText = computed(() => showPath.value ? "路径已显示" : "路径已隐藏");

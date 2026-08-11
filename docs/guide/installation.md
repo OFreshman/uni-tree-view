@@ -33,6 +33,8 @@ import UniTreeView from "uni-tree-view";
 
 ```ts
 // vite.config.ts
+import { defineConfig } from "vite";
+import uni from "@dcloudio/vite-plugin-uni";
 import Components from "@uni-helper/vite-plugin-uni-components";
 import { UniTreeViewResolver } from "uni-tree-view/resolver";
 

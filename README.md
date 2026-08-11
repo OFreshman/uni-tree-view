@@ -35,6 +35,10 @@ pnpm add uni-tree-view
 
 ## 使用
 
+### npm 方式
+
+通过 npm 安装后需要导入组件：
+
 ```vue
 <template>
   <uni-tree-view
@@ -48,6 +52,42 @@ pnpm add uni-tree-view
 
 <script setup>
 import UniTreeView from "uni-tree-view";
+import { ref } from "vue";
+
+const checkedValue = ref([]);
+const treeData = [
+  {
+    id: "building-a",
+    label: "A 栋",
+    children: [
+      { id: "floor-a-1", label: "1 层" },
+      { id: "floor-a-2", label: "2 层", disabled: true }
+    ]
+  }
+];
+
+function handleCheckChange({ keys, nodes }) {
+  console.log("当前选中:", keys);
+}
+</script>
+```
+
+### DCloud 插件市场方式
+
+从插件市场安装后，通过 easycom 自动导入，无需手动 import：
+
+```vue
+<template>
+  <uni-tree-view
+    v-model="checkedValue"
+    selectable
+    multiple
+    :data="treeData"
+    @check-change="handleCheckChange"
+  />
+</template>
+
+<script setup>
 import { ref } from "vue";
 
 const checkedValue = ref([]);

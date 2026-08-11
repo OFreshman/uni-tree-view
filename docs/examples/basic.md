@@ -86,7 +86,7 @@ const treeData = ref([
 
 ## 整行交互
 
-默认只有箭头/选择控件可点。移动端希望整行可点时，按需打开两个开关：
+`expand-on-click-node` 不是基础用法的必需项：组件默认只响应箭头，前面的纯展示树和默认展开示例都无需传入。移动端希望扩大触控区域、让节点文字也能触发展开时，再按需开启：
 
 ```vue
 <uni-tree-view
@@ -101,7 +101,7 @@ const treeData = ref([
 | `check-on-click-node` | 点击节点行任意位置切换选中（需配合 `selectable`） |
 | `check-on-click-leaf` | 仅点击叶子节点行时切换选中（需配合 `selectable`）；适合保留父节点行的展开/导航语义 |
 
-右侧实时预览顶部的「整行展开 / 箭头展开」按钮切换的就是 `expand-on-click-node`；`check-on-click-node` 的效果见[单选与多选](/examples/selection)。如果只希望点击叶子节点选中，可改用：
+右侧实时预览顶部仍保留「整行展开 / 箭头展开」按钮用于对比两种交互，初始状态为「箭头展开」；`check-on-click-node` 的效果见[单选与多选](/examples/selection)。如果只希望点击叶子节点选中，可改用：
 
 ```vue
 <uni-tree-view
@@ -126,7 +126,7 @@ const treeData = ref([
 
 ## 节点路径
 
-打开 `show-path` 后，节点文本下方会补一行从根节点数下来的完整层级路径，`path-separator` 定义分隔符：
+打开 `show-path` 后，节点文本下方会补一行从根节点到当前节点的完整层级路径，`path-separator` 定义分隔符：
 
 ```vue
 <uni-tree-view :data="treeData" show-path path-separator=" / " />
