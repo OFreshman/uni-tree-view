@@ -20,9 +20,9 @@
 
 - 🌲 展开收起、单选/多选、父子联动、严格模式、禁用节点
 - 🔍 关键词过滤、自定义匹配、命中高亮
-- ⚡ 固定行高虚拟渲染，万级节点流畅滚动
-- 🔌 懒加载子节点，内置加载态与失败重试
-- 🎨 主题色、`node-class` 与 label/icon/append/empty 插槽自由定制
+- ⚡ 固定行高虚拟渲染，只渲染可视区域，适合大数据树
+- 🔌 懒加载子节点，内置加载中、加载失败和重试状态
+- 🎨 主题色、`node-class` 以及文本、图标、尾部内容和空状态插槽自由定制
 - 📦 零运行时依赖，npm 与 DCloud 插件市场双通道分发
 
 ## 安装
@@ -66,7 +66,7 @@ const treeData = [
   }
 ];
 
-function handleCheckChange({ keys, nodes }) {
+function handleCheckChange({ keys }) {
   console.log("当前选中:", keys);
 }
 </script>
@@ -102,7 +102,7 @@ const treeData = [
   }
 ];
 
-function handleCheckChange({ keys, nodes }) {
+function handleCheckChange({ keys }) {
   console.log("当前选中:", keys);
 }
 </script>
@@ -113,10 +113,10 @@ function handleCheckChange({ keys, nodes }) {
 | 用法 | 行为 |
 | --- | --- |
 | 不传 `selectable` | 纯展示树 |
-| `selectable` | 单选（radio） |
-| `selectable multiple` | 多选（checkbox，父子联动） |
+| `selectable` | 单选（单选按钮） |
+| `selectable multiple` | 多选（复选框，父子联动） |
 
-禁用节点默认锁定当前选中状态，全选、清空、父子联动、实例方法和受控值回放都不会改变它；需要允许变更时传入 `checked-disabled`。
+禁用节点默认锁定当前选中状态。全选、清空、父子联动、实例方法以及外部更新 `v-model` 时，都不会改变它；需要允许变更时传入 `checked-disabled`。
 
 普通 `class` 作用于组件根容器；需要使用自己的类名定制每个节点行时，传入 `node-class`：
 
@@ -130,7 +130,7 @@ function handleCheckChange({ keys, nodes }) {
 
 `tree-props` 只负责数据字段映射，不包含样式配置。
 
-完整的 Props / Events / Slots / Methods 列表、懒加载与虚拟渲染示例请见 **[文档站](https://uni-tree-view.netlify.app/)**。
+完整的属性、事件、插槽和实例方法（Props / Events / Slots / Methods），以及懒加载与虚拟渲染示例，请见 **[文档站](https://uni-tree-view.netlify.app/)**。
 
 ## 平台兼容性
 
@@ -141,7 +141,7 @@ function handleCheckChange({ keys, nodes }) {
 | 支付宝小程序 | ✅ 构建验证 |
 | App / 其他小程序 | 理论可用，未充分验证 |
 
-实现层面的兼容性说明（hover-class、内联 iconfont、scroll-view 虚拟滚动等）见 [平台兼容性文档](https://uni-tree-view.netlify.app/guide/platforms)。
+点击反馈、内联图标和 `scroll-view` 虚拟滚动等实现说明，见 [平台兼容性文档](https://uni-tree-view.netlify.app/guide/platforms)。
 
 ## 开发
 

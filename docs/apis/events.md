@@ -10,13 +10,13 @@
 | `load-error` | `(payload: TreeLoadErrorPayload)` | 懒加载失败 |
 | `filter-change` | `(payload: TreeFilterPayload)` | 过滤结果变化 |
 
-## Payload 结构
+## 事件参数结构（Payload）
 
 ### TreeCheckChangePayload
 
 ```ts
 interface TreeCheckChangePayload {
-  value: TreeModelValue; // 新的 v-model 值
+  value: TreeModelValue;       // 新的 v-model 值
   keys: TreeKey[];             // 当前全部选中 keys
   nodes: TreeNode[];           // 当前全部选中节点
   halfCheckedKeys: TreeKey[];  // 当前半选 keys（严格模式或单选时为空）
@@ -54,7 +54,7 @@ interface TreeLoadPayload {
 
 interface TreeLoadErrorPayload {
   node: TreeNode; // 加载失败的节点，停留在失败态可重试
-  error: unknown; // load-api 抛出/reject 的错误
+  error: unknown; // load-api 抛出或 Promise 拒绝时的错误
 }
 ```
 

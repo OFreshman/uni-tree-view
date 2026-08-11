@@ -12,41 +12,41 @@
 | 自定义插槽 | ✅ | ✅ | ✅ |
 
 ::: tip 验证范围说明
-- **H5**：构建 + 交互验证（全量测试通过）
+- **H5**：构建与交互验证，组件自动化测试通过
 - **微信小程序**：构建验证（CI 自动化）
 - **支付宝小程序**：构建验证（CI 自动化）
 - **App / 其他平台**：理论兼容，未充分验证
 
-微信和支付宝小程序的功能实现基于 uni-app 标准 API 和组件，理论上应完整可用，但当前 CI 仅执行构建验证，未覆盖真机交互测试。
+微信和支付宝小程序的实现基于 uni-app 标准 API 和组件。当前 CI 只验证能否构建，尚未覆盖真机交互，因此表格表示实现支持范围，不代表所有机型和基础库版本都已验证。
 :::
 
 ## 实现层面的兼容性说明
 
-### 点击反馈用 hover-class
+### 点击反馈使用 `hover-class`
 
-小程序不支持 CSS `:hover` / `:active` 伪类的可靠触发，组件内部使用 uni-app 的 `hover-class` 实现按压反馈，三端行为一致。
+小程序不能可靠触发 CSS `:hover` 和 `:active` 伪类，组件内部使用 uni-app 的 `hover-class` 实现按压反馈，避免依赖 H5 专属的交互方式。
 
-### 图标使用内联 iconfont
+### 图标使用内联字体
 
 展开箭头、复选框图标通过 base64 内联字体实现，**不依赖网络字体**，离线可用，也避免了小程序 `@font-face` 远程加载的域名白名单问题。
 
-### 虚拟渲染基于 scroll-view
+### 虚拟渲染基于 `scroll-view`
 
-虚拟滚动通过 `scroll-view` 的 scroll 事件 + 上下 padding 占位实现，不依赖 `IntersectionObserver`。
+虚拟滚动通过 `scroll-view` 的滚动事件和上下占位区域实现，不依赖 `IntersectionObserver`。
 
 ::: tip 虚拟模式的两个前提
-1. `virtual-height`（容器高度，只接受 number，单位固定 px，默认 400）需与实际布局一致，否则滚动定位会错位
-2. 行高固定，由 `virtual-item-height` 声明并应用到节点（px）
+1. `virtual-height` 是容器高度，只接受数值，单位固定为 px，默认值为 `400`；它需要与实际布局一致，否则滚动定位会错位
+2. 每行高度必须固定，并通过 `virtual-item-height` 设置，单位为 px
 :::
 
-### virtualHost
+### `virtualHost`
 
 组件在微信/支付宝小程序上开启了 `virtualHost: true`，自定义组件不产生多余节点，外层样式（如 flex 布局）可以直接作用到组件根元素。
 
 ### 单位约定
 
-- `indent` 缩进使用 **rpx**（跟随屏幕宽度缩放）
-- `virtual-height` / `virtual-item-height` 只接受数值并使用 **px**（滚动计算需要明确像素）；不能直接传 `rpx`、`%`、`vh`、`calc()`
+- `indent` 缩进使用 **rpx**，会跟随屏幕宽度缩放
+- `virtual-height` 和 `virtual-item-height` 只接受数值，单位为 **px**；不能直接传 `rpx`、`%`、`vh` 或 `calc()`
 
 ## App 端
 

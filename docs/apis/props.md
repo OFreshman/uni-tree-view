@@ -1,13 +1,15 @@
 # Props
 
+本文中的 key 指节点的唯一标识：默认是 `id`，也可以通过 `tree-props.id` 映射到其他字段。
+
 ## 数据
 
 | 属性 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
 | `data` | `TreeDataItem[]` | `[]` | 树形数据 |
-| `v-model` / `modelValue` | `TreeKey \| TreeKey[] \| null` | - | 选中值。单选为单个 key，多选为 key 数组 |
+| `v-model` / `modelValue` | `TreeKey \| TreeKey[] \| null` | - | 选中值。单选为一个 key 或 `null`，多选为 key 数组 |
 | `tree-props` | `Partial<TreeProps>` | - | 字段映射，见下方 [TreeProps](#treeprops) |
-| `default-checked-keys` | `TreeKey \| TreeKey[]` | `[]` | 非受控场景的初始选中 keys |
+| `default-checked-keys` | `TreeKey \| TreeKey[]` | `[]` | 未绑定 `v-model` 时的初始选中 key |
 
 ### TreeProps
 
@@ -29,14 +31,14 @@ interface TreeProps {
 | 属性 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
 | `selectable` | `boolean` | `false` | 是否启用并展示选择控件 |
-| `multiple` | `boolean` | `false` | 是否多选。`false` 时为单选（radio） |
-| `show-radio-icon` | `boolean` | `true` | 单选模式是否展示 radio 图标 |
+| `multiple` | `boolean` | `false` | 是否多选。`false` 时为单选 |
+| `show-radio-icon` | `boolean` | `true` | 单选模式是否显示单选按钮 |
 | `check-strictly` | `boolean` | `false` | 父子选中状态是否互相独立 |
 | `only-radio-leaf` | `boolean` | `false` | 仅单选模式生效，限制为只允许选择叶子节点；`multiple=true` 时忽略 |
 | `check-on-click-node` | `boolean` | `false` | 点击任意节点行是否切换选中；开启后同时覆盖叶子和非叶子节点 |
 | `check-on-click-leaf` | `boolean` | `false` | 是否仅允许通过点击叶子节点行切换选中；可与 `check-on-click-node` 同时开启，后者优先覆盖全部节点 |
-| `checked-disabled` | `boolean` | `false` | 禁用节点是否允许参与选中状态变更；关闭时全选、清空、父子联动和受控值回放都保持其状态不变 |
-| `pack-disabled-key` | `boolean` | `true` | 已选禁用节点是否打包进 `v-model`、`check-change.keys/nodes`、`getCheckedKeys/getCheckedNodes`；不改变节点内部或视觉选中状态 |
+| `checked-disabled` | `boolean` | `false` | 禁用节点是否允许改变选中状态；关闭时，全选、清空、父子联动和外部更新 `v-model` 都不会改变它 |
+| `pack-disabled-key` | `boolean` | `true` | `v-model`、选择事件和查询方法的返回结果中，是否包含已选中的禁用节点；不改变节点内部或界面上的选中状态 |
 
 ## 展开
 
@@ -74,7 +76,7 @@ interface TreeProps {
 | `theme-color` | `string` | `#007aff` | 主题色（选中控件、高亮） |
 | `node-class` | `string` | `""` | 添加到每个节点行的自定义 class，不必依赖组件内部类名 |
 | `indent` | `number` | `40` | 每级缩进，单位 **rpx** |
-| `selection-placement` | `"left" \| "right"` | `"left"` | radio / checkbox 选择控件位置 |
+| `selection-placement` | `"left" \| "right"` | `"left"` | 单选按钮或复选框的位置 |
 | `empty-text` | `string` | `暂无数据` | 空数据文案 |
 | `show-path` | `boolean` | `false` | label 下方展示节点路径 |
 | `path-separator` | `string` | `" / "` | 路径分隔符 |

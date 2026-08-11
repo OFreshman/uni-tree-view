@@ -9,11 +9,11 @@
 | `empty` | `{ filterValue }` | 普通空数据，以及未提供 `empty-filter` 时过滤无结果的内容 |
 | `empty-filter` | `{ filterValue }` | 过滤关键词非空且无匹配节点时的专用空状态；未提供时回退到 `empty` |
 
-作用域参数说明：
+插槽参数说明：
 
-- `node: TreeNode` — 组件内部节点对象（含 `level`、`checked`、`expanded` 等状态）
-- `data: TreeDataItem` — 你传入的原始数据项
-- `path: TreeNode[]` — 根到该节点的路径
+- `node: TreeNode`：组件内部节点对象，包含 `level`、`checked`、`expanded` 等状态
+- `data: TreeDataItem`：传入组件的原始数据项
+- `path: TreeNode[]`：从根节点到当前节点的路径
 
 ## 示例
 

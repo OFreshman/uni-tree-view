@@ -1,6 +1,6 @@
 # Methods
 
-通过 ref 调用组件实例方法：
+先给组件设置 `ref`，再通过组件实例调用方法。本文中的 key 指节点的 `id`，或 `tree-props.id` 映射字段的值。
 
 ```vue
 <template>
@@ -35,7 +35,7 @@ function selectAll() {
 | `getHalfCheckedNodes` | `() => TreeNode[]` | 获取半选节点 |
 | `getUncheckedNodes` | `() => TreeNode[]` | 获取未选节点 |
 
-`checked-disabled` 默认为 `false`，此时禁用节点的当前选中状态会被锁定：通过 `setCheckedKeys` 实现的全选、清空，以及父子联动和受控值回放都不会直接改变它。只有显式开启 `checked-disabled`，禁用节点才允许参与状态变更。
+`checked-disabled` 默认为 `false`，此时禁用节点的当前选中状态会被锁定：通过 `setCheckedKeys` 实现的全选、清空，以及父子联动和外部更新 `v-model`，都不会直接改变它。只有显式开启 `checked-disabled`，禁用节点才允许改变选中状态。
 
 `pack-disabled-key=false` 会把已选禁用节点从 `getCheckedKeys/getCheckedNodes`、`check-change` 和 `v-model` 中排除，但不会取消其内部/视觉选中状态。禁用父节点仍可能因子节点全部选中而显示为全选。
 

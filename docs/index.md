@@ -32,13 +32,13 @@ features:
     details: 内置关键词过滤、自定义匹配函数和命中高亮，配合任意搜索框组件即可使用。
   - icon: ⚡
     title: 虚拟渲染
-    details: 万级节点开启 virtual 后仅渲染可视区域，小程序长列表也能流畅滚动。
+    details: 开启 virtual 后只渲染可视区域，减少实际渲染的节点行数，适合大数据树。
   - icon: 🔌
     title: 懒加载
-    details: loadApi 按需加载子节点，内置加载中、加载失败与重试，适配异步数据源。
+    details: 通过 `load-api` 按需加载子节点，内置加载中、加载失败与重试状态，适配异步数据源。
   - icon: 🎨
     title: 轻量可定制
-    details: 零运行时依赖，主题色一个 prop 搞定，label/icon/append/empty 插槽自由扩展。
+    details: 零运行时依赖，可通过 `theme-color` 调整主题色，并用文本、图标、尾部内容和空状态插槽扩展内容。
   - icon: 📦
     title: 双通道分发
     details: npm 包 + DCloud 插件市场双通道；市场发布形态与导入目录见安装说明。

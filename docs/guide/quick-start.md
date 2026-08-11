@@ -43,11 +43,12 @@ const treeData = ref([
 <script setup>
 import { ref } from "vue";
 
+// key 是节点 id（或 tree-props.id 映射字段的值）
 // 多选时 v-model 是 key 数组；这里预选「前端组」，组内子节点会一起被选中
 const checkedValue = ref(["frontend"]);
 
-// keys 为当前全部选中 key，nodes 为对应的节点对象
-function handleCheckChange({ keys, nodes }) {
+// keys 是当前所有已选节点的 key
+function handleCheckChange({ keys }) {
   console.log("当前选中:", keys);
 }
 </script>
@@ -58,8 +59,8 @@ function handleCheckChange({ keys, nodes }) {
 | 用法 | 行为 |
 | --- | --- |
 | 不传 `selectable` | 纯展示树，无选择入口 |
-| `selectable` | 单选，radio 控件 |
-| `selectable multiple` | 多选，checkbox 控件，父子联动 |
+| `selectable` | 单选，显示单选按钮 |
+| `selectable multiple` | 多选，显示复选框，父子联动 |
 
 ## 自定义字段名
 
