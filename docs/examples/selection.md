@@ -11,7 +11,7 @@ pageClass: examples-page
 
 ## 单选
 
-`selectable` 不加 `multiple` 即为单选，`v-model` 为单个 key（未选中时为 `null`）：
+`selectable` 不加 `multiple` 即为单选，`v-model` 为一个 key（未选中时为 `null`）。key 默认是节点的 `id`，也可以通过 `tree-props.id` 映射到其他字段：
 
 ```vue
 <template>
@@ -162,7 +162,7 @@ function clearChecked() {
 ```
 
 ::: tip
-`checked-disabled` 默认为 `false`，禁用节点的选中状态会被锁定；全选、清空、父子联动和受控值回放都不会直接改变它。需要允许禁用节点参与状态变更时，显式开启 `checked-disabled`。
+`checked-disabled` 默认为 `false`，禁用节点的选中状态会被锁定；全选、清空、父子联动和外部更新 `v-model`，都不会直接改变它。需要允许禁用节点改变选中状态时，显式开启 `checked-disabled`。
 
 `pack-disabled-key` 只控制已选禁用节点是否进入 `v-model`、事件和查询方法的返回结果，不会清除内部/视觉选中状态。
 

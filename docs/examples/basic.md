@@ -66,11 +66,13 @@ const treeData = ref([
 <uni-tree-view :data="treeData" :default-expanded-keys="['frontend']" />
 ```
 
-`default-expanded-keys` 在初始化时应用一次；指定某个后代节点时，组件默认会自动展开它的所有祖先。之后该数组的值发生变化会**重新按新值整体应用**，用户手动展开/收起的状态会被覆盖；如需保持显式 key 语义，可设置 `default-expand-parent="false"`。想在运行时增量控制展开，请用 [`setExpandedKeys`](/apis/methods#展开)。
+`default-expanded-keys` 用于设置默认展开节点。指定后代节点时，组件默认也会展开它的所有祖先；如不需要，可设置 `default-expand-parent="false"`。
+
+之后如果修改 `default-expanded-keys`，组件会按新值重新设置整棵树的展开状态，覆盖用户手动展开或收起的结果。需要在运行时只改变部分节点时，请使用 [`setExpandedKeys`](/apis/methods#展开)。
 
 ## 禁用节点
 
-数据中 `disabled: true` 的节点会置灰，且在默认的 `checked-disabled="false"` 下不会被用户点击、全选、清空、父子联动、实例方法或受控值回放改变选中状态。示例数据里的「顾宁」就是这样：
+数据中 `disabled: true` 的节点会置灰。`checked-disabled` 默认为 `false`，因此用户点击、全选、清空、父子联动、实例方法和外部更新 `v-model`，都不会改变它的选中状态。示例数据里的「顾宁」就是这样：
 
 ```js
 { id: "backend-2", label: "顾宁", disabled: true }

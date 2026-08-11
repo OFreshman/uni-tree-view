@@ -81,7 +81,7 @@ const { data, count } = createLargeTreeData({
 - **「异步区域 1」首次展开会故意失败**，再次点击箭头即可验证重试功能
 - 其他节点正常加载
 
-预览中两个树下方都有状态提示，会实时显示操作结果。共享数据和 loader 如下：
+预览中两个树下方都有状态提示，会实时显示操作结果。共用数据和加载函数如下：
 
 <<< ../../playground/src/utils/lazyVirtualTreeData.ts
 

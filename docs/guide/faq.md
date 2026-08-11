@@ -1,35 +1,76 @@
 # 常见问题
 
-## 树不显示 / 数据不渲染?
+## 树组件为什么没有显示数据？
 
 按顺序检查：
 
-1. `data` 是否为**数组**（不是对象）
-2. 数据字段名与默认字段（`id` / `label` / `children`）不一致时，是否配置了 `tree-props`
-3. 组件外层容器是否有高度——组件默认 `height: 100%`，父容器高度为 0 时不可见
+1. `data` 是否为**数组**，而不是单个对象
+2. 数据字段名是否为默认的 `id`、`label`、`children`；如果不是，是否通过 `tree-props` 配置了字段映射
+3. 组件外层容器是否有可用高度；组件默认 `height: 100%`，父容器高度为 0 时不会显示
 
-每个节点的 `id`（或 `tree-props.id` 映射字段）必须在整棵树中全局唯一，否则展开、选择和渲染 key 会互相覆盖。
+每个节点的 key 必须在整棵树中全局唯一。默认使用节点的 `id` 作为 key；配置了 `tree-props.id` 后，则使用映射后的字段。key 重复会导致展开、选择和列表渲染互相覆盖。
 
-## 修改 data 后为什么没有刷新?
+## 修改 `data` 后，页面为什么没有更新？
 
-为避免万级节点场景对 `data` 做深度监听，组件采用不可变数据更新：`push`、`splice` 或直接修改节点字段后，请同时替换根数组引用。
+为了避免万级节点场景下深度监听整棵树，组件只监听 `data` 根数组的引用变化。只执行 `push`、`splice` 或直接修改节点字段，不会触发组件重新解析；修改完成后还需要替换根数组：
 
 ```ts
 treeData.value[0].children.push(newNode);
 treeData.value = [...treeData.value];
 ```
 
-替换根数组时，非受控选中状态会按仍然存在的节点 key 保留；受控场景始终以 `v-model` 为准。
+节点选中状态在数据重新解析时按 key 匹配。这里可以简单分成两种用法：
 
-`tree-props` 的映射配置发生响应式变化时，组件会重新解析整棵树；但它只负责声明字段名，不会改变上述 `data` 不做深度监听的约定。
+- **绑定了 `v-model`（受控值）**：数据刷新后，以当前 `v-model` 中的 key 为准重新计算选中状态。
+- **没有绑定 `v-model`（非受控状态）**：`default-checked-keys` 只提供初始值，之后由组件内部记录用户的选择；数据刷新后，相同 key 的节点会保留原来的选中状态。
 
-## 选中了但 v-model 没更新?
+key 表示节点的唯一身份，不是节点的显示文字。例如节点的 `id` 仍为 `user-1`，只把 `name`、`label` 或其他展示内容改了，组件仍会认为它是同一个节点，选中状态不会改变；如果 key 也变了，就会被当作一个新节点，不会继承原节点的选中状态。
 
-`v-model` 只在启用选择时生效，确认传了 `selectable`。单选模式 `v-model` 是单个 key，多选模式（`multiple`）是 key 数组。
+::: tip 受控和非受控是什么意思？
+“受控”就是绑定了 `v-model`，选中值由外部变量提供；“非受控”就是没有绑定 `v-model`，运行时选中状态由组件自己保存。用户点击时，组件会先更新界面，再通知外部；父组件拒绝新值时如何恢复，见下方对应问题。
+:::
 
-## 父组件拒绝了选中值，如何回滚?
+运行时的展开状态与选中状态是两套状态。替换 `data` 后如果还希望保留用户已经展开的节点，请开启 `cache-expanded-keys`。
 
-组件的选中操作是“先更新内部状态，再发出事件”，不是严格受控模式。父组件即使不接受新的 `v-model` 值，组件内部状态也不会自动回滚。需要校验失败时，请通过 ref 调用 `setCheckedKeys` 恢复；注意该方法同样会触发 `update:modelValue` 和 `check-change`，回滚逻辑必须加防重入标记。下面示例使用 `check-strictly`，回滚单个节点：
+`tree-props` 的映射配置发生响应式变化时，组件也会重新解析整棵树；但它只负责声明字段名，不会改变 `data` 不做深度监听的约定。
+
+## 选中节点后，为什么 `v-model` 的值没有更新？
+
+按顺序检查：
+
+1. 是否传入了 `selectable`。用户点击产生选择时必须启用该属性；未启用时，组件只展示树，不会因为点击而更新选中值。
+2. 是否点击了选择图标。默认点击箭头只会展开或收起，点击节点文字也不会选中。若希望点击整行时选中，可开启 `check-on-click-node`；若只允许点击叶子节点行时选中，可使用 `check-on-click-leaf`。
+3. `v-model` 的初始值类型是否与选择模式一致。
+
+单选模式是传入 `selectable`、不传 `multiple`。此时 `v-model` 是**单个节点的 key**，也就是该节点的 `id`（或 `tree-props.id` 映射字段值），例如字符串 `"frontend"` 或数字 `1001`；没有选中项时为 `null`：
+
+```ts
+import { ref } from "vue";
+
+const selectedKey = ref<string | number | null>(null);
+```
+
+多选模式需要同时传入 `selectable` 和 `multiple`，此时 `v-model` 是 key 数组：
+
+```ts
+const checkedKeys = ref<Array<string | number>>([]);
+```
+
+```vue
+<!-- 单选：selectedKey 是单个 key 或 null -->
+<uni-tree-view v-model="selectedKey" selectable :data="treeData" />
+
+<!-- 多选：checkedKeys 是 key 数组 -->
+<uni-tree-view v-model="checkedKeys" selectable multiple :data="treeData" />
+```
+
+如果使用的是单向绑定 `:model-value`，而不是 `v-model`，则需要自行监听 `update:modelValue` 并更新外部变量。
+
+## 父组件不接受新的选中值时，界面为什么没有自动恢复？
+
+用户选择节点时，组件会先更新内部显示状态，再触发 `update:modelValue` 和 `check-change`。因此，即使父组件经过校验后没有保存新值，组件内部也不会自动回到旧状态。
+
+需要拒绝本次选择时，请通过 ref 调用 `setCheckedKeys` 恢复，并使用防重入标记，避免恢复操作再次进入同一段校验逻辑。下面示例使用 `check-strictly`，当选中数量超过 3 个时取消刚刚操作的节点：
 
 ```vue
 <uni-tree-view
@@ -66,44 +107,70 @@ function handleCheckChange(payload: TreeCheckChangePayload) {
 }
 ```
 
-如果需要恢复一组复杂的父子选中状态，请在同一个防重入区间内完成清空与重新设置，避免回滚事件再次进入校验逻辑。
+如果需要恢复一组复杂的父子选中状态，请在同一个防重入区间内完成清空和重新设置，避免恢复操作再次触发校验。
 
-## 父子联动不符合预期?
+## 勾选父节点后，为什么子节点也会一起变化？
 
-默认父子联动（勾选父节点会勾选所有子节点）。如果希望父子状态互相独立，开启：
+多选模式默认启用父子联动：
+
+- 勾选父节点，会勾选它下面的所有可选子节点。
+- 只勾选部分子节点时，父节点显示为半选。
+- 所有可选子节点都选中后，父节点显示为全选。
+
+如果希望父节点和子节点各自独立，开启 `check-strictly`：
 
 ```vue
 <uni-tree-view selectable multiple check-strictly :data="data" />
 ```
 
-## 禁用节点为什么出现在 keys 里，为什么全选/清空不改变它?
+## 禁用节点为什么不能被全选、清空或父子联动改变？
 
-`checked-disabled` 和 `pack-disabled-key` 控制的是两件事：
+`checked-disabled` 控制禁用节点是否允许改变选中状态，默认值为 `false`。默认情况下，用户点击、全选、清空、父子联动、实例方法和外部更新 `v-model`，都不会改变禁用节点当前的选中状态。
 
-- `checked-disabled` 决定禁用节点是否允许改变选中状态。默认是 `false`，因此用户点击、全选、清空、父子联动、实例方法和受控值回放都会保持禁用节点的当前状态；需要改变时显式设为 `true`。
-- `pack-disabled-key` 只决定**已经选中的**禁用节点是否包含在返回 keys / nodes 与 `v-model` 中，默认是 `true`；不需要返回时设为 `false`。
+如果业务上需要允许这些操作改变禁用节点，请显式开启：
 
-`pack-disabled-key` 影响的返回位置包括：
+```vue
+<uni-tree-view selectable multiple checked-disabled :data="data" />
+```
+
+## 禁用节点为什么仍然出现在 `v-model` 或返回结果中？
+
+节点能否改变选中状态，与选中后是否出现在返回结果中，是两件不同的事：
+
+- `checked-disabled` 控制禁用节点的选中状态能不能被改变。
+- `pack-disabled-key` 控制**已经选中的禁用节点**是否包含在返回结果中，默认值为 `true`。
+
+`pack-disabled-key` 会影响：
 
 - `v-model`
-- `check-change` 的 `keys/nodes`
-- `getCheckedKeys()` / `getCheckedNodes()`
+- `check-change` 的 `keys` 和 `nodes`
+- `getCheckedKeys()` 和 `getCheckedNodes()`
 
-设为 `false` 只是不打包返回，不会清除节点内部和视觉上的 checked 状态。
+如果不希望已选中的禁用节点出现在这些结果中，可设置：
 
-禁用父节点在非严格多选中仍是一个**只读汇总节点**：父节点不能直接点击选中，但子节点仍可选；部分子节点选中时父节点半选，全部子节点选中时父节点全选。此时 `pack-disabled-key=false` 可让该父节点不进入结果。开启 `check-strictly` 后父子独立，不再汇总。
+```vue
+<uni-tree-view selectable multiple :pack-disabled-key="false" :data="data" />
+```
 
-## 虚拟渲染开启后滚动错位?
+这只会把禁用节点从返回结果中排除，不会取消它在组件内部和界面上的选中状态。
 
-虚拟模式要求**视口高度和行高都是固定的 px 数值**。`virtual-height` / `virtual-item-height` 当前不接受 `rpx`、`%`、`vh` 或 `calc()`；内置节点会使用 `virtual-item-height` 作为实际行高。若插槽内容更高，请同步调大该值，且不要使用可变行高内容。
+在非严格多选模式下，禁用父节点仍会汇总子节点状态：部分子节点选中时显示半选，全部可选子节点选中时显示全选，但父节点本身不能直接操作。开启 `check-strictly` 后，父子状态互相独立，不再进行汇总。
 
-节点数量较少、内容不足 `virtual-height` 时会渲染全部节点，但滚动视口仍保持固定高度，剩余区域留空。这是定高虚拟列表的预期行为；需要内容自适应时关闭 `virtual`。
+## 开启虚拟渲染后，为什么会滚动错位？
 
-## 小程序上样式没生效?
+虚拟模式要求**视口高度和每行高度都是固定的 px 数值**。`virtual-height` 和 `virtual-item-height` 当前不接受 `rpx`、`%`、`vh` 或 `calc()`。
 
-组件启用了 `virtualHost`，普通 `class` 可作用于组件根节点。需要定制每个节点行时，请通过 `node-class` 传入自己的稳定类名；主题、缩进和内容分别使用 `theme-color`、`indent` 与插槽。不要直接依赖组件内部类名，并注意小程序的组件样式隔离规则。
+内置节点会使用 `virtual-item-height` 作为实际行高。如果插槽内容比默认节点更高，需要同步调大该值，并避免使用高度会动态变化的内容，否则计算位置与实际位置不一致，就会出现滚动错位。
 
-## 懒加载子节点失败了怎么办?
+节点较少、内容总高度不足 `virtual-height` 时，组件会渲染全部节点，但滚动区域仍保持设置的固定高度，因此底部可能出现空白。这是定高虚拟列表的预期行为；需要高度随内容变化时，请关闭 `virtual`。
+
+## 小程序中自定义样式为什么没有生效？
+
+组件启用了 `virtualHost`，传给组件的普通 `class` 可以作用于组件根节点。如果需要定制每个节点行，请通过 `node-class` 传入稳定的外部类名；主题色、缩进和节点内容分别使用 `theme-color`、`indent` 与插槽进行定制。
+
+不要直接依赖组件内部类名，同时需要注意小程序的组件样式隔离规则。
+
+## 懒加载子节点失败后，怎么重新加载？
 
 监听 `load-error` 事件提示用户，并通过 ref 调用 `retryLoad(key)` 重试：
 
@@ -114,13 +181,13 @@ function handleCheckChange(payload: TreeCheckChangePayload) {
 ```ts
 function onError({ node, error }) {
   uni.showToast({ title: "加载失败", icon: "none" });
-  // 稍后重试: treeRef.value.retryLoad(node.id)
+  // 稍后重试：treeRef.value.retryLoad(node.id)
 }
 ```
 
-## 如何做成弹窗选择器?
+## 如何把树组件放进弹窗选择器？
 
-组合你项目中的弹窗组件即可，例如 wot-ui：
+组合项目中已有的弹窗组件即可。下面以 wot-ui 为例：
 
 ```vue
 <wd-popup v-model="show" position="bottom">
@@ -130,6 +197,6 @@ function onError({ node, error }) {
 </wd-popup>
 ```
 
-## 还有问题?
+## 还有其他问题？
 
-提 [Issue](https://github.com/OFreshman/uni-tree-view/issues) 时请附上**最小重现**（平台、uni-app 版本、数据样例、期望/实际行为）。
+提交 [Issue](https://github.com/OFreshman/uni-tree-view/issues) 时，请附上**最小复现示例**，并说明运行平台、uni-app 版本、数据样例、期望行为和实际行为。

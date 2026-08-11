@@ -133,7 +133,7 @@ function onError({ node }) {
     content: `重新加载 ${node.label}？`,
     success: ({ confirm }) => {
       if (confirm) {
-        // 传 key 或节点对象都可以；返回 Promise，失败会再次 reject
+        // 传 key 或节点对象都可以；返回 Promise，加载失败时会抛出错误
         treeRef.value.retryLoad(node.id);
       }
     }
@@ -156,7 +156,7 @@ function onError({ node }) {
 
 ## 与虚拟渲染组合
 
-懒加载可以和 `virtual` 同时使用：加载成功后新增节点会进入可见列表，虚拟窗口随之重新计算。组合示例、失败重试和共享 loader 见[虚拟渲染：与懒加载组合](/examples/virtual#与懒加载组合)。
+懒加载可以和 `virtual` 同时使用：加载成功后新增节点会进入可见列表，虚拟窗口随之重新计算。组合示例、失败重试和共用加载函数见[虚拟渲染：与懒加载组合](/examples/virtual#与懒加载组合)。
 
 ::: warning
 懒加载模式下，`setExpandedKeys`、`expandAll`、`collapseAll` 只处理已经进入状态树的节点，不会为了展开而自动触发请求；`scrollToKey` 同理，目标节点尚未加载出来时返回 `false`。
