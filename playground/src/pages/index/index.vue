@@ -77,7 +77,6 @@
           selectable
           multiple
           check-on-click-node
-          expand-on-click-node
           expand-checked
           :theme-color="themeColor"
           :data="orgTreeData"
@@ -146,7 +145,6 @@
             selectable
             multiple
             check-on-click-node
-            expand-on-click-node
             virtual
             default-expand-all
             :theme-color="themeColor"
@@ -181,7 +179,6 @@
             selectable
             multiple
             check-on-click-node
-            expand-on-click-node
             virtual
             load-mode
             :theme-color="themeColor"

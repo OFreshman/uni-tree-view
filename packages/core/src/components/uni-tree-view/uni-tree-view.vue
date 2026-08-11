@@ -56,70 +56,78 @@
             'is-loading': item.node.loading,
             'is-load-error': Boolean(item.node.loadError)
           }"
-          @click.stop="handleToggleExpand(item.node)"></view>
+          @click="handleExpandClick(item.node)"></view>
         <view v-else class="utv-tree-item__arrow-placeholder"></view>
 
         <view
           v-if="showSelectionControl && props.selectionPlacement === 'left'"
           class="utv-tree-item__checkbox"
           :class="{ 'is-disabled': item.node.disabled }"
-          @click.stop="handleCheckChange(item.node)">
+          @click="handleCheckClick(item.node)">
           <view
             class="utv-tree-item__checkbox-icon"
             :class="getSelectionIconClass(item.node)"></view>
         </view>
 
         <view class="utv-tree-node-content">
-          <slot
-            name="default"
-            :node="item.node"
-            :data="item.node.source"
-            :path="item.path">
+          <template v-if="slots.default">
+            <slot
+              name="default"
+              :node="item.node"
+              :data="item.node.source"
+              :path="item.path"></slot>
+          </template>
+          <template v-else>
             <view v-if="item.node.icon || slots.icon" class="utv-tree-node-icon">
-              <slot
-                name="icon"
-                :node="item.node"
-                :data="item.node.source"
-                :path="item.path">
-                {{ item.node.icon }}
-              </slot>
+              <template v-if="slots.icon">
+                <slot
+                  name="icon"
+                  :node="item.node"
+                  :data="item.node.source"
+                  :path="item.path"></slot>
+              </template>
+              <template v-else>{{ item.node.icon }}</template>
             </view>
             <view class="utv-tree-node-main">
               <view class="utv-tree-node-label">
-                <slot
-                  name="label"
-                  :node="item.node"
-                  :data="item.node.source"
-                  :path="item.path">
+                <template v-if="slots.label">
+                  <slot
+                    name="label"
+                    :node="item.node"
+                    :data="item.node.source"
+                    :path="item.path"></slot>
+                </template>
+                <template v-else>
                   <text
                     v-for="(segment, segmentIndex) in getLabelSegments(item.node.label)"
                     :key="segmentIndex"
                     :class="{ 'utv-tree-node-label__match': segment.matched }">
                     {{ segment.text }}
                   </text>
-                </slot>
+                </template>
               </view>
               <view v-if="props.showPath" class="utv-tree-node-path">
                 {{ item.node.path.join(props.pathSeparator) }}
               </view>
             </view>
             <view v-if="item.node.append || slots.append" class="utv-tree-node-append">
-              <slot
-                name="append"
-                :node="item.node"
-                :data="item.node.source"
-                :path="item.path">
-                {{ item.node.append }}
-              </slot>
+              <template v-if="slots.append">
+                <slot
+                  name="append"
+                  :node="item.node"
+                  :data="item.node.source"
+                  :path="item.path"></slot>
+              </template>
+              <template v-else>{{ item.node.append }}</template>
             </view>
-          </slot>
+          </template>
         </view>
 
         <view
           v-if="showSelectionControl && props.selectionPlacement === 'right'"
           class="utv-tree-item__checkbox"
           :class="{ 'is-disabled': item.node.disabled }"
-          @click.stop="handleCheckChange(item.node)">
+          @click="handleCheckClick(item.node)">
           <view
             class="utv-tree-item__checkbox-icon"
             :class="getSelectionIconClass(item.node)"></view>
@@ -297,7 +305,35 @@ async function handleToggleExpand(node: TreeNode) {
   }
 }
 
+let handledActionNode: TreeNode | null = null;
+let handledActionVersion = 0;
+
+function markNodeActionHandled(node: TreeNode) {
+  const actionVersion = ++handledActionVersion;
+  handledActionNode = node;
+  setTimeout(() => {
+    if (handledActionVersion === actionVersion) {
+      handledActionNode = null;
+    }
+  }, 0);
+}
+
+function handleExpandClick(node: TreeNode) {
+  markNodeActionHandled(node);
+  void handleToggleExpand(node);
+}
+
+function handleCheckClick(node: TreeNode) {
+  markNodeActionHandled(node);
+  handleCheckChange(node);
+}
+
 function handleNodeClick(node: TreeNode) {
+  if (handledActionNode === node) {
+    handledActionNode = null;
+    return;
+  }
+
   emit("node-click", {
     id: node.id,
     node,

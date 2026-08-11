@@ -27,7 +27,7 @@
         </view>
       </view>
       <uni-tree-view
-        :key="renderKey"
+        v-if="treeVisible"
         ref="treeRef"
         load-mode
         selectable
@@ -59,7 +59,7 @@
 <script setup lang="ts">
 import UniTreeView from "uni-tree-view";
 import type { UniTreeViewExposed } from "uni-tree-view";
-import { computed, shallowRef } from "vue";
+import { computed, nextTick, shallowRef } from "vue";
 
 interface AreaItem {
   id: string;
@@ -68,7 +68,7 @@ interface AreaItem {
   type: "region" | "city";
 }
 
-const renderKey = shallowRef(0);
+const treeVisible = shallowRef(true);
 const treeRef = shallowRef<UniTreeViewExposed | null>(null);
 const loading = shallowRef(false);
 const failFirst = shallowRef(false);
@@ -146,12 +146,14 @@ async function retryFailedNode() {
   }
 }
 
-function resetDemo() {
-  renderKey.value += 1;
+async function resetDemo() {
+  treeVisible.value = false;
   loading.value = false;
   failedNode.value = null;
   failedOnceKeys.clear();
   loadMessage.value = "案例已重置，等待重新展开";
+  await nextTick();
+  treeVisible.value = true;
 }
 </script>
 

@@ -1,0 +1,12 @@
+{
+  "format": 2,
+  "appid": "touristappid",
+  "projectname": "Uni Tree View",
+  "compileOptions": {
+    "component2": true,
+    "enableNodeModuleBabelTransform": true
+  },
+  "developOptions": {
+    "disableParallel": true
+  }
+}

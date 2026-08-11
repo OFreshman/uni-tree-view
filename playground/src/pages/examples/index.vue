@@ -23,9 +23,14 @@
               </view>
 
               <view class="page__segment">
-                <wd-segmented
-                  v-model:value="selectionMode"
-                  :options="selectionModeOptions"></wd-segmented>
+                <view
+                  v-for="option in selectionModeOptions"
+                  :key="option"
+                  class="page__segment-item"
+                  :class="{ 'is-active': selectionMode === option }"
+                  @click="selectionMode = option">
+                  <text class="page__segment-label">{{ option }}</text>
+                </view>
               </view>
 
               <uni-tree-view
@@ -123,7 +128,7 @@
               </view>
 
               <uni-tree-view
-                :key="lazyRenderKey"
+                v-if="lazyTreeVisible"
                 ref="lazyTreeRef"
                 v-model="lazyValue"
                 selectable
@@ -272,7 +277,6 @@
                 selectable
                 multiple
                 check-on-click-node
-                expand-on-click-node
                 selection-placement="right"
                 theme-color="#299764"
                 default-expand-all
@@ -291,7 +295,7 @@
 import { onLoad } from "@dcloudio/uni-app";
 import UniTreeView from "uni-tree-view";
 import type { TreeDataItem, UniTreeViewExposed } from "uni-tree-view";
-import { computed, ref, shallowRef } from "vue";
+import { computed, nextTick, ref, shallowRef } from "vue";
 import AppPage from "@/components/appPage/index.vue";
 import {
   demoTreeProps,
@@ -376,7 +380,7 @@ function clearSelectionChecked() {
 }
 
 // ==================== 懒加载 ====================
-const lazyRenderKey = shallowRef(0);
+const lazyTreeVisible = shallowRef(true);
 const lazyTreeRef = shallowRef<UniTreeViewExposed | null>(null);
 const lazyValue = shallowRef<Array<string | number>>([]);
 const lazyStatus = shallowRef("待展开");
@@ -440,14 +444,16 @@ async function retryLazyNode() {
   }
 }
 
-function resetLazyDemo() {
-  lazyRenderKey.value += 1;
+async function resetLazyDemo() {
+  lazyTreeVisible.value = false;
   lazyValue.value = [];
   lazyLoading.value = false;
   lazyFailedNode.value = null;
   lazyFailedOnceKeys.clear();
   lazyStatus.value = "待展开";
   lazyMessage.value = "案例已重置，等待重新展开";
+  await nextTick();
+  lazyTreeVisible.value = true;
 }
 
 // ==================== 弹窗选择 ====================
@@ -484,10 +490,39 @@ function confirmPopup() {
 }
 
 .page__segment {
-  // 四个选项在 375 宽度下均分，缩小字号避免文本截断
-  --wot-segmented-item-font-size: 26rpx;
-
+  display: flex;
+  gap: 6rpx;
+  padding: 6rpx;
   margin: 20rpx 0 12rpx;
+  background: var(--wot-filled-content, #f2f3f5);
+  border-radius: 12rpx;
+}
+
+.page__segment-item {
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  height: 56rpx;
+  color: var(--wot-text-secondary, #4b5563);
+  font-size: 26rpx;
+  line-height: 1;
+  border-radius: 8rpx;
+  box-sizing: border-box;
+}
+
+.page__segment-item.is-active {
+  color: var(--wot-primary-6, #299764);
+  font-weight: 600;
+  background: var(--wot-filled-oppo, #ffffff);
+  box-shadow: 0 2rpx 8rpx rgba(16, 24, 40, 0.08);
+}
+
+.page__segment-label {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .page__slot-label {

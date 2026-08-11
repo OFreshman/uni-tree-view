@@ -36,7 +36,6 @@
         selectable
         multiple
         check-on-click-node
-        expand-on-click-node
         virtual
         default-expand-all
         :virtual-height="320"
@@ -72,7 +71,6 @@
         selectable
         multiple
         check-on-click-node
-        expand-on-click-node
         virtual
         load-mode
         :virtual-height="240"

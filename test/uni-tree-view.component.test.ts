@@ -198,7 +198,10 @@ describe("uni-tree-view component", () => {
   it("emits expand-change payloads from the arrow interaction", async () => {
     const wrapper = mount(UniTreeView, {
       props: {
-        data: treeData
+        data: treeData,
+        multiple: true,
+        selectable: true,
+        checkOnClickNode: true
       }
     });
 
@@ -210,6 +213,9 @@ describe("uni-tree-view component", () => {
       node: { id: "root" }
     });
     expect(wrapper.findAll(".utv-tree-item")).toHaveLength(2);
+    expect(exposed(wrapper).getCheckedKeys()).toEqual([]);
+    expect(wrapper.emitted("check-change")).toBeUndefined();
+    expect(wrapper.emitted("node-click")).toBeUndefined();
 
     await wrapper.find(".utv-tree-item__arrow-icon").trigger("click");
     const secondPayload = wrapper.emitted<TreeExpandPayload[]>("expand-change")?.[1]?.[0];
@@ -217,6 +223,29 @@ describe("uni-tree-view component", () => {
       expanded: false,
       node: { id: "root" }
     });
+    expect(wrapper.findAll(".utv-tree-item")).toHaveLength(1);
+    expect(exposed(wrapper).getCheckedKeys()).toEqual([]);
+    expect(wrapper.emitted("check-change")).toBeUndefined();
+    expect(wrapper.emitted("node-click")).toBeUndefined();
+  });
+
+  it("routes nested checkbox taps without triggering row click behavior", async () => {
+    const wrapper = mount(UniTreeView, {
+      props: {
+        data: treeData,
+        multiple: true,
+        selectable: true,
+        expandOnClickNode: true
+      }
+    });
+
+    await wrapper.find(".utv-tree-item__checkbox-icon").trigger("click");
+
+    expect(exposed(wrapper).getCheckedKeys()).toEqual(["root", "child"]);
+    expect(wrapper.findAll(".utv-tree-item")).toHaveLength(1);
+    expect(wrapper.emitted("check-change")).toHaveLength(1);
+    expect(wrapper.emitted("node-click")).toBeUndefined();
+    expect(wrapper.emitted("expand-change")).toBeUndefined();
   });
 
   it("emits filter-change with the filtered visible nodes", async () => {
@@ -369,6 +398,39 @@ describe("uni-tree-view component", () => {
 
     expect(wrapper.text()).toContain("child:Alpha root>Alpha child");
     expect(wrapper.findAll(".utv-tree-node-label__match")).toHaveLength(2);
+  });
+
+  it("keeps named slots rendered while arrow taps only collapse the node", async () => {
+    const wrapper = mount(UniTreeView, {
+      props: {
+        data: treeData,
+        defaultExpandAll: true,
+        multiple: true,
+        selectable: true,
+        checkOnClickNode: true
+      },
+      slots: {
+        icon: ({ node }) => `Icon:${node.id}`,
+        label: ({ node }) => `Label:${node.id}`,
+        append: ({ node }) => `Append:${node.id}`
+      }
+    });
+
+    expect(wrapper.text()).toContain("Icon:root");
+    expect(wrapper.text()).toContain("Label:child");
+    expect(wrapper.text()).toContain("Append:child");
+
+    await wrapper.find(".utv-tree-item__arrow-icon").trigger("click");
+
+    expect(wrapper.findAll(".utv-tree-item")).toHaveLength(1);
+    expect(wrapper.text()).toContain("Icon:root");
+    expect(wrapper.text()).toContain("Label:root");
+    expect(wrapper.text()).toContain("Append:root");
+    expect(wrapper.text()).not.toContain("Label:child");
+    expect(exposed(wrapper).getCheckedKeys()).toEqual([]);
+    expect(wrapper.emitted("expand-change")).toHaveLength(1);
+    expect(wrapper.emitted("check-change")).toBeUndefined();
+    expect(wrapper.emitted("node-click")).toBeUndefined();
   });
 
   it("adds nodeClass to rows while preserving the standard root class", () => {
