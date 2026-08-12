@@ -14,6 +14,8 @@
 
 > 文档站双线部署，内容一致：主入口为 Netlify（上方链接）；备用镜像 [GitHub Pages](https://ofreshman.github.io/uni-tree-view/)。
 
+> 使用 AI Coding 工具时，可将 [llms.txt](https://uni-tree-view.netlify.app/llms.txt) 作为精简的文档导航入口。
+
 > **项目状态：** 当前处于 `0.x` 早期阶段。核心能力已有自动化测试，并完成 H5 交互验证及微信/支付宝小程序构建验证；但在 `1.0.0` 前公开 API 和边界行为仍可能调整，升级前请查阅 [CHANGELOG](https://github.com/OFreshman/uni-tree-view/blob/main/CHANGELOG.md)。
 
 ## 特性

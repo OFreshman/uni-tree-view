@@ -122,7 +122,7 @@ export interface UniTreeViewProps {
   highlightFilter?: boolean;
   /** Default checked keys for uncontrolled initial state. */
   defaultCheckedKeys?: TreeKey | TreeKey[];
-  /** Field mapping for id, label, children and disabled. */
+  /** Field mapping for id, label, children, disabled, leaf, append and icon. */
   treeProps?: Partial<TreeProps>;
   /** Theme color for active checkbox/radio. */
   themeColor?: string;
