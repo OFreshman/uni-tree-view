@@ -48,6 +48,8 @@
         :hover-class="item.node.disabled ? 'none' : 'utv-tree-item--hover'"
         :hover-stay-time="80"
         @click="handleNodeClick(item.node)">
+        <view class="utv-tree-item__state-layer"></view>
+
         <view
           v-if="isExpandable(item.node)"
           class="utv-tree-item__arrow-icon is-right"
@@ -56,14 +58,14 @@
             'is-loading': item.node.loading,
             'is-load-error': Boolean(item.node.loadError)
           }"
-          @click="handleExpandClick(item.node)"></view>
+          @click.stop="handleToggleExpand(item.node)"></view>
         <view v-else class="utv-tree-item__arrow-placeholder"></view>
 
         <view
           v-if="showSelectionControl && props.selectionPlacement === 'left'"
           class="utv-tree-item__checkbox"
           :class="{ 'is-disabled': item.node.disabled }"
-          @click="handleCheckClick(item.node)">
+          @click.stop="handleCheckChange(item.node)">
           <view
             class="utv-tree-item__checkbox-icon"
             :class="getSelectionIconClass(item.node)"></view>
@@ -127,7 +129,7 @@
           v-if="showSelectionControl && props.selectionPlacement === 'right'"
           class="utv-tree-item__checkbox"
           :class="{ 'is-disabled': item.node.disabled }"
-          @click="handleCheckClick(item.node)">
+          @click.stop="handleCheckChange(item.node)">
           <view
             class="utv-tree-item__checkbox-icon"
             :class="getSelectionIconClass(item.node)"></view>
@@ -305,35 +307,7 @@ async function handleToggleExpand(node: TreeNode) {
   }
 }
 
-let handledActionNode: TreeNode | null = null;
-let handledActionVersion = 0;
-
-function markNodeActionHandled(node: TreeNode) {
-  const actionVersion = ++handledActionVersion;
-  handledActionNode = node;
-  setTimeout(() => {
-    if (handledActionVersion === actionVersion) {
-      handledActionNode = null;
-    }
-  }, 0);
-}
-
-function handleExpandClick(node: TreeNode) {
-  markNodeActionHandled(node);
-  void handleToggleExpand(node);
-}
-
-function handleCheckClick(node: TreeNode) {
-  markNodeActionHandled(node);
-  handleCheckChange(node);
-}
-
 function handleNodeClick(node: TreeNode) {
-  if (handledActionNode === node) {
-    handledActionNode = null;
-    return;
-  }
-
   emit("node-click", {
     id: node.id,
     node,

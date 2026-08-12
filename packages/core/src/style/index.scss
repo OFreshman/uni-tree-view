@@ -7,7 +7,6 @@
   min-height: 48rpx;
   padding-right: 24rpx;
   color: #1f2937;
-  transition: background-color 0.2s ease;
 
   // hover-class 按压反馈，兼容微信/支付宝小程序与 H5
   &--hover {
@@ -18,8 +17,9 @@
     color: #a3aab8;
   }
 
-  // 选中行淡色背景：伪元素 + opacity 取代 color-mix，兼容低版本小程序 webview
-  &.is-checked::before {
+  // 状态层始终保留在节点树中，选中时只改 opacity。
+  // 避免小程序在选中/反选时反复创建伪元素并重新合成整行。
+  &__state-layer {
     position: absolute;
     top: 0;
     right: 0;
@@ -27,23 +27,25 @@
     left: 0;
     z-index: 0;
     background-color: var(--theme-color, #007aff);
-    content: "";
-    opacity: 0.06;
+    opacity: 0;
     pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+
+  &.is-checked &__state-layer {
+    opacity: 0.06;
   }
 
   &.is-checked .utv-tree-node-label {
     color: var(--theme-color, #007aff);
-    font-weight: 500;
   }
 
-  &.is-disabled.is-checked::before {
-    display: none;
+  &.is-disabled &__state-layer {
+    opacity: 0;
   }
 
   &.is-disabled.is-checked .utv-tree-node-label {
     color: #a3aab8;
-    font-weight: normal;
   }
 
   &__arrow-placeholder {

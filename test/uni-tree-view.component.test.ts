@@ -128,6 +128,29 @@ describe("uni-tree-view component", () => {
     expect(wrapper.emitted("check-change")).toHaveLength(1);
   });
 
+  it("toggles selection when clicking a node label", async () => {
+    const wrapper = mount(UniTreeView, {
+      props: {
+        data: treeData,
+        defaultExpandAll: true,
+        multiple: true,
+        selectable: true,
+        checkOnClickNode: true
+      }
+    });
+
+    const label = wrapper.findAll(".utv-tree-node-label")[1];
+    await label.trigger("click");
+
+    expect(exposed(wrapper).getCheckedKeys()).toEqual(["root", "child"]);
+    expect(wrapper.emitted("check-change")).toHaveLength(1);
+
+    await label.trigger("click");
+
+    expect(exposed(wrapper).getCheckedKeys()).toEqual([]);
+    expect(wrapper.emitted("check-change")).toHaveLength(2);
+  });
+
   it("checks leaf nodes from row clicks without enabling parent row checks", async () => {
     const wrapper = mount(UniTreeView, {
       props: {
@@ -240,6 +263,51 @@ describe("uni-tree-view component", () => {
     });
 
     await wrapper.find(".utv-tree-item__checkbox-icon").trigger("click");
+
+    expect(exposed(wrapper).getCheckedKeys()).toEqual(["root", "child"]);
+    expect(wrapper.findAll(".utv-tree-item")).toHaveLength(1);
+    expect(wrapper.emitted("check-change")).toHaveLength(1);
+    expect(wrapper.emitted("node-click")).toBeUndefined();
+    expect(wrapper.emitted("expand-change")).toBeUndefined();
+  });
+
+  it("keeps the row state layer mounted while selection changes", async () => {
+    const wrapper = mount(UniTreeView, {
+      props: {
+        data: treeData,
+        multiple: true,
+        selectable: true
+      }
+    });
+
+    const row = wrapper.find(".utv-tree-item");
+    expect(row.findAll(".utv-tree-item__state-layer")).toHaveLength(1);
+    expect(row.classes()).not.toContain("is-checked");
+
+    await row.find(".utv-tree-item__checkbox-icon").trigger("click");
+
+    expect(row.findAll(".utv-tree-item__state-layer")).toHaveLength(1);
+    expect(row.classes()).toContain("is-checked");
+
+    await row.find(".utv-tree-item__checkbox-icon").trigger("click");
+
+    expect(row.findAll(".utv-tree-item__state-layer")).toHaveLength(1);
+    expect(row.classes()).not.toContain("is-checked");
+  });
+
+  it("isolates right checkbox taps from row click behavior", async () => {
+    const wrapper = mount(UniTreeView, {
+      props: {
+        data: treeData,
+        multiple: true,
+        selectable: true,
+        selectionPlacement: "right",
+        checkOnClickNode: true,
+        expandOnClickNode: true
+      }
+    });
+
+    await wrapper.find(".utv-tree-item__checkbox").trigger("click");
 
     expect(exposed(wrapper).getCheckedKeys()).toEqual(["root", "child"]);
     expect(wrapper.findAll(".utv-tree-item")).toHaveLength(1);
