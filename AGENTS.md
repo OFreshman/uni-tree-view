@@ -64,6 +64,9 @@
 
 - 提交信息使用 `feat:`、`fix:`、`docs:`、`style:`、`refactor:`、`test:`、`chore:` 等类型前缀加中文说明，简洁描述本次提交的实际变更。
 - 提交前检查暂存区，按功能边界分批提交。用户说“提交代码”时，默认含义是按功能分批执行 `git add` 和 `git commit`，并为每批编写对应的 commit message。
+- Git 提交只能署名当前开发者本人。AI agent 不得在提交消息中添加 `Co-authored-by`、`Signed-off-by`、`Generated-by` 或其他 Claude、Codex、AI、机器人署名，也不得把 AI 设置为 Author 或 Committer。
+- 不得执行 `git config user.name`、`git config user.email` 或使用 `git commit --author` 覆盖开发者身份；提交时沿用仓库或全局已有的 Git 身份。如果身份缺失或明显不是开发者本人，停止提交并提示用户配置。
+- 提交后使用 `git show -s --format=fuller HEAD` 检查 Author、Committer 和提交消息，确认只有开发者本人且不含 AI 署名尾注。
 - “提交代码”不包含 `git push`。除非用户明确要求“push”或“推送”，否则任何情况下都不要执行 `git push`；由用户手动推送，避免意外触发 GitHub Actions workflow。
 
 ## 参考资料
