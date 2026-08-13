@@ -34,8 +34,8 @@
     "prepare": "simple-git-hooks",
     "play": "nr -C playground dev:h5",
     "play:mp-weixin": "nr -C playground dev:mp-weixin",
-    "docs": "nr -C docs dev",
-    "docs:build": "pnpm -C playground build:h5:docs && pnpm -C docs build",
+    "docs": "tsx scripts/dev-docs.ts",
+    "docs:build": "pnpm -C playground build:h5:docs && pnpm -C docs build && pnpm docs:check",
     "docs:preview": "nr -C docs preview",
     "build": "pnpm --filter './packages/*' -r build",
     "build:play": "pnpm build && pnpm -C playground build:h5",
@@ -62,7 +62,8 @@
     "changelog:promote": "tsx scripts/update-changelog.ts",
     "release": "tsx scripts/release.ts",
     "release:prepare": "pnpm changelog:generate && pnpm changelog:promote && pnpm check && pnpm check:platforms",
-    "release:push": "git push origin main --follow-tags"
+    "release:push": "git push origin main --follow-tags",
+    "docs:check": "tsx scripts/check-docs-build.ts"
   },
   "devDependencies": {
     "@antfu/ni": "catalog:dev",

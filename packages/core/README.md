@@ -10,7 +10,7 @@
 
 适用于 uni-app + Vue 3 的跨端树形列表/选择组件，一套代码运行在微信小程序、支付宝小程序和 H5。
 
-**📖 [完整文档](https://ofreshman.github.io/uni-tree-view/)** · [在线演示](https://ofreshman.github.io/uni-tree-view/ui/#/) · [快速上手](https://ofreshman.github.io/uni-tree-view/guide/quick-start) · [API 参考](https://ofreshman.github.io/uni-tree-view/apis/props) · [常见问题](https://ofreshman.github.io/uni-tree-view/guide/faq)
+**📖 [完整文档](https://ofreshman.github.io/uni-tree-view/)** · [在线演示](https://ofreshman.github.io/uni-tree-view/ui/index.html#/) · [快速上手](https://ofreshman.github.io/uni-tree-view/guide/quick-start) · [API 参考](https://ofreshman.github.io/uni-tree-view/apis/props) · [常见问题](https://ofreshman.github.io/uni-tree-view/guide/faq)
 
 > 文档站双线部署，内容原则上保持一致：主入口为 GitHub Pages（上方链接）；访问较慢时可切换到 [Netlify 镜像](https://uni-tree-view.netlify.app/)。
 

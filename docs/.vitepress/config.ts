@@ -40,7 +40,7 @@ function exampleItem(text: string, name: string): DefaultTheme.SidebarItem {
 
 const siteBase = process.env.DOCS_BASE ?? "/uni-tree-view/";
 // VitePress 会自动为站内链接补上 base；这里保持根相对路径，避免默认构建重复拼接 /uni-tree-view/。
-const demoLink = "/ui/";
+const demoLink = process.env.VITE_DEMO_URL ?? "/ui/index.html";
 const siteUrl = process.env.DOCS_SITE_URL ?? "https://ofreshman.github.io/uni-tree-view";
 
 export default defineConfig({
@@ -114,8 +114,8 @@ export default defineConfig({
     lastUpdatedText: "最后更新",
     search: { provider: "local" },
     footer: {
-      message: "Released under the MIT License.",
-      copyright: "Copyright © 2026 OFreshman"
+      message: "Released under the MIT License · 使用或改造请保留版权与许可声明",
+      copyright: "Copyright © 2025-present OFreshman"
     }
   }
 });

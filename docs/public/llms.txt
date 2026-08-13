@@ -31,7 +31,7 @@ Uni Tree View is distributed through npm and the DCloud plugin marketplace. The 
 
 ## Project Resources
 
-- [Interactive Demo](https://ofreshman.github.io/uni-tree-view/ui/): H5 playground built from the current repository.
+- [Interactive Demo](https://ofreshman.github.io/uni-tree-view/ui/index.html): H5 playground built from the current repository.
 - [GitHub Repository](https://github.com/OFreshman/uni-tree-view): Source code, issues, contribution guide, and release history.
 - [Changelog](https://github.com/OFreshman/uni-tree-view/blob/main/CHANGELOG.md): Public changes and upgrade notes.
 - [npm Package](https://www.npmjs.com/package/uni-tree-view): Published package metadata and versions.

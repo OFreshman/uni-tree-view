@@ -105,7 +105,7 @@ const href = computed(() => {
     return `${base.replace(/\/$/, "")}${path}`;
   }
 
-  return withBase(`/ui${path}`);
+  return withBase(`/ui/index.html${path.slice(1)}`);
 });
 
 watch(scene, () => {
