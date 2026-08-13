@@ -10,11 +10,11 @@
 
 适用于 uni-app + Vue 3 的跨端树形列表/选择组件，一套代码运行在微信小程序、支付宝小程序和 H5。
 
-**📖 [完整文档](https://uni-tree-view.netlify.app/)** · [在线演示](https://uni-tree-view.netlify.app/ui/#/) · [快速上手](https://uni-tree-view.netlify.app/guide/quick-start) · [API 参考](https://uni-tree-view.netlify.app/apis/props) · [常见问题](https://uni-tree-view.netlify.app/guide/faq)
+**📖 [完整文档](https://ofreshman.github.io/uni-tree-view/)** · [在线演示](https://ofreshman.github.io/uni-tree-view/ui/#/) · [快速上手](https://ofreshman.github.io/uni-tree-view/guide/quick-start) · [API 参考](https://ofreshman.github.io/uni-tree-view/apis/props) · [常见问题](https://ofreshman.github.io/uni-tree-view/guide/faq)
 
-> 文档站双线部署，内容一致：主入口为 Netlify（上方链接）；备用镜像 [GitHub Pages](https://ofreshman.github.io/uni-tree-view/)。
+> 文档站双线部署，内容原则上保持一致：主入口为 GitHub Pages（上方链接）；访问较慢时可切换到 [Netlify 镜像](https://uni-tree-view.netlify.app/)。
 
-> 使用 AI Coding 工具时，可将 [llms.txt](https://uni-tree-view.netlify.app/llms.txt) 作为精简的文档导航入口。
+> 使用 AI Coding 工具时，可将 [llms.txt](https://ofreshman.github.io/uni-tree-view/llms.txt) 作为精简的文档导航入口。
 
 > **项目状态：** 当前处于 `0.x` 早期阶段。核心能力已有自动化测试，并完成 H5 交互验证及微信/支付宝小程序构建验证；但在 `1.0.0` 前公开 API 和边界行为仍可能调整，升级前请查阅 [CHANGELOG](https://github.com/OFreshman/uni-tree-view/blob/main/CHANGELOG.md)。
 
@@ -132,7 +132,7 @@ function handleCheckChange({ keys }) {
 
 `tree-props` 只负责数据字段映射，不包含样式配置。
 
-完整的属性、事件、插槽和实例方法（Props / Events / Slots / Methods），以及懒加载与虚拟渲染示例，请见 **[文档站](https://uni-tree-view.netlify.app/)**。
+完整的属性、事件、插槽和实例方法（Props / Events / Slots / Methods），以及懒加载与虚拟渲染示例，请见 **[文档站](https://ofreshman.github.io/uni-tree-view/)**。
 
 ## 平台兼容性
 
@@ -143,7 +143,7 @@ function handleCheckChange({ keys }) {
 | 支付宝小程序 | ✅ 构建验证 |
 | App / 其他小程序 | 理论可用，未充分验证 |
 
-点击反馈、内联图标和 `scroll-view` 虚拟滚动等实现说明，见 [平台兼容性文档](https://uni-tree-view.netlify.app/guide/platforms)。
+点击反馈、内联图标和 `scroll-view` 虚拟滚动等实现说明，见 [平台兼容性文档](https://ofreshman.github.io/uni-tree-view/guide/platforms)。
 
 ## 开发
 

@@ -6,7 +6,7 @@
   "description": "Cross-platform tree view component for uni-app and Vue 3, with single and multiple selection, filtering, lazy loading and virtual rendering",
   "author": "OFreshman <415561402@qq.com>",
   "license": "MIT",
-  "homepage": "https://uni-tree-view.netlify.app/",
+  "homepage": "https://ofreshman.github.io/uni-tree-view/",
   "keywords": [
     "uni-tree-view",
     "uni-app",

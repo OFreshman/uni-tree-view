@@ -397,7 +397,7 @@ GitHub Release 不再使用 GitHub 自动生成的 commit 列表；npm 包、文
 pnpm docs:build
 ```
 
-文档站双线部署同一份内容：**Netlify 为主入口**（`https://uni-tree-view.netlify.app/`），GitHub Pages 为备用镜像（`https://ofreshman.github.io/uni-tree-view/`，由 `docs.yml` workflow 自动部署）。
+文档站双线部署，内容原则上保持一致：**GitHub Pages 为主入口**（`https://ofreshman.github.io/uni-tree-view/`，由 `docs.yml` workflow 自动部署），Netlify 为备用镜像（`https://uni-tree-view.netlify.app/`）。两套部署都由 push 到 GitHub 独立触发，并不是 GitHub Pages 部署完成后再触发 Netlify；Netlify 暂停生产部署时，备用镜像可能落后于主入口。
 
 Netlify 构建应使用仓库根目录的 `netlify.toml`：
 
