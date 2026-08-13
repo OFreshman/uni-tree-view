@@ -47,5 +47,6 @@ dist-ssr
 *.sln
 *.sw?
 
-# 本地规划与调研记录
+# 本地规划、调研与维护者手册
 .local/
+/RELEASE.md
