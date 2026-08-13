@@ -8,6 +8,23 @@
   }
 }
 
+/* 桌面端导航栏使用连续背景和一条完整分隔线。
+   VitePress 默认由左侧标题边框和右侧 divider 分别绘制底线，颜色与位置容易出现断层。 */
+@media (min-width: 960px) {
+  .VPNavBar.has-sidebar .content,
+  .VPNavBar.has-sidebar .content-body {
+    background-color: var(--vp-nav-bg-color);
+  }
+
+  .VPNavBar.has-sidebar .VPNavBarTitle .title {
+    border-bottom-color: transparent;
+  }
+
+  .VPNavBar.has-sidebar .wrapper + .divider {
+    padding-left: 0;
+  }
+}
+
 /* 非示例页（右侧无实时预览）在宽屏下正文适当加宽，缓解两侧空、中间挤 */
 @media (min-width: 1440px) {
   .VPDoc.has-aside:not(:has(.DemoPreview--aside)) .content-container {
