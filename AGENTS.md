@@ -1,92 +1,80 @@
 # AGENTS.md
 
-给在本仓库工作的 AI agent 使用的约束和必要提示。
+给在本仓库工作的 AI agent 使用。只记录容易误判、容易造成回归或需要跨文件同步的项目约束；一般开发常识以现有代码和脚本为准。
 
 ## 项目边界
 
-- 这是一个 pnpm `10.11.0` workspace，用于开发 uni-app + Vue 3 组件包。
-- `packages/core` 是实际发布的 `uni-tree-view` 包；根目录 package 仅用于 workspace 脚本，并保持 `private: true`。
-- `playground` 是本地 uni-app H5 演示项目，当前 demo 直接从 `uni-tree-view` 导入组件。
+- 这是一个 uni-app + Vue 3 组件库的 pnpm workspace。pnpm 版本由根目录 `packageManager` 固定，Node.js 版本以 `.nvmrc` 为准。
+- `packages/core` 是实际发布的 `uni-tree-view`；根目录 package 只负责 workspace 脚本并保持 `private: true`。
+- `playground` 是本地演示和跨端构建工程，workspace 中直接从 `uni-tree-view` 导入组件。
+- `packages/core` 保持零运行时依赖，Vue 作为 peer dependency。只服务于演示、文档或构建的依赖不要加入发布包。
+- 工作区可能已有用户未提交的修改。不要撤销、覆盖、格式化、暂存或提交任务范围外的变更。
 
 ## 常用命令
 
 - 安装依赖：`pnpm install`。
 - 启动 H5 playground：`pnpm play`。
+- 同时启动文档站和 playground：`pnpm docs`。
 - 构建组件包：`pnpm build`。
-- 构建组件包并打包 playground H5：`pnpm build:play`。
-- 检查代码：`pnpm lint`、`pnpm lint:type`、`pnpm test`。
+- 常规代码全量检查：`pnpm check`。
+- 完整构建并校验文档站：`pnpm docs:build`。
+- 构建微信和支付宝小程序：`pnpm check:platforms`。
+- 构建 DCloud 发布产物：`pnpm build:uni`。
 
-## 开发约束
+## 开发与跨平台约束
 
-- 文本文件保持 LF 行尾；仓库使用 `.gitattributes` 避免 CRLF 噪音。
-- 优先使用 Node/pnpm 脚本，不要新增依赖特定操作系统 shell 的命令。
-- 不要写死 Windows 或 macOS 专属路径；路径处理优先使用 package scripts 和 `node:path`。
-- `playground/src/pages.json` 和 `playground/src/manifest.json` 是静态 uni-app 配置来源。
-- 不要新增 `<route>` 自定义块，除非恢复 `@uni-helper/vite-plugin-uni-pages` 并在 Windows 上验证通过。
-- 不要导入 `virtual:uno.css`，除非恢复 UnoCSS 并在 Windows 上验证通过。
+- 文本文件保持 LF；优先使用 Node/pnpm 脚本和 `node:path`，不要新增依赖特定操作系统 shell 或写死 Windows、macOS 路径的实现。
+- `playground/src/pages.json` 和 `playground/src/manifest.json` 是当前实际使用的静态 uni-app 配置来源。
+- 仓库虽保留 `playground/pages.config.ts`、`manifest.config.ts`、`uno.config.ts` 及相关依赖，但对应 Pages、Manifest、UnoCSS 插件当前未接入 `playground/vite.config.ts`。不要仅凭配置文件或依赖存在就认为功能已启用。
+- 不要新增 `<route>` 自定义块或导入 `virtual:uno.css`。确需恢复相关插件时，应完成 Vite 接入，并至少验证 H5、微信小程序、支付宝小程序和 Windows 构建。
+- 不要根据依赖列表推断平台兼容性。支持范围和结论只以当前实现、实际构建验证及 `docs/guide/platforms.md` 为准。
 
-## 组件约束
+## 组件与公开 API
 
 - 主组件：`packages/core/src/components/uni-tree-view/uni-tree-view.vue`。
-- 对外类型：`packages/core/src/components/uni-tree-view/types.ts` 和 `packages/core/src/components/uni-tree-view/uni-tree-view.vue.d.ts`。
-- 当前能力：展开/收起、单选/多选（父子联动与严格模式）、禁用节点、`v-model`、关键词过滤与高亮、懒加载（含失败重试）、定高虚拟渲染；事件有 `check-change`、`expand-change`、`node-click`、`load`、`load-error`、`filter-change`，并通过 ref 暴露 `setCheckedKeys`、`scrollToKey` 等方法（完整清单见 `types.ts` 的 `UniTreeViewExposed`）。
-- `treeProps` 只用于映射 `id`、`label`、`children`、`disabled`、`leaf`、`append`、`icon` 字段名；节点行外部样式类使用一级 `nodeClass` prop。
-- 修改组件能力时，保持 `defineProps`/`withDefaults`/`defineEmits`、`types.ts` 和 `.d.ts` 类型同步。
+- 公开类型：`packages/core/src/components/uni-tree-view/types.ts` 和 `uni-tree-view.vue.d.ts`；完整 props、事件、插槽和 ref 方法清单以这些文件及实现为准，不在本文件重复维护能力列表。
+- 修改公开能力时，同步检查 `defineProps`/`withDefaults`、`defineEmits`、`defineSlots`、`defineExpose`、`types.ts`、`.d.ts`、对应测试、API 文档和 playground 示例。不要只让运行时或类型中的一侧生效。
+- `treeProps` 只映射 `id`、`label`、`children`、`disabled`、`leaf`、`append`、`icon` 字段名；节点行外部样式类使用一级 `nodeClass` prop，不要把它塞入 `treeProps`。
+- 行为变更优先补测试。测试按展开、选中、半选、禁用、受控值、默认值、公开方法和事件 payload 等行为组织；优先纯逻辑或最小组件场景，不为单个逻辑引入沉重的跨平台 E2E 依赖。
 
 ## 文档约束
 
-- 文档描述以当前组件实现、公开类型、测试和演示为准，不写未经验证的平台兼容性或性能结论。
-- 准确优先，其次通俗易懂；术语首次出现时用一句话解释，必要时给出具体值或代码示例。
-- FAQ 标题使用用户实际遇到的现象，答案先给结论，再列排查步骤或例外情况。
-- 指南负责解释用法，API 页面用于快速查询；同一内容不要在多处大段重复，优先用链接关联。
-- 示例代码应可直接复制，必要的导入和上下文要完整，不保留未使用的参数或与当前演示不一致的配置。
-- `key`、`v-model`、受控/非受控、单选/多选等术语在各页面保持一致；模板属性名优先使用 kebab-case。
-- 使用短句和直接表达，避免堆砌中英文术语、重复同一结论或为了统一文风制造无意义的大面积改动。
-- 根目录 `README.md` 与 `packages/core/README.md` 的公共内容保持同步，但保留图片、仓库文件等链接路径差异。
+- 文档以当前实现、公开类型、测试和演示为准，不写未经验证的平台兼容性、性能数字或边界行为。
+- 对外文档面向组件使用者、集成开发者或贡献者，保持中立的项目文档视角。不要把维护者与 AI 的对话、个人意图或本次修改过程写入正文。
+- 指南解释用法，API 页面用于查询；FAQ 标题描述真实现象并先给结论。示例必须可复制，包含必要导入和上下文，不保留无效参数。
+- `key`、`v-model`、受控/非受控、单选/多选等术语保持一致，模板属性名优先使用 kebab-case。避免为了统一文风制造与任务无关的大面积改写。
+- 根目录 `README.md` 是公共 README 的来源；`packages/core/scripts/post-build.ts` 会基于它生成带发布链接的 `packages/core/README.md`。不要独立维护两份不同内容，修改后通过构建检查生成结果。
 
-## 测试约束
+## 构建与生成文件
 
-- 在继续 P1/P2 功能前，优先补齐轻量业务逻辑测试，覆盖已有能力，避免交互回归。
-- 测试按展开、选中、半选、禁用、受控值、默认值、公开方法和事件 payload 等行为分组。
-- 优先抽离可测试的纯逻辑或使用最小组件场景；不要为单个逻辑用例引入沉重的跨平台 E2E 依赖。
-- 功能开发完成后，先跑业务逻辑测试，再跑构建验证；测试失败时先修业务行为。
+- `uni-tree-view/resolver` 的最终导出位于 `packages/core/dist-resolver/index.*`。unbuild 会先生成 `dist-resolver/resolver/*`，随后 `packages/core/scripts/post-build.ts` 再整理到根级入口；不要因中间阶段的缺失警告直接修改 exports，应检查命令退出码和最终文件。
+- `pnpm docs` 通过 `VITE_DEMO_URL` 连接本地 playground。`pnpm docs:build` 先将 H5 demo 生成到 `docs/public/ui`，再构建 VitePress，并由 `pnpm docs:check` 校验在线演示入口、iframe 和静态资源。
+- 修改文档部署路径时，同时检查 `DOCS_BASE`、`PLAYGROUND_DOCS_BASE`、带 `index.html` 的静态入口及 Netlify/GitHub Pages 两种部署形态。
+- 不要手动编辑生成物，包括 `dist`、`dist-resolver`、`docs/public/ui`、`docs/.vitepress/dist`、`artifacts`、`coverage`、`playground/src/uni_modules` 和 playground 生成的类型文件。
+- 变更日志只维护根目录 `CHANGELOG.md`；`packages/core/CHANGELOG.md` 在 npm 打包前生成，不要手动编辑。
 
-## 构建提示
+## Git 与发布约束
 
-- `packages/core/package.json` 中的 `uni-tree-view/resolver` 导出指向 `dist-resolver/index.*`。
-- 构建时会先生成 `dist-resolver/resolver/*`，随后 `scripts/post-build.ts` 会移动到 `dist-resolver/index.*`。
-- 如果 unbuild 提示找不到 `dist-resolver/index.*`，先确认 post-build 结束后的最终文件是否存在，再考虑改 exports。
-- 文档站实时预览由 playground 的 `build:h5:docs` 直接生成到 `docs/public/ui`，随后 VitePress 将其复制到 `docs/.vitepress/dist/ui`；完整流水线使用 `pnpm docs:build`。
-- `docs/public/ui` 是已忽略的生成目录；单独运行 VitePress build 只会复用已有内容，在干净检出时不会自动生成 demo，且本地残留可能过期。验证 docs 改动时应运行完整的 `pnpm docs:build`。
-- 变更日志只维护仓库根目录 `CHANGELOG.md`；`packages/core/CHANGELOG.md` 是 npm 打包前自动生成的忽略文件，不要手动编辑。
-
-## 提交约束
-
-- 提交信息使用 `feat:`、`fix:`、`docs:`、`style:`、`refactor:`、`test:`、`chore:` 等类型前缀加中文说明，简洁描述本次提交的实际变更。
-- 提交前检查暂存区，按功能边界分批提交。用户说“提交代码”时，默认含义是按功能分批执行 `git add` 和 `git commit`，并为每批编写对应的 commit message。
-- Git 提交只能署名当前开发者本人。AI agent 不得在提交消息中添加 `Co-authored-by`、`Signed-off-by`、`Generated-by` 或其他 Claude、Codex、AI、机器人署名，也不得把 AI 设置为 Author 或 Committer。
-- 不得执行 `git config user.name`、`git config user.email` 或使用 `git commit --author` 覆盖开发者身份；提交时沿用仓库或全局已有的 Git 身份。如果身份缺失或明显不是开发者本人，停止提交并提示用户配置。
-- 提交后使用 `git show -s --format=fuller HEAD` 检查 Author、Committer 和提交消息，确认只有开发者本人且不含 AI 署名尾注。
-- “提交代码”不包含 `git push`。除非用户明确要求“push”或“推送”，否则任何情况下都不要执行 `git push`；由用户手动推送，避免意外触发 GitHub Actions workflow。
-
-## 参考资料
-
-- 本环境已全局安装 `uni-app` skill；如需查询 uni-app API、平台差异、条件编译、`pages.json` 或 `manifest.json` 配置，优先使用该 skill。
-- 不要把 skill vendoring 或复制进仓库；本仓库规则以当前 `AGENTS.md` 为准。
+- 提交信息遵循仓库的 Conventional Commits 校验，使用中文简述；准确格式和允许的 type 以 `scripts/check-commit-message.ts`、`scripts/changelog-utils.ts` 为准。
+- 用户说“提交代码”时，按功能边界检查暂存区并分批执行 `git add`、`git commit`；不要混入任务外现有改动。
+- Git 提交只能沿用当前开发者已有身份。不得执行 `git config user.name`、`git config user.email`、`git commit --author`，也不得添加 `Co-authored-by`、`Signed-off-by`、`Generated-by` 或任何 AI/机器人署名。
+- 提交后运行 `git show -s --format=fuller HEAD`，确认 Author、Committer、提交消息和尾注均符合要求。
+- “提交代码”不包含 push。只有用户明确要求“push”或“推送”时才可执行 `git push`。
+- 普通功能任务不要修改版本号、创建 release commit/tag 或执行发布命令；这些操作必须由用户明确要求。
 
 ## 交付前验证
 
-做了有意义的代码修改后，交付前运行：
+按变更范围执行，不为纯文案改动无意义地运行所有构建：
 
-```bash
-pnpm lint
-pnpm lint:type
-pnpm test
-pnpm build:play
-git diff --check
-```
+- 组件、脚本或配置代码：`pnpm check`。
+- 文档结构、示例、部署路径或在线演示：`pnpm docs:build`。
+- 跨端模板、样式、事件或平台相关改动：在常规检查外运行 `pnpm check:platforms`。
+- DCloud 打包逻辑或发布内容：运行 `pnpm build:uni`。
+- 任何文本改动至少运行 `git diff --check`。
 
-已知的非阻断输出：
+交付时说明实际运行的命令和结果。Browserslist 的 `caniuse-lite` 提示，以及 unbuild 在 post-build 前报告 resolver 临时入口缺失，可以是非阻断输出；仍须以退出码和最终产物为准。
 
-- Browserslist 可能提示 `caniuse-lite` 数据较旧。
-- unbuild 可能在 post-build 移动 resolver 文件前提示 resolver 导出文件缺失。
+## 参考资料
+
+- 查询 uni-app API、条件编译、平台差异、`pages.json` 或 `manifest.json` 时，若环境提供 `uni-app` skill，优先使用它。
+- 不要把外部 skill 或大段通用参考资料复制进仓库；本仓库行为以代码、测试和本文件为准。
