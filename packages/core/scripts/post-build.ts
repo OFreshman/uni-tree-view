@@ -39,6 +39,10 @@ async function main() {
       .replace(
         "[CONTRIBUTING.md](./CONTRIBUTING.md)",
         "[CONTRIBUTING.md](https://github.com/OFreshman/uni-tree-view/blob/main/CONTRIBUTING.md)"
+      )
+      .replace(
+        "[许可证与署名说明](./docs/guide/license.md)",
+        "[许可证与署名说明](https://ofreshman.github.io/uni-tree-view/guide/license)"
       );
 
     await writeFile(r("README.md"), packageReadme);

@@ -10,6 +10,7 @@ Uni Tree View is distributed through npm and the DCloud plugin marketplace. The 
 - [Installation](https://ofreshman.github.io/uni-tree-view/guide/installation): npm and DCloud installation, manual import, resolver-based automatic import, and global types.
 - [Quick Start](https://ofreshman.github.io/uni-tree-view/guide/quick-start): Copyable examples for basic data, selection with v-model, field mapping, node styling, and filtering.
 - [Platform Compatibility](https://ofreshman.github.io/uni-tree-view/guide/platforms): Verified platforms, unverified targets, and cross-platform implementation notes.
+- [License and Attribution](https://ofreshman.github.io/uni-tree-view/guide/license): MIT notice requirements, recommended attribution, and guidance for modified distributions.
 - [FAQ](https://ofreshman.github.io/uni-tree-view/guide/faq): Controlled values, disabled nodes, virtual scrolling, component styling, lazy-load retry, and common integration issues.
 
 ## API Reference

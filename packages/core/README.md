@@ -159,4 +159,6 @@ pnpm docs        # 本地文档站
 
 ## License
 
-[MIT](./LICENSE) © OFreshman
+本项目使用 [MIT](./LICENSE) 许可证，版权归 OFreshman 所有。再分发源码、构建产物或主要部分时，请保留版权声明和许可证全文；MIT 不要求在产品界面展示作者名。
+
+使用或改造时的保留要求、推荐署名格式和第三方许可说明，见 [许可证与署名说明](https://ofreshman.github.io/uni-tree-view/guide/license)。
