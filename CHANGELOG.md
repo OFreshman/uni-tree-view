@@ -4,6 +4,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- 修复 npm 安装使用时具名插槽在 IDE 中无法识别的问题，并保留 `$props` / JSX 事件回调的 payload 类型。
+
 ## 0.5.0 - 2026-08-13
 
 ### Fixed

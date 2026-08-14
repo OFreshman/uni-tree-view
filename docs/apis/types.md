@@ -1,17 +1,20 @@
 # 类型定义
 
-`uni-tree-view/shared` 是共享入口：除公开类型外，也保留 `device`、`env`、`helpers`、`mitt` 和 `uni` 运行时工具导出。组件本身不依赖这些工具；使用者可按需导入。
-
-包内所有公开类型均可从该入口导入：
+组件相关的公开类型可直接从 `uni-tree-view` 导入；`uni-tree-view/shared` 也会导出这些类型，并额外提供 `device`、`env`、`helpers`、`mitt` 和 `uni` 运行时工具。组件本身不依赖这些工具，使用者可按需选择入口。
 
 ```ts
 import type {
   TreeCheckChangePayload,
   TreeDataItem,
+  TreeEmptySlotProps,
   TreeKey,
   TreeNode,
-  UniTreeViewProps
-} from "uni-tree-view/shared";
+  TreeSlotProps,
+  UniTreeViewEmits,
+  UniTreeViewExposed,
+  UniTreeViewProps,
+  UniTreeViewSlots
+} from "uni-tree-view";
 ```
 
 ## 基础类型
@@ -58,6 +61,55 @@ interface TreeNode {
   loadError: unknown | null; // 最近一次加载失败的错误，未失败或重试成功后为 null
 }
 ```
+
+## 插槽类型
+
+节点内容插槽与空状态插槽分别使用以下作用域参数：
+
+```ts
+interface TreeSlotProps {
+  node: TreeNode;
+  data: TreeDataItem;
+  path: TreeNode[];
+}
+
+interface TreeEmptySlotProps {
+  filterValue: string;
+}
+```
+
+`UniTreeViewSlots` 汇总组件支持的全部插槽，可用于封装组件或检查 `$slots` 类型：
+
+```ts
+interface UniTreeViewSlots {
+  default?: (props: TreeSlotProps) => unknown;
+  label?: (props: TreeSlotProps) => unknown;
+  icon?: (props: TreeSlotProps) => unknown;
+  append?: (props: TreeSlotProps) => unknown;
+  empty?: (props: TreeEmptySlotProps) => unknown;
+  "empty-filter"?: (props: TreeEmptySlotProps) => unknown;
+}
+```
+
+各插槽的渲染行为和示例见 [Slots](/apis/slots)。
+
+## 事件类型
+
+`UniTreeViewEmits` 使用 Vue 3 的具名元组形式描述事件参数。模板事件、JSX 回调和组件实例 `$props` 中的 `onXxx` 回调均使用对应的 payload 类型：
+
+```ts
+type UniTreeViewEmits = {
+  "update:modelValue": [value: TreeModelValue];
+  "check-change": [payload: TreeCheckChangePayload];
+  "expand-change": [payload: TreeExpandPayload];
+  "load": [payload: TreeLoadPayload];
+  "load-error": [payload: TreeLoadErrorPayload];
+  "node-click": [payload: TreeNodeClickPayload];
+  "filter-change": [payload: TreeFilterPayload];
+};
+```
+
+各 payload 的字段结构见 [Events](/apis/events)。
 
 ## 全局组件类型
 
