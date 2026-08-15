@@ -52,8 +52,7 @@
       "import": "./dist-resolver/index.mjs",
       "require": "./dist-resolver/index.cjs"
     },
-    "./global": "./src/global.d.ts",
-    "./*": "./src/*"
+    "./global": "./src/global.d.ts"
   },
   "files": [
     "CHANGELOG.md",

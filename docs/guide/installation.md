@@ -64,7 +64,7 @@ export default defineConfig({
 
 从 [Uni Tree View 插件页](https://ext.dcloud.net.cn/plugin?id=28897) 点击“下载插件并导入 HBuilderX”。
 
-::: warning 当前 0.3.2 的导入目录
+::: warning 插件市场条目当前为 0.3.2
 当前插件市场条目仍按**普通组件**形态导入，实际目录为：
 
 ```text
