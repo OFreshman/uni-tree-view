@@ -1,12 +1,11 @@
 // 本文件中的公开类型断言在编译期校验，由 `pnpm check` 的类型检查执行。
-import { describe, expect, it } from "vitest";
 import type {
   TreeCheckChangePayload,
   TreeEmptySlotProps,
   TreeModelValue,
   TreeSlotProps
-} from "../packages/core/src/components/uni-tree-view/types";
-import type UniTreeView from "../packages/core/src/components/uni-tree-view/uni-tree-view.vue.d";
+} from "../../packages/core/src/components/uni-tree-view/types";
+import type UniTreeView from "../../packages/core/src/components/uni-tree-view/uni-tree-view.vue.d";
 
 type ComponentProps = InstanceType<typeof UniTreeView>["$props"];
 type Slots = InstanceType<typeof UniTreeView>["$slots"];
@@ -41,12 +40,6 @@ type _UpdateModelValuePayload = Assert<Equals<
   Parameters<NonNullable<ComponentProps["onUpdate:modelValue"]>>,
   [value: TreeModelValue]
 >>;
-
-describe("uni-tree-view public types", () => {
-  it("keeps the compile-time assertions included in the test suite", () => {
-    expect(true).toBe(true);
-  });
-});
 
 // @ts-expect-error unknown slot names must not be accepted by the public component type
 const invalidSlotName: SlotName = "nonexistent-slot";
