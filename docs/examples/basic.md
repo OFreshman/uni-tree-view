@@ -128,7 +128,7 @@ const treeData = ref([
 
 ## 节点路径
 
-打开 `show-path` 后，节点文本下方会补一行从根节点到当前节点的完整层级路径，`path-separator` 定义分隔符：
+打开 `show-path` 后，非根节点文本下方会补一行从根节点到当前节点的完整层级路径，根节点不会重复显示自身；`path-separator` 定义分隔符：
 
 ```vue
 <uni-tree-view :data="treeData" show-path path-separator=" / " />

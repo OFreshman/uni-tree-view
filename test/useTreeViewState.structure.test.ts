@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { CHECK_STATUS_MAP } from "../packages/core/src/components/uni-tree-view/constants";
 import {
@@ -302,5 +302,24 @@ describe("useTreeViewState: structure, expansion and filtering", () => {
     state.checkNode(node(state, "town-0-0-0"));
     expect(node(state, "province-0").checked).toBe(CHECK_STATUS_MAP.indeterminate);
     expect(node(state, "city-0-0").checked).toBe(CHECK_STATUS_MAP.indeterminate);
+  });
+
+  it("warns once for missing and duplicate node keys in development", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    createState({
+      data: [
+        { label: "Missing one" },
+        { label: "Missing two" },
+        { id: "duplicate", label: "Duplicate one" },
+        { id: "duplicate", label: "Duplicate two" }
+      ]
+    });
+
+    const missingWarnings = warn.mock.calls.filter(([message]) => String(message).includes("缺失节点 key"));
+    expect(missingWarnings).toHaveLength(1);
+    expect(String(missingWarnings[0][0])).toContain("Missing one");
+    expect(warn.mock.calls.filter(([message]) => String(message).includes("重复节点 key"))).toHaveLength(1);
+    warn.mockRestore();
   });
 });

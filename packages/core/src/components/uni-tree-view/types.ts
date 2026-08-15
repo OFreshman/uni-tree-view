@@ -28,7 +28,7 @@ export interface TreeNode {
   isLeaf: boolean;
   loaded: boolean;
   loading: boolean;
-  loadError: unknown | null;
+  loadError: unknown;
 }
 
 export interface TreeProps {
@@ -121,7 +121,7 @@ export interface UniTreeViewProps {
   /** Highlight literal filter keyword matches in the built-in label. */
   highlightFilter?: boolean;
   /** Default checked keys for uncontrolled initial state. */
-  defaultCheckedKeys?: TreeKey | TreeKey[];
+  defaultCheckedKeys?: TreeKey | TreeKey[] | null;
   /** Field mapping for id, label, children, disabled, leaf, append and icon. */
   treeProps?: Partial<TreeProps>;
   /** Theme color for active checkbox/radio. */
@@ -191,7 +191,7 @@ export interface UniTreeViewProps {
 }
 
 export interface UniTreeViewExposed {
-  setCheckedKeys: (keys: TreeKey | TreeKey[], checked?: boolean) => void;
+  setCheckedKeys: (keys: TreeKey | TreeKey[], checked?: boolean) => TreeModelValue;
   getCheckedKeys: () => TreeKey[];
   getHalfCheckedKeys: () => TreeKey[];
   getUncheckedKeys: () => TreeKey[];
@@ -202,9 +202,11 @@ export interface UniTreeViewExposed {
   getExpandedKeys: () => TreeKey[];
   getUnexpandedKeys: () => TreeKey[];
   getVisibleKeys: () => TreeKey[];
+  getMatchedKeys: () => TreeKey[];
   getExpandedNodes: () => TreeNode[];
   getUnexpandedNodes: () => TreeNode[];
   getVisibleNodes: () => TreeNode[];
+  getMatchedNodes: () => TreeNode[];
   getNode: (key: TreeKey) => TreeNode | undefined;
   getNodePath: (keyOrNode: TreeKey | TreeNode) => TreeNode[];
   expandAll: () => void;

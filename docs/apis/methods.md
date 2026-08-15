@@ -27,13 +27,17 @@ function selectAll() {
 
 | 方法 | 签名 | 说明 |
 | --- | --- | --- |
-| `setCheckedKeys` | `(keys: TreeKey \| TreeKey[], checked = true) => void` | 设置指定 keys 的选中状态；默认跳过禁用节点 |
+| `setCheckedKeys` | `(keys: TreeKey \| TreeKey[], checked = true) => TreeModelValue` | 设置指定 keys 的选中状态，并返回当前实际生效的选中值；默认跳过禁用节点 |
 | `getCheckedKeys` | `() => TreeKey[]` | 获取全部选中 keys |
 | `getHalfCheckedKeys` | `() => TreeKey[]` | 获取半选 keys |
 | `getUncheckedKeys` | `() => TreeKey[]` | 获取未选 keys |
 | `getCheckedNodes` | `() => TreeNode[]` | 获取全部选中节点 |
 | `getHalfCheckedNodes` | `() => TreeNode[]` | 获取半选节点 |
 | `getUncheckedNodes` | `() => TreeNode[]` | 获取未选节点 |
+
+`setCheckedKeys` 的返回值与当前模式一致：单选返回实际选中的 key 或 `null`，多选返回实际选中的 key 数组。单选传入数组时按顺序使用第一个可选 key；因此调用方不需要猜测禁用节点、`only-radio-leaf` 等规则过滤后的结果。
+
+懒加载模式下，尚未进入状态树的 key 会排队等待。方法先返回当前实际生效值；对应节点加载成功且可选后，组件再应用选中状态，并触发 `update:modelValue` 与 `check-change`。已经存在但受禁用规则拦截的节点不会进入等待队列。
 
 `checked-disabled` 默认为 `false`，此时禁用节点的当前选中状态会被锁定：通过 `setCheckedKeys` 实现的全选、清空，以及父子联动和外部更新 `v-model`，都不会直接改变它。只有显式开启 `checked-disabled`，禁用节点才允许改变选中状态。
 
@@ -61,6 +65,8 @@ function selectAll() {
 | `getNodePath` | `(keyOrNode) => TreeNode[]` | 获取根到节点的路径 |
 | `getVisibleKeys` | `() => TreeKey[]` | 当前可见（含过滤后）keys |
 | `getVisibleNodes` | `() => TreeNode[]` | 当前可见节点 |
+| `getMatchedKeys` | `() => TreeKey[]` | 当前过滤条件下直接命中的 keys；未过滤时为空数组 |
+| `getMatchedNodes` | `() => TreeNode[]` | 当前过滤条件下直接命中的节点；未过滤时为空数组 |
 
 ## 懒加载 / 滚动
 

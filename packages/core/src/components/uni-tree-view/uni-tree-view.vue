@@ -108,7 +108,7 @@
                   </text>
                 </template>
               </view>
-              <view v-if="props.showPath" class="utv-tree-node-path">
+              <view v-if="props.showPath && item.node.path.length > 1" class="utv-tree-node-path">
                 {{ item.node.path.join(props.pathSeparator) }}
               </view>
             </view>
@@ -218,6 +218,9 @@ let nextNodeDomId = 0;
 
 const {
   isMultiple,
+  treeVersion,
+  reconciledModelValue,
+  pendingCheckChangePayload,
   visibleTreeList,
   toggleExpand,
   checkNode,
@@ -443,10 +446,52 @@ function emitFilterChange() {
   });
 }
 
+// 过滤条件或状态树变化时对账：只要本次或上一次处于过滤中就同步结果，避免未过滤时的数据更新触发噪音事件。
+let previouslyHadFilterValue = false;
+
 watch(
-  () => [props.filterValue, props.filterMethod] as const,
+  () => [props.filterValue, props.filterMethod, treeVersion.value] as const,
   () => {
+    const currentlyHasFilterValue = hasFilterValue.value;
+    const shouldEmit = currentlyHasFilterValue || previouslyHadFilterValue;
+    previouslyHadFilterValue = currentlyHasFilterValue;
+    if (!shouldEmit) {
+      return;
+    }
     emitFilterChange();
+  },
+  { flush: "post", immediate: true }
+);
+
+// 状态树重建或懒加载追加后回收已移除节点的 DOM id，保持 scrollToKey 的查询目标与渲染一致。
+watch(
+  treeVersion,
+  () => {
+    for (const key of nodeDomIds.keys()) {
+      if (!getNode(key)) {
+        nodeDomIds.delete(key);
+      }
+    }
+  },
+  { flush: "sync" }
+);
+
+watch(
+  reconciledModelValue,
+  (payload) => {
+    if (payload) {
+      emit("update:modelValue", payload.value);
+    }
+  },
+  { flush: "post" }
+);
+
+watch(
+  pendingCheckChangePayload,
+  (payload) => {
+    if (payload) {
+      commitSelectionChange(payload);
+    }
   },
   { flush: "post" }
 );
@@ -467,11 +512,13 @@ function commitSelectionChange(payload: TreeCheckChangePayload) {
 
 function setCheckedKeys(keys: TreeKey | TreeKey[], checked = true) {
   const payload = setStateCheckedKeys(keys, checked);
-  if (!payload) {
-    return;
+  if (payload) {
+    commitSelectionChange(payload);
+    return payload.value;
   }
 
-  commitSelectionChange(payload);
+  const checkedKeys = getCheckedKeys();
+  return isMultiple.value ? checkedKeys : (checkedKeys[0] ?? null);
 }
 
 const exposed = {
@@ -486,9 +533,11 @@ const exposed = {
   getExpandedKeys,
   getUnexpandedKeys,
   getVisibleKeys,
+  getMatchedKeys,
   getExpandedNodes,
   getUnexpandedNodes,
   getVisibleNodes,
+  getMatchedNodes,
   getNode,
   getNodePath,
   expandAll,

@@ -51,9 +51,11 @@ describe("uni-tree-view component", () => {
       "getExpandedKeys",
       "getUnexpandedKeys",
       "getVisibleKeys",
+      "getMatchedKeys",
       "getExpandedNodes",
       "getUnexpandedNodes",
       "getVisibleNodes",
+      "getMatchedNodes",
       "getNode",
       "getNodePath",
       "expandAll",
@@ -589,5 +591,171 @@ describe("uni-tree-view component", () => {
     expect(await exposed(wrapper).scrollToKey("BB")).toBe(true);
     await nextTick();
     expect(wrapper.find("scroll-view").attributes("scroll-top")).toBe("36");
+  });
+
+  it("emits filter results on initial filtering and filtered data replacement", async () => {
+    const wrapper = mount(UniTreeView, {
+      props: {
+        data: [{ id: "root", label: "Root", children: [{ id: "alpha-1", label: "Alpha one" }] }],
+        filterValue: "alpha"
+      }
+    });
+    await nextTick();
+
+    expect(wrapper.emitted<TreeFilterPayload[]>("filter-change")?.[0]?.[0]).toMatchObject({
+      keys: ["root", "alpha-1"],
+      matchedKeys: ["alpha-1"]
+    });
+    expect(exposed(wrapper).getMatchedKeys()).toEqual(["alpha-1"]);
+
+    await wrapper.setProps({
+      data: [{ id: "root", label: "Root", children: [{ id: "alpha-2", label: "Alpha two" }] }]
+    });
+    await nextTick();
+
+    const events = wrapper.emitted<TreeFilterPayload[]>("filter-change") ?? [];
+    expect(events).toHaveLength(2);
+    expect(events[1][0]).toMatchObject({
+      keys: ["root", "alpha-2"],
+      matchedKeys: ["alpha-2"]
+    });
+    expect(exposed(wrapper).getMatchedNodes().map((node) => node.id)).toEqual(["alpha-2"]);
+  });
+
+  it("does not emit filter-change for unfiltered expansion", async () => {
+    const wrapper = mount(UniTreeView, {
+      props: {
+        data: [{ id: "root", label: "Root", children: [{ id: "child", label: "Child" }] }]
+      }
+    });
+
+    exposed(wrapper).setExpandedKeys(["root"]);
+    await nextTick();
+
+    expect(wrapper.emitted("filter-change")).toBeUndefined();
+  });
+
+  it("reconciles controlled values when selected keys disappear from non-lazy data", async () => {
+    const wrapper = mount(UniTreeView, {
+      props: {
+        data: [{ id: "selected", label: "Selected" }],
+        modelValue: ["selected"],
+        multiple: true,
+        checkStrictly: true
+      }
+    });
+
+    await wrapper.setProps({ data: [{ id: "replacement", label: "Replacement" }] });
+    await nextTick();
+
+    expect(exposed(wrapper).getCheckedKeys()).toEqual([]);
+    expect(wrapper.emitted("update:modelValue")).toEqual([[[]]]);
+    expect(wrapper.emitted("check-change")).toBeUndefined();
+  });
+
+  it("queues imperative lazy keys and emits after they become selectable", async () => {
+    const wrapper = mount(UniTreeView, {
+      props: {
+        data: [{ id: "lazy-root", label: "Lazy root", leaf: false }],
+        multiple: true,
+        checkStrictly: true,
+        loadMode: true,
+        loadApi: () => [{ id: "lazy-child", label: "Lazy child", leaf: true }]
+      }
+    });
+    const tree = exposed(wrapper);
+
+    expect(tree.setCheckedKeys("lazy-child")).toEqual([]);
+    expect(wrapper.emitted("update:modelValue")).toBeUndefined();
+
+    await tree.loadNode(tree.getNode("lazy-root")!);
+    await nextTick();
+
+    expect(tree.getCheckedKeys()).toEqual(["lazy-child"]);
+    expect(wrapper.emitted("update:modelValue")).toEqual([[["lazy-child"]]]);
+    expect(wrapper.emitted<TreeCheckChangePayload[]>("check-change")?.[0]?.[0].node.id).toBe("lazy-child");
+  });
+
+  it("keeps the effective single-select value until an imperative lazy key resolves", async () => {
+    const wrapper = mount(UniTreeView, {
+      props: {
+        data: [
+          { id: "existing", label: "Existing", leaf: true },
+          { id: "lazy-root", label: "Lazy root", leaf: false }
+        ],
+        loadMode: true,
+        loadApi: () => [{ id: "lazy-child", label: "Lazy child", leaf: true }]
+      }
+    });
+    const tree = exposed(wrapper);
+
+    expect(tree.setCheckedKeys("existing")).toBe("existing");
+    expect(tree.setCheckedKeys("lazy-child")).toBe("existing");
+    expect(wrapper.emitted("update:modelValue")).toEqual([["existing"]]);
+
+    await tree.loadNode(tree.getNode("lazy-root")!);
+    await nextTick();
+
+    expect(tree.getCheckedKeys()).toEqual(["lazy-child"]);
+    expect(wrapper.emitted("update:modelValue")).toEqual([["existing"], ["lazy-child"]]);
+  });
+
+  it("returns the effective single-select value and uses the first selectable key", () => {
+    const wrapper = mount(UniTreeView, {
+      props: {
+        data: [
+          { id: "branch", label: "Branch", children: [{ id: "leaf-a", label: "Leaf A" }] },
+          { id: "leaf-b", label: "Leaf B" }
+        ],
+        selectable: true,
+        onlyRadioLeaf: true
+      }
+    });
+    const tree = exposed(wrapper);
+
+    expect(tree.setCheckedKeys(["branch", "leaf-a", "leaf-b"])).toBe("leaf-a");
+    expect(tree.getCheckedKeys()).toEqual(["leaf-a"]);
+  });
+
+  it("highlights repeated literal matches case-insensitively", () => {
+    const wrapper = mount(UniTreeView, {
+      props: {
+        data: [{ id: "match", label: "Alpha alpha ALPHA" }],
+        filterValue: "aLpHa",
+        highlightFilter: true
+      }
+    });
+
+    expect(wrapper.findAll(".utv-tree-node-label__match").map((item) => item.text())).toEqual([
+      "Alpha",
+      "alpha",
+      "ALPHA"
+    ]);
+  });
+
+  it("renders paths only for descendants", () => {
+    const wrapper = mount(UniTreeView, {
+      props: {
+        data: [{ id: "root", label: "Root", children: [{ id: "child", label: "Child" }] }],
+        defaultExpandAll: true,
+        showPath: true,
+        pathSeparator: " > "
+      }
+    });
+
+    expect(wrapper.findAll(".utv-tree-node-path")).toHaveLength(1);
+    expect(wrapper.find(".utv-tree-node-path").text()).toBe("Root > Child");
+  });
+
+  it("releases DOM ids for removed keys before they are added again", async () => {
+    const wrapper = mount(UniTreeView, {
+      props: { data: [{ id: "reused", label: "First" }] }
+    });
+    const firstId = wrapper.find(".utv-tree-item").attributes("id");
+
+    await wrapper.setProps({ data: [{ id: "other", label: "Other" }] });
+    await wrapper.setProps({ data: [{ id: "reused", label: "Second" }] });
+
+    expect(wrapper.find(".utv-tree-item").attributes("id")).not.toBe(firstId);
   });
 });

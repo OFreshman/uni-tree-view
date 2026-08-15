@@ -58,7 +58,7 @@ interface TreeNode {
   isLeaf: boolean;         // 是否叶子节点
   loaded: boolean;         // 懒加载是否完成
   loading: boolean;        // 懒加载进行中
-  loadError: unknown | null; // 最近一次加载失败的错误，未失败或重试成功后为 null
+  loadError: unknown;        // 最近一次加载失败的错误，未失败或重试成功后为 null
 }
 ```
 

@@ -10,6 +10,10 @@
 | `load-error` | `(payload: TreeLoadErrorPayload)` | 懒加载失败 |
 | `filter-change` | `(payload: TreeFilterPayload)` | 过滤结果变化 |
 
+非懒加载模式下，如果受控 `modelValue` 中的 key 因 `data` 更新而不再存在，组件会通过 `update:modelValue` 回传清理后的值。该过程属于数据对账，没有可作为“本次操作节点”的合法节点，因此不会额外触发 `check-change`。父组件仍需接收并更新受控值。
+
+`filter-change` 在以下情况下触发：组件初始化时已有非空 `filter-value`；过滤值或 `filter-method` 改变；非空过滤期间，`data` 替换或懒加载结果使状态树更新。清空已有过滤条件也会触发一次。未启用过滤时，普通展开/收起和数据更新不会触发该事件。
+
 ## 事件参数结构（Payload）
 
 ### TreeCheckChangePayload

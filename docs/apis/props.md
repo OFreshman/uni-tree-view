@@ -9,7 +9,7 @@
 | `data` | `TreeDataItem[]` | `[]` | 树形数据 |
 | `v-model` / `modelValue` | `TreeKey \| TreeKey[] \| null` | - | 选中值。单选为一个 key 或 `null`，多选为 key 数组 |
 | `tree-props` | `Partial<TreeProps>` | - | 字段映射，见下方 [TreeProps](#treeprops) |
-| `default-checked-keys` | `TreeKey \| TreeKey[]` | `[]` | 未绑定 `v-model` 时的初始选中 key |
+| `default-checked-keys` | `TreeKey \| TreeKey[] \| null` | `[]` | 未绑定 `v-model` 时的初始选中 key |
 
 ### TreeProps
 
@@ -32,7 +32,7 @@ interface TreeProps {
 | --- | --- | --- | --- |
 | `selectable` | `boolean` | `false` | 是否启用并展示选择控件 |
 | `multiple` | `boolean` | `false` | 是否多选。`false` 时为单选 |
-| `show-radio-icon` | `boolean` | `true` | 单选模式是否显示单选按钮 |
+| `show-radio-icon` | `boolean` | `true` | 单选模式是否显示单选按钮；关闭时需开启 `check-on-click-node` 或 `check-on-click-leaf`，否则用户没有选择入口 |
 | `check-strictly` | `boolean` | `false` | 父子选中状态是否互相独立 |
 | `only-radio-leaf` | `boolean` | `false` | 仅单选模式生效，限制为只允许选择叶子节点；`multiple=true` 时忽略 |
 | `check-on-click-node` | `boolean` | `false` | 点击任意节点行是否切换选中；开启后同时覆盖叶子和非叶子节点 |
@@ -78,7 +78,7 @@ interface TreeProps {
 | `indent` | `number` | `40` | 每级缩进，单位 **rpx** |
 | `selection-placement` | `"left" \| "right"` | `"left"` | 单选按钮或复选框的位置 |
 | `empty-text` | `string` | `暂无数据` | 空数据文案 |
-| `show-path` | `boolean` | `false` | label 下方展示节点路径 |
+| `show-path` | `boolean` | `false` | 非根节点的 label 下方展示完整路径；根节点不重复显示路径行 |
 | `path-separator` | `string` | `" / "` | 路径分隔符 |
 
 普通 `class` 仍按 Vue / uni-app 约定作用于组件根容器；需要定制节点行时使用 `node-class`：

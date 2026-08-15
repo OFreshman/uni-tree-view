@@ -3,13 +3,15 @@ import type {
   TreeCheckChangePayload,
   TreeEmptySlotProps,
   TreeModelValue,
-  TreeSlotProps
+  TreeSlotProps,
+  UniTreeViewExposed
 } from "../../packages/core/src/components/uni-tree-view/types";
 import type UniTreeView from "../../packages/core/src/components/uni-tree-view/uni-tree-view.vue.d";
 
 type ComponentProps = InstanceType<typeof UniTreeView>["$props"];
 type Slots = InstanceType<typeof UniTreeView>["$slots"];
 type SlotName = keyof Slots;
+type Exposed = Pick<InstanceType<typeof UniTreeView>, keyof UniTreeViewExposed>;
 
 type Assert<T extends true> = T;
 type Equals<A, B> = (<T>() => T extends A ? 1 : 2) extends
@@ -40,6 +42,10 @@ type _UpdateModelValuePayload = Assert<Equals<
   Parameters<NonNullable<ComponentProps["onUpdate:modelValue"]>>,
   [value: TreeModelValue]
 >>;
+type _SetCheckedKeysResult = Assert<Equals<ReturnType<Exposed["setCheckedKeys"]>, TreeModelValue>>;
+
+const nullableDefaultCheckedKeys: ComponentProps = { defaultCheckedKeys: null };
+void nullableDefaultCheckedKeys;
 
 // @ts-expect-error unknown slot names must not be accepted by the public component type
 const invalidSlotName: SlotName = "nonexistent-slot";

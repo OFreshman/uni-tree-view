@@ -1,4 +1,4 @@
-import { computed, ref, toRaw, watch } from "vue";
+import { computed, ref, shallowRef, toRaw, watch } from "vue";
 import { CHECK_STATUS_MAP, DefaultTreeProps } from "./constants";
 import type {
   CheckStatus,
@@ -7,42 +7,49 @@ import type {
   TreeKey,
   TreeModelValue,
   TreeNode,
-  TreeProps
+  TreeProps,
+  UniTreeViewProps
 } from "./types";
 
-export interface TreeViewStateProps {
-  data?: TreeDataItem[];
-  treeProps?: Partial<TreeProps>;
-  filterValue?: string;
-  filterMethod?: (value: string, node: TreeNode) => boolean;
-  modelValue?: TreeModelValue;
-  defaultCheckedKeys?: TreeKey | TreeKey[] | null;
-  multiple?: boolean;
-  checkStrictly?: boolean;
-  accordion?: boolean;
-  onlyRadioLeaf?: boolean;
-  defaultExpandAll?: boolean;
-  defaultExpandedKeys?: TreeKey[] | null;
-  defaultExpandParent?: boolean;
-  expandChecked?: boolean;
-  cacheExpandedKeys?: boolean;
-  loadMode?: boolean;
-  loadApi?: (node: TreeNode) => TreeDataItem[] | Promise<TreeDataItem[]>;
-  isLeafFn?: (item: TreeDataItem, node: TreeNode) => boolean;
-  alwaysFirstLoad?: boolean;
-  checkedDisabled?: boolean;
-  packDisabledKey?: boolean;
-  packDisabledkey?: boolean;
-}
+export type TreeViewStateProps = Pick<
+  UniTreeViewProps,
+  | "data"
+  | "treeProps"
+  | "filterValue"
+  | "filterMethod"
+  | "modelValue"
+  | "defaultCheckedKeys"
+  | "multiple"
+  | "checkStrictly"
+  | "accordion"
+  | "onlyRadioLeaf"
+  | "defaultExpandAll"
+  | "defaultExpandedKeys"
+  | "defaultExpandParent"
+  | "expandChecked"
+  | "cacheExpandedKeys"
+  | "loadMode"
+  | "loadApi"
+  | "isLeafFn"
+  | "alwaysFirstLoad"
+  | "checkedDisabled"
+  | "packDisabledKey"
+  | "packDisabledkey"
+>;
 
 export function useTreeViewState(props: TreeViewStateProps) {
   const treeList = ref<TreeNode[]>([]);
   const visibleTreeList = ref<TreeNode[]>([]);
   const matchedTreeList = ref<TreeNode[]>([]);
+  const treeVersion = ref(0);
+  const reconciledModelValue = shallowRef<{ value: TreeModelValue } | null>(null);
+  const pendingCheckChangePayload = shallowRef<TreeCheckChangePayload | null>(null);
   const childrenMap = ref<Map<TreeKey, TreeNode[]>>(new Map());
   const nodeMap = ref<Map<TreeKey, TreeNode>>(new Map());
   const cachedExpandedKeys = ref<Set<TreeKey>>(new Set());
   let pendingCheckedKeys = new Set<TreeKey>();
+  let pendingImperativeCheckedKeys = new Set<TreeKey>();
+  let warnedInvalidKeys = new Set<string>();
   let initialized = false;
 
   const resolvedTreeProps = computed<TreeProps>(() => {
@@ -101,21 +108,33 @@ export function useTreeViewState(props: TreeViewStateProps) {
   );
 
   function initializeTree(treeData: TreeDataItem[] = []) {
+    const wasInitialized = initialized;
     const preserveRuntimeChecked = initialized && props.modelValue === undefined;
     const checkedKeys = props.modelValue !== undefined
       ? getInitialCheckedKeys()
       : preserveRuntimeChecked
-        ? [...getRawCheckedKeys(), ...pendingCheckedKeys]
+        ? isMultiple.value
+          ? [...getRawCheckedKeys(), ...pendingCheckedKeys]
+          : [...pendingImperativeCheckedKeys, ...pendingCheckedKeys, ...getRawCheckedKeys()]
         : getInitialCheckedKeys();
     const pendingKeys = preserveRuntimeChecked ? [...pendingCheckedKeys] : checkedKeys;
+    const imperativeKeys = [...pendingImperativeCheckedKeys];
     syncCachedExpandedKeys();
     childrenMap.value = new Map();
     nodeMap.value = new Map();
+    warnedInvalidKeys = new Set();
     treeList.value = flattenTree(treeData);
+    treeVersion.value += 1;
     initialized = true;
     applyCheckedState(checkedKeys);
     pendingCheckedKeys = new Set(pendingKeys.filter((key) => !nodeMap.value.has(key)));
+    const resolvedImperativeKeys = imperativeKeys.filter((key) => nodeMap.value.has(key));
+    pendingImperativeCheckedKeys = new Set(
+      imperativeKeys.filter((key) => pendingCheckedKeys.has(key))
+    );
     applyExpandedState();
+    publishPendingSelectionChange(resolvedImperativeKeys);
+    reconcileMissingControlledKeys(wasInitialized, checkedKeys);
   }
 
   function toggleExpand(node: TreeNode) {
@@ -198,6 +217,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
       const id = item[idKey] as TreeKey;
       const children = item[childrenKey];
       const label = String(item[labelKey] ?? "");
+      warnAboutInvalidKey(id, label);
 
       const treeNode: TreeNode = {
         id,
@@ -223,6 +243,12 @@ export function useTreeViewState(props: TreeViewStateProps) {
       treeNode.loaded = treeNode.isLeaf || !props.loadMode || (Array.isArray(children) && children.length > 0 && !props.alwaysFirstLoad);
       nodes.push(treeNode);
 
+      if (id !== undefined && id !== null && nodeMap.value.has(id)) {
+        warnOnce(
+          `duplicate:${String(id)}`,
+          `[uni-tree-view] 检测到重复节点 key：${String(id)}。请确保 tree-props.id 映射的值在整棵树中唯一。`
+        );
+      }
       nodeMap.value.set(id, treeNode);
       const parentId = parentIds.slice(-1)[0];
       if (parentId !== undefined) {
@@ -277,6 +303,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
   function applyConfiguredCheckedState(keys: TreeKey[]) {
     applyCheckedState(keys);
     pendingCheckedKeys = new Set(keys.filter((key) => !nodeMap.value.has(key)));
+    pendingImperativeCheckedKeys = new Set();
   }
 
   function applyPendingCheckedState() {
@@ -285,8 +312,10 @@ export function useTreeViewState(props: TreeViewStateProps) {
       return;
     }
 
+    const resolvedImperativeKeys = resolvedKeys.filter((key) => pendingImperativeCheckedKeys.has(key));
     for (const key of resolvedKeys) {
       pendingCheckedKeys.delete(key);
+      pendingImperativeCheckedKeys.delete(key);
     }
 
     if (isMultiple.value) {
@@ -301,18 +330,18 @@ export function useTreeViewState(props: TreeViewStateProps) {
         updateNodeAndDescendantsStatus(resolvedKeys, CHECK_STATUS_MAP.checked, Boolean(props.checkedDisabled));
         updateParentNodesStatus(resolvedKeys);
       }
+      publishPendingSelectionChange(resolvedImperativeKeys);
       return;
     }
 
     const node = resolvedKeys
       .map((key) => nodeMap.value.get(key))
-      .find((item): item is TreeNode => item !== undefined
-        && canSelectDisabledNode(item)
-        && (!props.onlyRadioLeaf || item.isLeaf));
+      .find((item): item is TreeNode => item !== undefined && canSelectNode(item));
     if (node) {
       clearCheckedStatus();
       node.checked = CHECK_STATUS_MAP.checked;
     }
+    publishPendingSelectionChange(resolvedImperativeKeys);
   }
 
   function applyExpandedState() {
@@ -723,21 +752,67 @@ export function useTreeViewState(props: TreeViewStateProps) {
     };
   }
 
-  function setCheckedKeys(keys: TreeKey | TreeKey[], checked = true) {
-    const normalizedKeys = normalizeKeys(keys);
-    const changedNode = normalizedKeys
+  function publishPendingSelectionChange(keys: TreeKey[]) {
+    const changedNode = keys
       .map((key) => nodeMap.value.get(key))
-      .find((node): node is TreeNode => node !== undefined && (!node.disabled || Boolean(props.checkedDisabled)));
-    if (!changedNode) {
-      return null;
+      .find((node): node is TreeNode => node !== undefined && canSelectNode(node));
+    if (changedNode) {
+      pendingCheckChangePayload.value = buildCheckChangePayload(changedNode);
+    }
+  }
+
+  function reconcileMissingControlledKeys(wasInitialized: boolean, configuredKeys: TreeKey[]) {
+    if (!wasInitialized || props.modelValue === undefined || props.loadMode) {
+      return;
+    }
+    if (!configuredKeys.some((key) => !nodeMap.value.has(key))) {
+      return;
     }
 
+    const keys = getCheckedKeys();
+    reconciledModelValue.value = {
+      value: isMultiple.value ? keys : (keys[0] ?? null)
+    };
+  }
+
+  function warnAboutInvalidKey(id: TreeKey, label: string) {
+    if (id !== undefined && id !== null) {
+      return;
+    }
+    warnOnce(
+      "missing",
+      `[uni-tree-view] 检测到缺失节点 key。请检查 tree-props.id 映射；问题节点 label：${label || "(空)"}`
+    );
+  }
+
+  function warnOnce(key: string, message: string) {
+    if (!(import.meta as ImportMeta & { env?: { DEV?: boolean } }).env?.DEV || warnedInvalidKeys.has(key)) {
+      return;
+    }
+    warnedInvalidKeys.add(key);
+    console.warn(message);
+  }
+
+  function setCheckedKeys(keys: TreeKey | TreeKey[], checked = true) {
+    const normalizedKeys = normalizeKeys(keys);
+
     if (!checked) {
+      for (const key of normalizedKeys) {
+        pendingCheckedKeys.delete(key);
+        pendingImperativeCheckedKeys.delete(key);
+      }
+      const changedNode = normalizedKeys
+        .map((key) => nodeMap.value.get(key))
+        .find((node): node is TreeNode => node !== undefined && canSelectNode(node));
+      if (!changedNode) {
+        return null;
+      }
+
       if (isMultiple.value) {
         if (props.checkStrictly) {
           for (const key of normalizedKeys) {
             const node = nodeMap.value.get(key);
-            if (node && (!node.disabled || props.checkedDisabled)) {
+            if (node && canSelectDisabledNode(node)) {
               node.checked = CHECK_STATUS_MAP.unchecked;
             }
           }
@@ -748,7 +823,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
       } else {
         for (const key of normalizedKeys) {
           const node = nodeMap.value.get(key);
-          if (node && (!node.disabled || props.checkedDisabled)) {
+          if (node && canSelectNode(node)) {
             node.checked = CHECK_STATUS_MAP.unchecked;
           }
         }
@@ -756,21 +831,51 @@ export function useTreeViewState(props: TreeViewStateProps) {
       return buildCheckChangePayload(changedNode);
     }
 
-    if (isMultiple.value) {
-      if (props.checkStrictly) {
-        for (const key of normalizedKeys) {
-          const node = nodeMap.value.get(key);
-          if (node && (!node.disabled || props.checkedDisabled)) {
-            node.checked = CHECK_STATUS_MAP.checked;
-          }
+    if (!isMultiple.value) {
+      const targetKey = normalizedKeys.find((key) => {
+        const node = nodeMap.value.get(key);
+        return node === undefined || canSelectNode(node);
+      });
+      if (targetKey === undefined) {
+        return null;
+      }
+
+      const targetNode = nodeMap.value.get(targetKey);
+      pendingCheckedKeys = new Set();
+      pendingImperativeCheckedKeys = new Set();
+      if (!targetNode) {
+        pendingCheckedKeys.add(targetKey);
+        pendingImperativeCheckedKeys.add(targetKey);
+        return null;
+      }
+
+      clearCheckedStatus();
+      targetNode.checked = CHECK_STATUS_MAP.checked;
+      return buildCheckChangePayload(targetNode);
+    }
+
+    const unresolvedKeys = normalizedKeys.filter((key) => !nodeMap.value.has(key));
+    for (const key of unresolvedKeys) {
+      pendingCheckedKeys.add(key);
+      pendingImperativeCheckedKeys.add(key);
+    }
+    const changedNode = normalizedKeys
+      .map((key) => nodeMap.value.get(key))
+      .find((node): node is TreeNode => node !== undefined && canSelectNode(node));
+    if (!changedNode) {
+      return null;
+    }
+
+    if (props.checkStrictly) {
+      for (const key of normalizedKeys) {
+        const node = nodeMap.value.get(key);
+        if (node && canSelectDisabledNode(node)) {
+          node.checked = CHECK_STATUS_MAP.checked;
         }
-      } else {
-        updateNodeAndDescendantsStatus(normalizedKeys, CHECK_STATUS_MAP.checked, Boolean(props.checkedDisabled));
-        updateParentNodesStatus(normalizedKeys);
       }
     } else {
-      clearCheckedStatus();
-      changedNode.checked = CHECK_STATUS_MAP.checked;
+      updateNodeAndDescendantsStatus(normalizedKeys, CHECK_STATUS_MAP.checked, Boolean(props.checkedDisabled));
+      updateParentNodesStatus(normalizedKeys);
     }
 
     return buildCheckChangePayload(changedNode);
@@ -886,6 +991,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
     removeDescendants(node.id);
 
     const childNodes = flattenTree(children, node.level + 1, [...node.parentIds, node.id], [...node.parents, node.source]);
+    treeVersion.value += 1;
     const nodeIndex = treeList.value.findIndex((item) => item.id === node.id);
     if (nodeIndex === -1) {
       treeList.value.push(...childNodes);
@@ -937,6 +1043,9 @@ export function useTreeViewState(props: TreeViewStateProps) {
     isMultiple,
     visibleTreeList,
     matchedTreeList,
+    treeVersion,
+    reconciledModelValue,
+    pendingCheckChangePayload,
     initializeTree,
     toggleExpand,
     checkNode,

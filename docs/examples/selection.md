@@ -166,5 +166,5 @@ function clearChecked() {
 
 `pack-disabled-key` 只控制已选禁用节点是否进入 `v-model`、事件和查询方法的返回结果，不会清除内部/视觉选中状态。
 
-`setCheckedKeys` 会同步更新 `v-model` 并触发一次 `check-change`，因此 `@check-change` 里的逻辑对手动调用同样生效。传入的 key 全部不存在（或全部被禁用规则拦下）时方法直接返回，不发事件。完整方法列表见 [Methods](/apis/methods)。
+`setCheckedKeys` 返回当前实际生效的选中值。已存在且可选的节点发生变化时，它会同步更新 `v-model` 并触发一次 `check-change`；单选传入数组时只使用第一个可选 key。懒加载中尚未出现的 key 会进入等待队列，方法先返回当前值，节点加载成功后再补选并触发事件。全部已知 key 都被禁用规则拦截时状态不变，也不会触发事件。完整方法列表见 [Methods](/apis/methods)。
 :::
