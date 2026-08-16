@@ -1,7 +1,7 @@
 {
   "name": "Uni Tree View",
   "appid": "__UNI__D8AD38E",
-  "description": "",
+  "description": "uni-tree-view 跨平台树形组件示例工程",
   "versionName": "1.0.0",
   "versionCode": "10000",
   "transformPx": false,

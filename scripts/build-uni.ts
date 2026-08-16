@@ -40,6 +40,7 @@ interface PlaygroundPackageJson extends PackageJson {
 const NpmPackageName = "uni-tree-view";
 const PluginId = "KieranYin9527-tree";
 const PluginDisplayName = "Uni Tree View";
+const DescriptionMaxLength = 100;
 // DCloud 规定 keywords 最多 5 个，不能沿用 npm 包里那份长列表；
 // 插件市场检索以中文为主，因此保留一个中文词。
 const PluginKeywords = ["树形组件", "tree", "tree-view", "uni-app", "vue3"];
@@ -93,6 +94,21 @@ function normalizeBugs(bugs: PackageJson["bugs"]) {
 function validatePluginId() {
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)+$/i.test(PluginId) || PluginId.length > 20) {
     throw new Error(`Invalid DCloud plugin ID: ${PluginId}`);
+  }
+}
+
+function validatePluginDescription(pkg: PackageJson) {
+  const description = pkg.description?.trim() ?? "";
+  if (!description) {
+    throw new Error("The DCloud plugin description must not be empty");
+  }
+  if (description.length > DescriptionMaxLength) {
+    throw new Error(
+      `The DCloud plugin description must be at most ${DescriptionMaxLength} characters`
+    );
+  }
+  if (!/[\u4E00-\u9FFF]/.test(description)) {
+    throw new Error("The DCloud plugin description must contain Chinese text");
   }
 }
 
@@ -531,6 +547,7 @@ async function build() {
       `The npm package name must remain ${NpmPackageName}; DCloud uses the separate ID ${PluginId}`
     );
   }
+  validatePluginDescription(pkg);
 
   // 唯一产物是 HBuilderX 发布用工程。uni_modules 插件只能由 IDE 打包上传，旧的插件 ZIP、
   // 示例工程 ZIP 和单独 readme 都是网页上传通道的遗留，条目页与 GitHub release 都不再需要。

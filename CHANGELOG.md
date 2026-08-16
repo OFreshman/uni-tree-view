@@ -4,6 +4,25 @@
 
 ## Unreleased
 
+## 0.6.0 - 2026-08-16
+
+### Added
+
+- **dcloud:** 将插件市场发布迁移为 `uni_modules`，从市场导入后由 easycom 自动注册，不再落入项目的 `components` 目录。
+- **core:** 新增 `getMatchedKeys` / `getMatchedNodes` 实例方法，用于获取当前过滤条件下直接命中的节点。
+
+### Changed
+
+- **core:** `setCheckedKeys` 现在返回实际生效的选中值；懒加载节点尚未出现时会等待节点加载，再补选并触发选中事件。
+- **core:** 非懒加载模式下，`data` 更新会清理受控 `modelValue` 中已经不存在的 key；过滤期间状态树变化也会重新触发 `filter-change`。
+- **core:** `show-path` 不再为根节点重复显示仅包含自身的路径行。
+
+### Fixed
+
+- **package:** 收紧公开子路径导出，只保留主入口、`shared`、`resolver` 和 `global`，避免依赖包内未承诺的实现路径。
+- **build:** 强化文档和 README 构建校验。
+- **docs:** 修复文档开发进程退出码与端口解析。
+
 ## 0.5.1 - 2026-08-14
 
 ### Fixed

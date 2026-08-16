@@ -1,9 +1,9 @@
 {
   "name": "uni-tree-view",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "private": true,
   "packageManager": "pnpm@10.11.0",
-  "description": "Cross-platform tree view component for uni-app and Vue 3, with single and multiple selection, filtering, lazy loading and virtual rendering",
+  "description": "适用于 uni-app 与 Vue 3 的跨平台树形组件，支持单选、多选、筛选、懒加载和虚拟列表",
   "author": "OFreshman <415561402@qq.com>",
   "license": "MIT",
   "homepage": "https://ofreshman.github.io/uni-tree-view/",
