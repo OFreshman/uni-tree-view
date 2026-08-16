@@ -4,6 +4,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- **dcloud:** 更新并上传 `uni_modules` 示例工程，移除旧 `components` 使用方式及 npm 包依赖。
+
 ## 0.6.0 - 2026-08-16
 
 ### Added
