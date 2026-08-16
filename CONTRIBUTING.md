@@ -31,7 +31,7 @@ playground      uni-app 演示工程
 docs            VitePress 文档站
 test            单元测试
 scripts         构建脚本（build:uni 生成 DCloud 发布文件）
-artifacts       本地发布产物（插件 ZIP、说明文档、示例工程 ZIP、npm 包 tgz）
+artifacts       本地产物（HBuilderX 发布用工程、npm 包 tgz）
 ```
 
 ## 提交前检查
@@ -48,6 +48,8 @@ pnpm build      # 构建组件包
 - 运行时 props/emits 与 `types.ts`、`uni-tree-view.vue.d.ts` 保持同步
 - 补充对应的单元测试（按展开/选中/禁用/事件 payload 等行为分组）
 - 更新 `docs/` 对应 API 文档；需要人工整理发布说明时再填写根目录 `CHANGELOG.md` 的 Unreleased 段落
+
+修改 `playground/` 示例时请注意：这份工程会被打包成插件市场的示例工程，而那份工程里没有 npm 版组件，`<uni-tree-view>` 只能由 easycom 从 `uni_modules` 解析。构建脚本会自动删除运行时 `import`、把纯类型导入改指向插件目录；其余导入形态（默认导入混具名等）会直接报错，需要手工拆成这两种。`pnpm check` 会断言生成工程不再引用 `uni-tree-view`，CI 还会把它装到仓库外独立构建一次。
 
 ## 提交规范
 
@@ -66,3 +68,5 @@ docs: 补充 xxx 示例
 贡献者只需按功能边界提交代码、测试和文档。版本号、release commit、tag、npm 发布和 DCloud 插件市场发布由项目维护者统一处理，请不要在功能提交中修改版本号。
 
 变更日志只维护仓库根目录 `CHANGELOG.md`；npm 包内的 `CHANGELOG.md` 会在打包前自动生成。提交类型会用于整理发布说明，需要补充迁移步骤、兼容性变化或其他无法从提交标题表达的信息时，请更新根目录 `CHANGELOG.md` 的 `Unreleased` 段落。
+
+npm 发布由 tag 触发的 release 工作流自动完成；DCloud 插件市场按 `uni_modules` 规范发布，必须由维护者在 HBuilderX 中手动操作，贡献者无需关心。

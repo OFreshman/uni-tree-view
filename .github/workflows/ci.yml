@@ -57,6 +57,8 @@ jobs:
         env:
           BEFORE_SHA: ${{ github.event.before }}
 
+      # pnpm check 里已包含 pack:uni（easycom 目录约定、可移植导入、示例工程不引用 npm 包），
+      # 所以这里不再单独跑一次。真正把生成工程装起来构建的是下面的 standalone-example job。
       - name: Check
         run: pnpm check
 
@@ -69,8 +71,44 @@ jobs:
       - name: Build Alipay mini program
         run: pnpm -C playground build:mp-alipay
 
-      - name: Build uni_modules package
-        run: pnpm pack:uni
+  standalone-example:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set node
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build DCloud publish workspace
+        run: pnpm build:uni
+
+      # 必须搬出仓库再验证：留在 artifacts/ 下时 pnpm 会向上找到根 pnpm-workspace.yaml，
+      # 生成工程可能经 workspace 链接解析到 uni-tree-view，构建通过也说明不了插件形态可用。
+      - name: Move the generated project out of the workspace
+        run: mv artifacts/hbuilderx/KieranYin9527-tree-example "$RUNNER_TEMP/standalone-example"
+
+      - name: Install the standalone project
+        working-directory: ${{ runner.temp }}/standalone-example
+        run: pnpm install --no-lockfile
+
+      - name: Type check the standalone project
+        working-directory: ${{ runner.temp }}/standalone-example
+        run: pnpm lint:type
+
+      - name: Build the standalone project for H5
+        working-directory: ${{ runner.temp }}/standalone-example
+        run: pnpm build:h5
 
   cross-platform:
     runs-on: ${{ matrix.os }}

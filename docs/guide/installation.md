@@ -1,8 +1,14 @@
 # 安装
 
-支持 npm 与 DCloud 插件市场两种方式，二选一即可。
+支持 npm 与 DCloud 插件市场（`uni_modules`）两种方式，二选一即可。
 
-## 方式一：npm
+::: tip 该选哪个
+**推荐 npm**：更新时只改一行版本号，不会与项目里的组件源码产生冲突，配合 resolver 还能免导入。CLI 工程（Vite / vue-cli）优先走这条。
+
+`uni_modules` 适合用 HBuilderX 可视化开发、项目里没有 npm 依赖管理的场景：即插即用、天然支持 easycom，代价是升级时会覆盖工程里对应的 `uni_modules` 插件目录。
+:::
+
+## 方式一：npm（推荐）
 
 ```bash
 # pnpm
@@ -60,21 +66,20 @@ export default defineConfig({
 }
 ```
 
-## 方式二：DCloud 插件市场
+## 方式二：DCloud 插件市场（uni_modules）
 
-从 [Uni Tree View 插件页](https://ext.dcloud.net.cn/plugin?id=28897) 点击“下载插件并导入 HBuilderX”。
+从 [Uni Tree View 插件页](https://ext.dcloud.net.cn/plugin?id=28897) 点击“下载插件并导入 HBuilderX”，选择目标工程即可。插件按 `uni_modules` 规范发布，导入后统一落在以插件 ID 命名的目录下：
 
-::: warning 插件市场条目当前为 0.3.2
-当前插件市场条目仍按**普通组件**形态导入，实际目录为：
+| 工程类型 | 导入目录 |
+| --- | --- |
+| HBuilderX 可视化工程 | `uni_modules/KieranYin9527-tree` |
+| CLI 工程（Vite / vue-cli） | `src/uni_modules/KieranYin9527-tree` |
 
-```text
-src/components/uni-tree-view
-```
+也可以在插件页下载 ZIP，把解压出的 `KieranYin9527-tree` 目录放进上表对应位置，效果等同。
 
-这不是 Vue 2 / Vue 3 的区别，也不是“下载插件并导入 HBuilderX”按钮决定的；落到 `components` 还是 `uni_modules`，由插件市场条目的**发布类型**决定。
-:::
+导入 `uni_modules` 规范插件需要 HBuilderX 3.1.0 以上版本。`uni_modules` 并非 Vue 2 专属，Vue 3 工程同样适用。
 
-当前目录符合 easycom 的组件目录约定，可直接在模板中使用：
+组件目录符合 easycom 约定，无需任何配置即可直接使用：
 
 ```vue
 <template>
@@ -82,13 +87,26 @@ src/components/uni-tree-view
 </template>
 ```
 
-标准 `uni_modules` 发布形态对应的目录应为：
+### 类型提示
 
-```text
-src/uni_modules/KieranYin9527-tree
+插件自带类型声明，不需要配置 `types`：插件目录里的 `global.d.ts` 声明了 `<uni-tree-view>` 的全局组件类型，只要插件目录落在 `tsconfig.json` 的 `include` 范围内（CLI 工程默认的 `src/**/*` 已覆盖）就生效。
+
+需要显式导入类型时，指向工程内的插件目录，而不是 npm 包名：
+
+```ts
+// CLI 工程：插件在 src/uni_modules 下，`@` 指向 src
+import type {
+  TreeDataItem,
+  TreeKey,
+  UniTreeViewExposed
+} from "@/uni_modules/KieranYin9527-tree";
 ```
 
-Vue 3 项目同样可以使用 `uni_modules` 组件；`uni_modules` 并非 Vue 2 专属。后续若插件市场条目迁移为 `uni_modules` 发布，HBuilderX 的导入目录会随发布类型变化，组件标签仍保持 `<uni-tree-view>`。迁移前请勿在同一项目同时保留 `src/components/uni-tree-view` 与 `src/uni_modules/KieranYin9527-tree` 两份组件，以免 easycom 匹配到重复实现。
+HBuilderX 可视化工程没有 `@` 别名、插件也在工程根目录，改用相对路径，例如页面位于 `pages/demo/` 时写 `../../uni_modules/KieranYin9527-tree`。
+
+::: warning 不要与 npm 方式混用
+同一工程里不要同时保留 `uni_modules/KieranYin9527-tree` 和 npm 安装的 `uni-tree-view`，否则 easycom 与显式导入会解析到两份实现。换用另一种方式前，先把上一种彻底删掉。
+:::
 
 ## 环境要求
 

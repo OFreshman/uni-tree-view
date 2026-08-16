@@ -76,8 +76,10 @@ jobs:
       - name: Build Alipay mini program
         run: pnpm -C playground build:mp-alipay
 
+      # DCloud 插件只能由 HBuilderX 手动发布，这里不产出 release 资产；插件形态的断言
+      # （easycom 目录约定、可移植导入、示例工程不引用 npm 包）已包含在上面的 pnpm check 里。
       - name: Build release artifacts
-        run: pnpm pack:npm && pnpm pack:uni
+        run: pnpm pack:npm
 
       - name: Check npm version
         id: npm-version
@@ -100,7 +102,7 @@ jobs:
       - name: Create or update GitHub release
         shell: bash
         run: |
-          assets=(artifacts/npm/* artifacts/dcloud/*)
+          assets=(artifacts/npm/*)
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
             gh release upload "$RELEASE_TAG" "${assets[@]}" --clobber
             gh release edit "$RELEASE_TAG" \

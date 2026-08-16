@@ -33,7 +33,7 @@
 pnpm add uni-tree-view
 ```
 
-或在 [DCloud 插件市场](https://ext.dcloud.net.cn/plugin?id=28897) 导入 `Uni Tree View`。当前市场版本按普通组件形态安装到 `src/components/uni-tree-view`，可通过 easycom 使用；目录差异见[安装说明](https://ofreshman.github.io/uni-tree-view/guide/installation)。
+推荐使用 npm；也可以在 [DCloud 插件市场](https://ext.dcloud.net.cn/plugin?id=28897) 导入 `Uni Tree View`，插件按 `uni_modules` 规范发布，导入后位于 `uni_modules/KieranYin9527-tree`（CLI 工程为 `src/uni_modules/KieranYin9527-tree`）。两种方式的取舍见[安装说明](https://ofreshman.github.io/uni-tree-view/guide/installation)。
 
 ## 使用
 
@@ -76,7 +76,7 @@ function handleCheckChange({ keys }) {
 
 ### DCloud 插件市场方式
 
-从插件市场安装后，通过 easycom 自动导入，无需手动 import：
+从插件市场导入到 `uni_modules` 后，通过 easycom 自动导入，无需手动 import：
 
 ```vue
 <template>

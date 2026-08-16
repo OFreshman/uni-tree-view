@@ -41,5 +41,5 @@ features:
     details: 零运行时依赖，可通过 `theme-color` 调整主题色，并用文本、图标、尾部内容和空状态插槽扩展内容。
   - icon: 📦
     title: 双通道分发
-    details: npm 包 + DCloud 插件市场双通道；市场发布形态与导入目录见安装说明。
+    details: 推荐 npm 安装；也提供 DCloud 插件市场的 `uni_modules` 形态，导入即用，取舍见安装说明。
 ---
