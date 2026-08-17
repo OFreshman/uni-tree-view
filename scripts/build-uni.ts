@@ -341,7 +341,7 @@ function createDCloudPackage(pkg: PackageJson) {
 function createPluginReadmeGuide() {
   return `# ${PluginDisplayName}（\`uni_modules\` 插件）
 
-插件已按 \`uni_modules\` 规范导入，组件目录符合 easycom 约定，模板里直接写 \`<uni-tree-view>\` 即可，**不需要** import：
+插件已按 \`uni_modules\` 规范导入，组件目录符合 easycom 约定。在项目保持 easycom 自动扫描开启时，模板里直接写 \`<uni-tree-view>\` 即可，**不需要** import：
 
 \`\`\`vue
 <template>
@@ -356,7 +356,7 @@ function createPluginReadmeGuide() {
 import type { TreeDataItem, UniTreeViewExposed } from "${PluginTypeImportPath}";
 \`\`\`
 
-HBuilderX 可视化工程没有 \`@\` 别名、插件也在工程根目录，改用相对路径指向 \`uni_modules/${PluginId}\`。
+如果 HBuilderX 可视化工程没有配置 \`@\` 别名，应改用相对路径指向 \`uni_modules/${PluginId}\`；如果工程自行配置了别名，则以实际配置为准。
 
 下面是与 npm 包共用的完整说明，其中「npm 方式」一节只适用于 npm 通道。
 

@@ -76,7 +76,7 @@ function handleCheckChange({ keys }) {
 
 ### DCloud 插件市场方式
 
-从插件市场导入到 `uni_modules` 后，通过 easycom 自动导入，无需手动 import：
+从插件市场导入到 `uni_modules` 后，在 easycom 保持自动扫描开启时，无需手动 import：
 
 ```vue
 <template>
