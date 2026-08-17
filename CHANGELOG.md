@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+## 0.6.2 - 2026-08-17
+
 ### Changed
 
 - **docs:** 澄清 `uni_modules` 插件重新安装、更新及安装方式切换的影响范围。
