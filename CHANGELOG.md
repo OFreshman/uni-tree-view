@@ -4,6 +4,10 @@
 
 ## Unreleased
 
+### Removed
+
+- **core:** 移除 0.3.0 起标记废弃的过渡别名 `packDisabledkey` / `pack-disabledkey`，统一使用规范命名 `packDisabledKey` / `pack-disabled-key`。行为与默认值（`true`）不变，仍在使用旧拼写的工程改用新名即可。
+
 ### Changed
 
 - **dcloud:** 插件 ID 由 `KieranYin9527-tree` 改为 `keryin-tree-view`，从市场导入后的插件目录名随之变化。已装旧版的工程需删除 `uni_modules/KieranYin9527-tree`（CLI 工程为 `src/uni_modules/KieranYin9527-tree`）后再导入新版，并把显式的类型导入路径改指向新目录；npm 通道不受影响。
