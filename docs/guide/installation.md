@@ -72,14 +72,14 @@ export default defineConfig({
 
 | 工程类型 | 导入目录 |
 | --- | --- |
-| HBuilderX 可视化工程 | `uni_modules/KieranYin9527-tree` |
-| CLI 工程（Vite / vue-cli） | `src/uni_modules/KieranYin9527-tree` |
+| HBuilderX 可视化工程 | `uni_modules/keryin-tree-view` |
+| CLI 工程（Vite / vue-cli） | `src/uni_modules/keryin-tree-view` |
 
 ::: info 重新安装或更新会影响哪些目录
 假设 `uni_modules` 下有 `a`、`b`、`c` 三个插件，重新安装或更新 `c` 时，操作目标是 `c` 对应的目录，`a` 和 `b` 不会因此被替换。这里所说的“覆盖”仅指 `c` 目录内与新版同路径的文件；HBuilderX 更新时会显示文件差异，应在确认前检查并备份需要保留的本地修改。
 :::
 
-也可以在插件页下载 ZIP，把解压出的 `KieranYin9527-tree` 目录放进上表对应位置。这样可以得到相同的运行时目录结构，但后续升级需要自行重新下载，并合并或替换这个插件目录。
+也可以在插件页下载 ZIP，把解压出的 `keryin-tree-view` 目录放进上表对应位置。这样可以得到相同的运行时目录结构，但后续升级需要自行重新下载，并合并或替换这个插件目录。
 
 HBuilderX 3.1.0 起支持导入 `uni_modules` 规范插件；这是 `uni_modules` 机制本身的最低版本，不是本组件的运行环境要求。本组件要求 HBuilderX 4.15 以上版本，详见下方[环境要求](#环境要求)。`uni_modules` 并非 Vue 2 专属，Vue 3 工程同样适用。
 
@@ -103,16 +103,16 @@ import type {
   TreeDataItem,
   TreeKey,
   UniTreeViewExposed
-} from "@/uni_modules/KieranYin9527-tree";
+} from "@/uni_modules/keryin-tree-view";
 ```
 
-如果 HBuilderX 可视化工程没有配置 `@` 别名，应改用相对路径。以 `pages/demo/index.vue` 为例，可以写 `../../uni_modules/KieranYin9527-tree`；如果工程自行配置了别名，则以实际配置为准。
+如果 HBuilderX 可视化工程没有配置 `@` 别名，应改用相对路径。以 `pages/demo/index.vue` 为例，可以写 `../../uni_modules/keryin-tree-view`；如果工程自行配置了别名，则以实际配置为准。
 
 ::: warning 不要同时使用两种安装方式
 同一工程同时保留 npm 包和 `uni_modules` 插件时，不同页面或不同导入方式可能使用不同版本的组件，排查问题时容易混淆。切换安装方式时，只移除不再使用的那一份：
 
 - 改用 `uni_modules`：通过当前包管理器卸载 `uni-tree-view`。
-- 改用 npm：删除 `uni_modules/KieranYin9527-tree`；CLI 工程删除 `src/uni_modules/KieranYin9527-tree`。同级的其他插件目录不受影响。
+- 改用 npm：删除 `uni_modules/keryin-tree-view`；CLI 工程删除 `src/uni_modules/keryin-tree-view`。同级的其他插件目录不受影响。
 :::
 
 ## 环境要求
