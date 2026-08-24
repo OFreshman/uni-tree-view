@@ -196,7 +196,6 @@ const props = withDefaults(defineProps<UniTreeViewProps>(), {
   alwaysFirstLoad: false,
   checkedDisabled: false,
   packDisabledKey: undefined,
-  packDisabledkey: undefined,
   nodeClass: "",
   indent: 40,
   selectionPlacement: "left",

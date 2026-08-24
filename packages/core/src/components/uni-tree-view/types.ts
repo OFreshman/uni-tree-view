@@ -166,8 +166,6 @@ export interface UniTreeViewProps {
   checkedDisabled?: boolean;
   /** Whether checked disabled nodes are included in returned keys/nodes. */
   packDisabledKey?: boolean;
-  /** @deprecated Use `packDisabledKey` instead. */
-  packDisabledkey?: boolean;
   /** Custom class name added to every node row. */
   nodeClass?: string;
   /** Tree item indent in rpx. */

@@ -336,28 +336,24 @@ describe("useTreeViewState: selection", () => {
     stop();
   });
 
-  it("prefers packDisabledKey while preserving the deprecated alias", () => {
-    const modern = createState({
+  it("resolves packDisabledKey with a packing default", () => {
+    const excluded = createState({
       checkedDisabled: true,
       packDisabledKey: false
     });
-    modern.state.setCheckedKeys("room-a-202");
-    expect(modern.state.getCheckedKeys()).toEqual([]);
+    excluded.state.setCheckedKeys("room-a-202");
+    expect(excluded.state.getCheckedKeys()).toEqual([]);
 
-    const legacy = createState({
+    const included = createState({
       checkedDisabled: true,
-      packDisabledkey: false
+      packDisabledKey: true
     });
-    legacy.state.setCheckedKeys("room-a-202");
-    expect(legacy.state.getCheckedKeys()).toEqual([]);
+    included.state.setCheckedKeys("room-a-202");
+    expect(included.state.getCheckedKeys()).toEqual(["room-a-202"]);
 
-    const preferred = createState({
-      checkedDisabled: true,
-      packDisabledKey: true,
-      packDisabledkey: false
-    });
-    preferred.state.setCheckedKeys("room-a-202");
-    expect(preferred.state.getCheckedKeys()).toEqual(["room-a-202"]);
+    const omitted = createState({ checkedDisabled: true });
+    omitted.state.setCheckedKeys("room-a-202");
+    expect(omitted.state.getCheckedKeys()).toEqual(["room-a-202"]);
   });
 
   it("preserves disabled checked nodes internally when packing excludes them", async () => {
@@ -365,7 +361,7 @@ describe("useTreeViewState: selection", () => {
       multiple: true,
       checkStrictly: true,
       checkedDisabled: true,
-      packDisabledkey: false
+      packDisabledKey: false
     });
 
     state.setCheckedKeys(["room-a-202"]);
@@ -377,7 +373,7 @@ describe("useTreeViewState: selection", () => {
     expect(checkedKeys(state)).toEqual([]);
   });
 
-  it("honors checkedDisabled and packDisabledkey options", () => {
+  it("honors checkedDisabled and packDisabledKey options", () => {
     const blocked = createState();
 
     expect(blocked.state.setCheckedKeys(["room-a-202"])).toBeNull();
@@ -385,7 +381,7 @@ describe("useTreeViewState: selection", () => {
 
     const allowed = createState({
       checkedDisabled: true,
-      packDisabledkey: false
+      packDisabledKey: false
     });
 
     const payload = allowed.state.setCheckedKeys(["room-a-202"]);

@@ -34,7 +34,6 @@ export type TreeViewStateProps = Pick<
   | "alwaysFirstLoad"
   | "checkedDisabled"
   | "packDisabledKey"
-  | "packDisabledkey"
 >;
 
 export function useTreeViewState(props: TreeViewStateProps) {
@@ -65,9 +64,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
   });
 
   const isMultiple = computed(() => Boolean(props.multiple));
-  const resolvedPackDisabledKey = computed(() => {
-    return props.packDisabledKey ?? props.packDisabledkey ?? true;
-  });
+  const resolvedPackDisabledKey = computed(() => props.packDisabledKey ?? true);
 
   watch(
     () => [
