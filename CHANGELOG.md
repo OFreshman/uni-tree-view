@@ -4,6 +4,10 @@
 
 ## Unreleased
 
+### Changed
+
+- **dcloud:** 插件 ID 由 `KieranYin9527-tree` 改为 `keryin-tree-view`，从市场导入后的插件目录名随之变化。已装旧版的工程需删除 `uni_modules/KieranYin9527-tree`（CLI 工程为 `src/uni_modules/KieranYin9527-tree`）后再导入新版，并把显式的类型导入路径改指向新目录；npm 通道不受影响。
+
 ## 0.6.2 - 2026-08-17
 
 ### Changed
