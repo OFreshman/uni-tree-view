@@ -38,7 +38,11 @@ interface PlaygroundPackageJson extends PackageJson {
 }
 
 const NpmPackageName = "uni-tree-view";
-const PluginId = "KieranYin9527-tree";
+const PluginId = "keryin-tree-view";
+// 生成工程的目录名与它的 package.json name 都跟着插件 ID 走，从 ID 派生而不是各写一份：
+// 之前 name 是硬编码的小写字面量，改 ID 时漏改不会有任何报错。npm 的 name 只允许小写，
+// 插件 ID 允许大写，所以用作 name 时统一降级。
+const ExampleProjectName = `${PluginId}-example`;
 const PluginDisplayName = "Uni Tree View";
 const DescriptionMaxLength = 100;
 // DCloud 规定 keywords 最多 5 个，不能沿用 npm 包里那份长列表；
@@ -504,7 +508,7 @@ async function buildExampleProject(pkg: PackageJson, exampleDir: string) {
 
   const examplePackagePath = r(exampleDir, "package.json");
   const examplePackage = await readJson(examplePackagePath) as PlaygroundPackageJson;
-  examplePackage.name = "kieranyin9527-tree-example";
+  examplePackage.name = ExampleProjectName.toLowerCase();
   examplePackage.private = true;
   examplePackage.version = pkg.version;
   examplePackage.description = `${PluginDisplayName} DCloud 插件使用示例`;
@@ -552,7 +556,7 @@ async function build() {
   // 唯一产物是 HBuilderX 发布用工程。uni_modules 插件只能由 IDE 打包上传，旧的插件 ZIP、
   // 示例工程 ZIP 和单独 readme 都是网页上传通道的遗留，条目页与 GitHub release 都不再需要。
   const workspaceDir = r("artifacts", "hbuilderx");
-  const exampleDir = r(workspaceDir, `${PluginId}-example`);
+  const exampleDir = r(workspaceDir, ExampleProjectName);
   const pluginDir = r(exampleDir, "src", "uni_modules", PluginId);
 
   consola.info(chalk.cyan("Building the DCloud publish workspace"));

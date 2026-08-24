@@ -11,7 +11,7 @@ function r(...paths: string[]) {
 
 function getComponentVersion() {
   const packageJsonPaths = [
-    r("src", "uni_modules", "KieranYin9527-tree", "package.json"),
+    r("src", "uni_modules", "keryin-tree-view", "package.json"),
     r("..", "packages", "core", "package.json")
   ];
 
