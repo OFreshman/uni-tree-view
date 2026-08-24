@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+## 0.6.3 - 2026-08-24
+
 ### Removed
 
 - **core:** 移除 0.3.0 起标记废弃的过渡别名 `packDisabledkey` / `pack-disabledkey`，统一使用规范命名 `packDisabledKey` / `pack-disabled-key`。行为与默认值（`true`）不变，仍在使用旧拼写的工程改用新名即可。
