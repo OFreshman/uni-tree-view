@@ -32,6 +32,7 @@ export function useVirtualTreeList<T>(options: UseVirtualTreeListOptions<T>) {
 
   const totalCount = computed(() => toValue(options.items).length);
 
+  // 定高窗口：滚动位置除以行高得到首个进入视口的下标，再向前多渲染 overscan 行缓冲。
   const startIndex = computed(() => {
     if (!virtualEnabled.value || totalCount.value === 0) {
       return 0;
@@ -59,6 +60,7 @@ export function useVirtualTreeList<T>(options: UseVirtualTreeListOptions<T>) {
     return items.slice(startIndex.value, endIndex.value);
   });
 
+  // 上下占位高度替代被跳过的行，撑出真实滚动条长度，使滚动比例与完整列表一致。
   const topPadding = computed(() => {
     return virtualEnabled.value ? startIndex.value * itemHeight.value : 0;
   });

@@ -243,7 +243,7 @@
   text-align: center;
 }
 
-// 加载图标旋转动画；此前被 .is-loading 引用但未定义
+// 懒加载中的箭头图标旋转动画，由 .utv-tree-item__arrow-icon.is-loading 引用。
 @keyframes IconLoading {
   0% {
     transform: rotate(0deg);

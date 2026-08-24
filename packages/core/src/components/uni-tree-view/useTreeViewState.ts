@@ -46,7 +46,10 @@ export function useTreeViewState(props: TreeViewStateProps) {
   const childrenMap = ref<Map<TreeKey, TreeNode[]>>(new Map());
   const nodeMap = ref<Map<TreeKey, TreeNode>>(new Map());
   const cachedExpandedKeys = ref<Set<TreeKey>>(new Set());
+  // 目标节点尚未加载出来的选中 key 暂存于此，等懒加载补齐节点后再落地为真实选中态。
   let pendingCheckedKeys = new Set<TreeKey>();
+  // 上述待选 key 中来自 setCheckedKeys 等命令式调用的子集：落地后需要额外抛出选中事件，
+  // 而来自 modelValue / defaultCheckedKeys 的部分属于配置回放，不重复抛事件。
   let pendingImperativeCheckedKeys = new Set<TreeKey>();
   let warnedInvalidKeys = new Set<string>();
   let initialized = false;
@@ -64,6 +67,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
   });
 
   const isMultiple = computed(() => Boolean(props.multiple));
+  // 未显式传入时默认打包已选中的禁用节点，保持与历史行为一致。
   const resolvedPackDisabledKey = computed(() => props.packDisabledKey ?? true);
 
   watch(
@@ -591,6 +595,9 @@ export function useTreeViewState(props: TreeViewStateProps) {
     return Array.isArray(value) ? value : [value];
   }
 
+  // 以下四个签名把配置项序列化成字符串，供 watch 做浅层比较。
+  // 大树上深度侦听 data 的代价过高，因此只在「引用变化」或「配置签名变化」时才重建/重放状态。
+
   function getTreeConfigSignature() {
     return JSON.stringify({
       treeProps: resolvedTreeProps.value,
@@ -626,6 +633,10 @@ export function useTreeViewState(props: TreeViewStateProps) {
     });
   }
 
+  /**
+   * 判断当前选中态是否已等价于配置值，用于跳过受控 v-model 回流引起的重复重放。
+   * 比较时并入 pendingCheckedKeys，避免懒加载尚未落地的 key 被误判为"缺失"而重放。
+   */
   function isConfiguredCheckedStateCurrent(keys: TreeKey[]) {
     const expectedKeySet = new Set(keys);
     const currentKeySet = new Set([...getCheckedKeys(), ...pendingCheckedKeys]);
