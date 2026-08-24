@@ -215,6 +215,8 @@ export function useTreeViewState(props: TreeViewStateProps) {
       const children = item[childrenKey];
       const label = String(item[labelKey] ?? "");
       warnAboutInvalidKey(id, label);
+      // parentIds 是自根到父的完整链路，末位即直接父级；根节点为 undefined。
+      const parentId = parentIds[parentIds.length - 1];
 
       const treeNode: TreeNode = {
         id,
@@ -223,7 +225,7 @@ export function useTreeViewState(props: TreeViewStateProps) {
         icon: String(item[iconKey] ?? ""),
         path: [...parents.map((parent) => String(parent[labelKey] ?? "")), label],
         source: item,
-        parentId: parentIds[parentIds.length - 1],
+        parentId,
         parentIds,
         parents,
         level,
@@ -247,7 +249,6 @@ export function useTreeViewState(props: TreeViewStateProps) {
         );
       }
       nodeMap.value.set(id, treeNode);
-      const parentId = parentIds.slice(-1)[0];
       if (parentId !== undefined) {
         if (!childrenMap.value.has(parentId)) {
           childrenMap.value.set(parentId, []);

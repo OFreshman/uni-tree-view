@@ -53,10 +53,6 @@ export function compareVersion(v1, v2) {
   return 0;
 }
 
-// function gte(version) {
-//   return compareVersion(getVersion(), version) >= 0;
-// }
-
 export function querySelect(component, selector, fields) {
   return new Promise((resolve, reject) => {
     uni.createSelectorQuery()
