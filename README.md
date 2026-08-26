@@ -33,7 +33,9 @@
 pnpm add uni-tree-view
 ```
 
-推荐使用 npm；也可以在 [DCloud 插件市场](https://ext.dcloud.net.cn/plugin?id=28897) 导入 `Uni Tree View`，插件按 `uni_modules` 规范发布，导入后位于 `uni_modules/keryin-tree-view`（CLI 工程为 `src/uni_modules/keryin-tree-view`）。两种方式的取舍见[安装说明](https://ofreshman.github.io/uni-tree-view/guide/installation)。
+推荐使用 npm；也可以在 [DCloud 插件市场](https://ext.dcloud.net.cn/plugin?id=29379) 导入 `Uni Tree View`，插件按 `uni_modules` 规范发布，导入后位于 `uni_modules/keryin-tree-view`（CLI 工程为 `src/uni_modules/keryin-tree-view`）。两种方式的取舍见[安装说明](https://ofreshman.github.io/uni-tree-view/guide/installation)。
+
+> 插件市场迁移说明：插件市场自 `0.6.3` 起使用新的 [插件条目（id=29379）](https://ext.dcloud.net.cn/plugin?id=29379)。`0.6.2` 及更早版本可能来自旧条目，导入目录为 `uni_modules/KieranYin9527-tree`；如果本地仍有旧目录，请先删除，再导入 `uni_modules/keryin-tree-view`。npm 包不受影响。
 
 ## 使用
 

@@ -68,12 +68,16 @@ export default defineConfig({
 
 ## 方式二：DCloud 插件市场（uni_modules）
 
-从 [Uni Tree View 插件页](https://ext.dcloud.net.cn/plugin?id=28897) 点击“下载插件并导入 HBuilderX”，选择目标工程即可。该插件按 `uni_modules` 规范发布，并以插件 ID 作为自己的目录名：
+从 [Uni Tree View 插件页](https://ext.dcloud.net.cn/plugin?id=29379) 点击“下载插件并导入 HBuilderX”，选择目标工程即可。该插件按 `uni_modules` 规范发布，并以插件 ID 作为自己的目录名：
 
 | 工程类型 | 导入目录 |
 | --- | --- |
 | HBuilderX 可视化工程 | `uni_modules/keryin-tree-view` |
 | CLI 工程（Vite / vue-cli） | `src/uni_modules/keryin-tree-view` |
+
+::: warning 插件市场条目已变更
+插件市场自 `0.6.3` 起使用新的[插件条目（id=29379）](https://ext.dcloud.net.cn/plugin?id=29379)。`0.6.2` 及更早版本可能来自旧条目，导入目录为 `uni_modules/KieranYin9527-tree`；如果本地仍有旧目录，请先删除，再导入 `uni_modules/keryin-tree-view`。npm 包不受影响。
+:::
 
 ::: info 重新安装或更新会影响哪些目录
 假设 `uni_modules` 下有 `a`、`b`、`c` 三个插件，重新安装或更新 `c` 时，操作目标是 `c` 对应的目录，`a` 和 `b` 不会因此被替换。这里所说的“覆盖”仅指 `c` 目录内与新版同路径的文件；HBuilderX 更新时会显示文件差异，应在确认前检查并备份需要保留的本地修改。
