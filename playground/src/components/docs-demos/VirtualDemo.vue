@@ -22,6 +22,13 @@
       </button>
     </view>
 
+    <wd-search
+      v-model="keyword"
+      custom-class="docs-demo-search"
+      placeholder="筛选区域（可先滚到底部再输入）"
+      hide-cancel
+      placeholder-left></wd-search>
+
     <view class="docs-demo-card">
       <view class="docs-demo-card__header">
         <text class="docs-demo-card__title">万级区域树</text>
@@ -42,6 +49,8 @@
         :virtual-item-height="36"
         :virtual-overscan="12"
         :data="treeData"
+        :filter-value="keyword"
+        highlight-filter
         theme-color="#299764"></uni-tree-view>
     </view>
 
@@ -114,6 +123,7 @@ const largeTree = createLargeTreeData();
 const treeRef = shallowRef<UniTreeViewExposed | null>(null);
 const checkedValue = shallowRef<TreeKey[]>([]);
 const treeData = shallowRef(largeTree.data);
+const keyword = shallowRef("");
 const nodeCount = largeTree.count.toLocaleString();
 const depthText = `${largeTree.minDepth}-${largeTree.maxDepth} 层`;
 const locateMessage = shallowRef(`可定位目标：第 6 层「${largeTree.targetLabel}」`);

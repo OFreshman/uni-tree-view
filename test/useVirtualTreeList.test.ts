@@ -98,14 +98,49 @@ describe("useVirtualTreeList", () => {
     result!.handleScroll({ detail: { scrollTop: Number.NaN } });
     expect(result!.scrollTop.value).toBe(0);
 
+    // 超出范围的滚动位置应落在最后一屏（可滚动上限 10 * 10 - 30 = 70），而不是只剩末行。
     result!.handleScroll({ detail: { scrollTop: 1_000 } });
-    expect(result!.startIndex.value).toBe(9);
+    expect(result!.startIndex.value).toBe(6);
     expect(result!.endIndex.value).toBe(10);
+    expect(result!.renderedItems.value).toEqual([6, 7, 8, 9]);
 
+    // 列表缩短到不足一屏后窗口必须回到顶部，而不是沿用旧 scrollTop 卡在末尾只剩一行。
     items.value = [0, 1, 2];
-    expect(result!.startIndex.value).toBe(2);
+    expect(result!.startIndex.value).toBe(0);
     expect(result!.endIndex.value).toBe(3);
-    expect(result!.renderedItems.value).toEqual([2]);
+    expect(result!.renderedItems.value).toEqual([0, 1, 2]);
+
+    scope.stop();
+  });
+
+  it("clamps the window to the new maximum offset when the list shrinks", () => {
+    const scope = effectScope();
+    const items = shallowRef(Array.from({ length: 100 }, (_, index) => index));
+    const result = scope.run(() => {
+      return useVirtualTreeList({
+        items,
+        virtual: true,
+        itemHeight: 10,
+        height: 30,
+        overscan: 0
+      });
+    });
+
+    expect(result).toBeTruthy();
+    result!.handleScroll({ detail: { scrollTop: 900 } });
+    expect(result!.startIndex.value).toBe(90);
+
+    // 新的可滚动上限是 20 * 10 - 30 = 170，窗口应落在最后一屏而非停在原偏移。
+    items.value = Array.from({ length: 20 }, (_, index) => index);
+    expect(result!.maxScrollTop.value).toBe(170);
+    expect(result!.effectiveScrollTop.value).toBe(170);
+    expect(result!.startIndex.value).toBe(17);
+    expect(result!.endIndex.value).toBe(20);
+    expect(result!.renderedItems.value).toEqual([17, 18, 19]);
+    expect(result!.bottomPadding.value).toBe(0);
+
+    // 原始 scrollTop 保留不动，用户往回滚时不会被这层夹紧干扰。
+    expect(result!.scrollTop.value).toBe(900);
 
     scope.stop();
   });
@@ -152,6 +187,39 @@ describe("useVirtualTreeList", () => {
     expect(result!.renderedItems.value).toContain(25);
     expect(result!.scrollToIndex(1_000)).toBe(true);
     expect(result!.scrollTop.value).toBe(1_980);
+
+    scope.stop();
+  });
+
+  it("clamps an out-of-range scrollTop back into the scrollable range", () => {
+    const items = shallowRef(Array.from({ length: 100 }, (_, index) => index));
+    const scope = effectScope();
+    const result = scope.run(() => {
+      return useVirtualTreeList({
+        items,
+        virtual: true,
+        itemHeight: 20,
+        height: 100,
+        overscan: 0
+      });
+    });
+
+    expect(result).toBeTruthy();
+    result!.scrollToIndex(99);
+    expect(result!.scrollTop.value).toBe(1_980);
+
+    // 列表缩短到 3 项后，可滚动范围只剩 0：夹紧必须把 scrollTop 真的写回，否则范围恢复
+    // 后旧偏移会重新生效，而真实滚动位置早已被命令到别处。
+    items.value = [0, 1, 2];
+    expect(result!.maxScrollTop.value).toBe(0);
+    expect(result!.clampScrollTopToRange()).toBe(0);
+    expect(result!.scrollTop.value).toBe(0);
+
+    // 范围内的滚动位置不该被干预，返回 null 表示无需命令 scroll-view 归位。
+    items.value = Array.from({ length: 100 }, (_, index) => index);
+    result!.scrollToIndex(50);
+    expect(result!.clampScrollTopToRange()).toBeNull();
+    expect(result!.scrollTop.value).toBe(1_000);
 
     scope.stop();
   });

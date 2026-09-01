@@ -32,13 +32,31 @@ export function useVirtualTreeList<T>(options: UseVirtualTreeListOptions<T>) {
 
   const totalCount = computed(() => toValue(options.items).length);
 
+  const maxScrollTop = computed(() => {
+    if (!virtualEnabled.value) {
+      return 0;
+    }
+
+    return Math.max(0, totalCount.value * itemHeight.value - height.value);
+  });
+
+  // 列表变短后旧的 scrollTop 可能已超出新的可滚动范围，直接拿它算下标会把窗口卡在
+  // 末尾只剩一行。这里只夹紧参与计算的值而不回写 scrollTop，避免和用户滚动互相覆盖。
+  const effectiveScrollTop = computed(() => {
+    if (!virtualEnabled.value) {
+      return 0;
+    }
+
+    return Math.min(scrollTop.value, maxScrollTop.value);
+  });
+
   // 定高窗口：滚动位置除以行高得到首个进入视口的下标，再向前多渲染 overscan 行缓冲。
   const startIndex = computed(() => {
     if (!virtualEnabled.value || totalCount.value === 0) {
       return 0;
     }
 
-    const rawStart = Math.floor(scrollTop.value / itemHeight.value) - overscan.value;
+    const rawStart = Math.floor(effectiveScrollTop.value / itemHeight.value) - overscan.value;
     return Math.min(Math.max(0, rawStart), totalCount.value - 1);
   });
 
@@ -102,8 +120,25 @@ export function useVirtualTreeList<T>(options: UseVirtualTreeListOptions<T>) {
     return true;
   }
 
+  // 可滚动范围缩小后旧的 scrollTop 可能已越界。这里把它拉回范围内并返回新位置，供调用方
+  // 命令 scroll-view 一起归位；未越界时返回 null 表示无需干预。
+  //
+  // scrollTop 必须真的写回，不能只依赖 effectiveScrollTop 夹紧渲染下标：一旦范围恢复
+  // （例如清空筛选词），未修正的 scrollTop 会重新生效，而真实滚动位置早已被命令到别处，
+  // 两者错位同样会让可视区渲染到窗口外。
+  function clampScrollTopToRange() {
+    if (!virtualEnabled.value || scrollTop.value <= maxScrollTop.value) {
+      return null;
+    }
+
+    scrollTop.value = maxScrollTop.value;
+    return maxScrollTop.value;
+  }
+
   return {
     scrollTop,
+    effectiveScrollTop,
+    maxScrollTop,
     virtualEnabled,
     startIndex,
     endIndex,
@@ -112,7 +147,8 @@ export function useVirtualTreeList<T>(options: UseVirtualTreeListOptions<T>) {
     bottomPadding,
     scrollViewStyle,
     handleScroll,
-    scrollToIndex
+    scrollToIndex,
+    clampScrollTopToRange
   };
 }
 
