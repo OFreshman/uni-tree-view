@@ -504,8 +504,11 @@ export function useTreeViewState(props: TreeViewStateProps) {
       }
 
       for (const node of treeList.value) {
-        node.visible = visibleKeySet.has(node.id);
-        if (node.visible) {
+        const visible = visibleKeySet.has(node.id);
+        if (node.visible !== visible) {
+          node.visible = visible;
+        }
+        if (visible) {
           visibleNodes.push(node);
         }
       }
@@ -516,13 +519,20 @@ export function useTreeViewState(props: TreeViewStateProps) {
 
     matchedTreeList.value = [];
 
-    // treeList is pre-order flattened, so parent visibility is already resolved here.
+    // treeList 是前序展开的，节点的父级必然是最近一个 level - 1 的节点，因此按层级栈记住
+    // 「父级是否展开且可见」即可，无需为每个节点回查 nodeMap（那是这里最大的一笔开销）。
+    // 栈内存布尔值而非节点，父级不可见时整棵子树都会被判为不可见，与原先的逐级回查等价。
+    const parentVisibleStack: boolean[] = [];
     for (const node of treeList.value) {
-      const parent = node.parentId === undefined ? undefined : nodeMap.value.get(node.parentId);
-      node.visible = node.level === 0 || Boolean(parent?.visible && parent.expanded);
-      if (node.visible) {
+      const level = node.level;
+      const visible = level === 0 || parentVisibleStack[level - 1] === true;
+      if (node.visible !== visible) {
+        node.visible = visible;
+      }
+      if (visible) {
         visibleNodes.push(node);
       }
+      parentVisibleStack[level] = visible && node.expanded === true;
     }
 
     visibleTreeList.value = visibleNodes;
@@ -616,11 +626,18 @@ export function useTreeViewState(props: TreeViewStateProps) {
     });
   }
 
+  // 选中值可能是很长的 key 数组，而上面的 watch 回调只比较 behaviorSignature，本签名仅用于
+  // 登记依赖。join 会逐项读取，对这种扁平的原始值数组与 JSON.stringify 登记的依赖一致，但省掉
+  // 了引号转义和对象包装。
   function getCheckedValueSignature() {
-    return JSON.stringify({
-      controlled: props.modelValue !== undefined,
-      value: props.modelValue !== undefined ? props.modelValue : props.defaultCheckedKeys
-    });
+    const controlled = props.modelValue !== undefined;
+    const source = controlled ? props.modelValue : props.defaultCheckedKeys;
+    const prefix = controlled ? "c" : "d";
+    if (!Array.isArray(source)) {
+      return `${prefix}:${String(source)}`;
+    }
+
+    return `${prefix}${source.length}:${source.join(",")}`;
   }
 
   function getCheckedBehaviorSignature() {
@@ -684,13 +701,15 @@ export function useTreeViewState(props: TreeViewStateProps) {
     return getUncheckedNodes().map((node) => node.id);
   }
 
+  // 「选中且应当对外暴露」的唯一判定处，getCheckedNodes 与 buildCheckChangePayload 共用，
+  // 避免 packDisabledKey 规则日后在两处各改一份。
+  function isPackableCheckedNode(node: TreeNode, includeDisabled: boolean) {
+    return node.checked === CHECK_STATUS_MAP.checked && (includeDisabled || !node.disabled);
+  }
+
   function getCheckedNodes() {
-    return treeList.value.filter((node) => {
-      if (node.checked !== CHECK_STATUS_MAP.checked) {
-        return false;
-      }
-      return resolvedPackDisabledKey.value || !node.disabled;
-    });
+    const includeDisabled = resolvedPackDisabledKey.value;
+    return treeList.value.filter((node) => isPackableCheckedNode(node, includeDisabled));
   }
 
   function getHalfCheckedNodes() {
@@ -748,15 +767,34 @@ export function useTreeViewState(props: TreeViewStateProps) {
       .filter((node): node is TreeNode => Boolean(node));
   }
 
+  // 每次勾选都会构造一次载荷，分别调用三个 getter 会把 treeList 扫三遍；这里合成一次遍历，
+  // 推入顺序与逐个 filter 完全一致，因此对外的数组顺序不变。
   function buildCheckChangePayload(node: TreeNode): TreeCheckChangePayload {
-    const nodes = getCheckedNodes();
-    const keys = nodes.map((checkedNode) => checkedNode.id);
+    const nodes: TreeNode[] = [];
+    const keys: TreeKey[] = [];
+    const halfCheckedNodes: TreeNode[] = [];
+    const halfCheckedKeys: TreeKey[] = [];
+    const includeDisabled = resolvedPackDisabledKey.value;
+
+    for (const candidate of treeList.value) {
+      if (isPackableCheckedNode(candidate, includeDisabled)) {
+        nodes.push(candidate);
+        keys.push(candidate.id);
+        continue;
+      }
+
+      if (candidate.checked === CHECK_STATUS_MAP.indeterminate) {
+        halfCheckedNodes.push(candidate);
+        halfCheckedKeys.push(candidate.id);
+      }
+    }
+
     return {
       value: isMultiple.value ? keys : (keys[0] ?? null),
       keys,
       nodes,
-      halfCheckedKeys: getHalfCheckedKeys(),
-      halfCheckedNodes: getHalfCheckedNodes(),
+      halfCheckedKeys,
+      halfCheckedNodes,
       node
     };
   }

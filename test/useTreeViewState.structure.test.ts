@@ -109,6 +109,26 @@ describe("useTreeViewState: structure, expansion and filtering", () => {
     expect(state.getExpandedKeys()).toEqual(["building-a", "floor-a-1", "floor-a-2", "building-b"]);
   });
 
+  it("hides a deeper expanded branch when an intermediate ancestor collapses", () => {
+    const { state } = createState({
+      defaultExpandAll: true
+    });
+
+    expect(visibleKeys(state)).toContain("room-a-101");
+
+    // floor-a-1 保持 expanded，只折叠中间层 building-a：可见性靠祖先链判定，
+    // 因此整棵子树都要隐藏，而 floor-a-1 自身的展开状态必须保留。
+    state.toggleExpand(node(state, "building-a"));
+
+    expect(visibleKeys(state)).toEqual(["building-a", "building-b", "floor-b-1", "floor-b-2"]);
+    expect(node(state, "floor-a-1").expanded).toBe(true);
+    expect(node(state, "room-a-101").visible).toBe(false);
+
+    // 重新展开后，深层分支应按原本保留的展开状态直接恢复。
+    state.toggleExpand(node(state, "building-a"));
+    expect(visibleKeys(state)).toContain("room-a-101");
+  });
+
   it("collapses expanded siblings when accordion mode is enabled", () => {
     const { state } = createState({
       accordion: true,
