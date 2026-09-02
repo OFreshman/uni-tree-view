@@ -78,6 +78,7 @@
     "@types/node": "catalog:types",
     "@uni-helper/uni-app-types": "catalog:dev",
     "@vitejs/plugin-vue": "catalog:build",
+    "@vitest/coverage-v8": "catalog:test",
     "@vue/test-utils": "catalog:test",
     "@xiaohe01/eslint-config": "catalog:lint",
     "@xiaohe01/tsconfig": "catalog:dev",
