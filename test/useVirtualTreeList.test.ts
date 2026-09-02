@@ -223,4 +223,62 @@ describe("useVirtualTreeList", () => {
 
     scope.stop();
   });
+
+  it("reconciles the JS scrollTop with a measured scroll offset", () => {
+    const scope = effectScope();
+    const result = scope.run(() => {
+      return useVirtualTreeList({
+        items: shallowRef(Array.from({ length: 100 }, (_, index) => index)),
+        virtual: true,
+        itemHeight: 20,
+        height: 100,
+        overscan: 0
+      });
+    });
+
+    expect(result).toBeTruthy();
+
+    // 快速甩动后 @scroll 停在滞后值上，渲染窗口落在真实视口之外：可视区只剩占位块。
+    result!.handleScroll({ detail: { scrollTop: 100 } });
+    expect(result!.renderedItems.value).toContain(5);
+
+    // 用实测偏移补上丢失的位置后，窗口回到真实视口。
+    expect(result!.syncScrollTop(800)).toBe(true);
+    expect(result!.scrollTop.value).toBe(800);
+    expect(result!.renderedItems.value).toContain(40);
+    expect(result!.renderedItems.value).not.toContain(5);
+
+    // 不足半行的偏差不会改变任何渲染下标，重算只是白费一次 setData。
+    expect(result!.syncScrollTop(809)).toBe(false);
+    expect(result!.scrollTop.value).toBe(800);
+
+    // 超出可滚动范围的实测值要夹紧，负值与非法值一律忽略。
+    expect(result!.syncScrollTop(99_999)).toBe(true);
+    expect(result!.scrollTop.value).toBe(1_900);
+    expect(result!.syncScrollTop(-50)).toBe(true);
+    expect(result!.scrollTop.value).toBe(0);
+    expect(result!.syncScrollTop(Number.NaN)).toBe(false);
+    expect(result!.scrollTop.value).toBe(0);
+
+    scope.stop();
+  });
+
+  it("ignores measured scroll offsets when virtual rendering is disabled", () => {
+    const scope = effectScope();
+    const result = scope.run(() => {
+      return useVirtualTreeList({
+        items: shallowRef(Array.from({ length: 100 }, (_, index) => index)),
+        virtual: false,
+        itemHeight: 20,
+        height: 100,
+        overscan: 0
+      });
+    });
+
+    expect(result).toBeTruthy();
+    expect(result!.syncScrollTop(800)).toBe(false);
+    expect(result!.scrollTop.value).toBe(0);
+
+    scope.stop();
+  });
 });

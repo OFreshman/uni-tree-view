@@ -144,7 +144,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, nextTick, shallowRef, watch } from "vue";
+import { computed, getCurrentInstance, nextTick, onBeforeUnmount, shallowRef, watch } from "vue";
 import type {
   TreeCheckChangePayload,
   TreeKey,
@@ -157,6 +157,7 @@ import type {
 } from "./types";
 import { useTreeViewState } from "./useTreeViewState";
 import { useVirtualTreeList } from "./useVirtualTreeList";
+import type { UniTreeVirtualScrollEvent } from "./useVirtualTreeList";
 
 defineOptions({
   name: "UniTreeView",
@@ -262,15 +263,78 @@ const {
   topPadding: virtualTopPadding,
   bottomPadding: virtualBottomPadding,
   scrollViewStyle,
-  handleScroll: handleVirtualScroll,
+  handleScroll: updateVirtualWindow,
   scrollToIndex,
-  clampScrollTopToRange
+  clampScrollTopToRange,
+  syncScrollTop
 } = useVirtualTreeList({
   items: visibleTreeList,
   virtual: () => props.virtual,
   itemHeight: () => props.virtualItemHeight,
   height: () => props.virtualHeight,
   overscan: () => props.virtualOverscan
+});
+
+// 滚动停稳后校正一次 JS 侧的滚动位置。
+//
+// 小程序的 @scroll 是节流上报的，快速甩动时逻辑层收到的位置严重滞后，而惯性停下的那一刻
+// 不保证还有事件到达。最后一个位置一旦没上报，JS 侧就永久停在滞后值上，渲染窗口落在真实
+// 视口之外，可视区只剩占位块——即「连续快滑几下后虚拟区域一直空白，重新触一下才渲染」。
+// 这里在滚动事件停止后主动读一次真实偏移补上那个丢失的位置。
+let scrollSettleTimer: ReturnType<typeof setTimeout> | undefined;
+let isUnmounted = false;
+
+// 略大于微信 @scroll 的上报间隔：滑动过程中会被后续事件不断重置，只有真正停下才会执行，
+// 因此每次手势最多触发一次查询。
+const SCROLL_SETTLE_DELAY = 120;
+
+// 选择器查询必须带上组件实例：小程序的自定义组件内部节点对页面级查询不可见。实例只能在
+// setup 期间取到，定时器回调里 getCurrentInstance() 已经是 null，所以在这里先存下来。
+const instance = getCurrentInstance();
+
+function reconcileScrollTop() {
+  if (isUnmounted || !virtualEnabled.value || !instance || typeof uni === "undefined") {
+    return;
+  }
+
+  uni.createSelectorQuery()
+    .in(instance.proxy)
+    .select(".scroll-view-container")
+    .fields({ scrollOffset: true }, () => {})
+    .exec(([node]) => {
+      // 查询是异步的，回调到达时组件可能已经卸载。
+      if (isUnmounted) {
+        return;
+      }
+
+      const measuredScrollTop = (node as UniApp.NodeInfo | undefined)?.scrollTop;
+      if (typeof measuredScrollTop !== "number") {
+        return;
+      }
+
+      // 校正真的改变了位置，说明查询时列表还在动（甩动中途逻辑层被饿死也会走到这里），
+      // 再排一次检查；直到某次偏差小于半行才收敛，避免停在中途的滞后值上。
+      if (syncScrollTop(measuredScrollTop)) {
+        scheduleScrollSettleCheck();
+      }
+    });
+}
+
+function scheduleScrollSettleCheck() {
+  clearTimeout(scrollSettleTimer);
+  scrollSettleTimer = setTimeout(reconcileScrollTop, SCROLL_SETTLE_DELAY);
+}
+
+function handleVirtualScroll(event: UniTreeVirtualScrollEvent) {
+  updateVirtualWindow(event);
+  if (virtualEnabled.value) {
+    scheduleScrollSettleCheck();
+  }
+}
+
+onBeforeUnmount(() => {
+  isUnmounted = true;
+  clearTimeout(scrollSettleTimer);
 });
 
 interface RenderedTreeItem {
