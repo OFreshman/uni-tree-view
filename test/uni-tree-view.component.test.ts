@@ -464,7 +464,8 @@ describe("uni-tree-view component", () => {
 
     expect(await exposed(wrapper).scrollToKey("lazy-child-5")).toBe(true);
     await nextTick();
-    expect(wrapper.find("scroll-view").attributes("scroll-top")).toBe("216");
+    // 指令值用完即清，渲染窗口仍应停在目标节点上。
+    expect(wrapper.find("scroll-view").attributes("scroll-top")).toBeUndefined();
     expect(wrapper.text()).toContain("Lazy child 5");
   });
 
@@ -588,9 +589,22 @@ describe("uni-tree-view component", () => {
     await wrapper.find("scroll-view").trigger("scroll", { detail: { scrollTop: 36 } });
     expect(wrapper.find("scroll-view").attributes("scroll-top")).toBeUndefined();
 
-    expect(await exposed(wrapper).scrollToKey("BB")).toBe(true);
-    await nextTick();
-    expect(wrapper.find("scroll-view").attributes("scroll-top")).toBe("36");
+    // 指令必须真的下发过目标位置，而且下发后立刻清空：留在绑定上不清，后续的用户滚动
+    // 会被反复吸附回这个位置。不 await scrollToKey，手动逐个 tick 推进，才能观察到
+    // 「下发」与「清空」之间的中间态。
+    const scrollView = wrapper.find("scroll-view");
+    const pendingScroll = exposed(wrapper).scrollToKey("BB");
+    const scrollTopCommands: (string | undefined)[] = [];
+
+    for (let tick = 0; tick < 4; tick += 1) {
+      await nextTick();
+      scrollTopCommands.push(scrollView.attributes("scroll-top"));
+    }
+
+    expect(await pendingScroll).toBe(true);
+    expect(scrollTopCommands).toContain("36");
+    expect(scrollTopCommands[scrollTopCommands.length - 1]).toBeUndefined();
+    expect(scrollView.attributes("scroll-top")).toBeUndefined();
   });
 
   it("emits filter results on initial filtering and filtered data replacement", async () => {

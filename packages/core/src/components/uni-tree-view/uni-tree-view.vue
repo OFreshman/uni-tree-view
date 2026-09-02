@@ -451,6 +451,9 @@ async function scrollToKey(key: TreeKey, options: TreeScrollToOptions = {}) {
       return false;
     }
     virtualScrollCommandTop.value = virtualScrollTop.value;
+    // 与下方 watch 同理，指令用完即清，避免这个值长期停在绑定上把后续滚动吸附回来。
+    await nextTick();
+    virtualScrollCommandTop.value = undefined;
     return true;
   }
 
