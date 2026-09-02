@@ -258,11 +258,13 @@ const {
   virtualEnabled,
   renderedItems: virtualRenderedTreeList,
   scrollTop: virtualScrollTop,
+  maxScrollTop: virtualMaxScrollTop,
   topPadding: virtualTopPadding,
   bottomPadding: virtualBottomPadding,
   scrollViewStyle,
   handleScroll: handleVirtualScroll,
-  scrollToIndex
+  scrollToIndex,
+  clampScrollTopToRange
 } = useVirtualTreeList({
   items: visibleTreeList,
   virtual: () => props.virtual,
@@ -393,6 +395,30 @@ async function scrollToKey(key: TreeKey, options: TreeScrollToOptions = {}) {
   scrollIntoView.value = getNodeDomId(node);
   return true;
 }
+
+// H5 的 scroll-view 会自行收敛超出范围的滚动位置，小程序端不会，需要显式把夹紧后的
+// 位置写回 :scroll-top，否则筛选后视图仍停在旧偏移上，只是内容被换成了末尾几行。
+//
+// 触发源必须是 maxScrollTop（仅在可滚动范围本身变化时才变），不能是「JS 侧滚动位置越界」
+// 这类派生比较：小程序的 @scroll 是节流上报的，快速滑动时 JS 侧位置天然落后于真实位置，
+// 那种条件会在正常滑动中反复成立，把视图不断拽回旧位置，最终使渲染窗口与真实偏移错位、
+// 可视区只剩占位块（表现为滑动后永久空白，需触摸才恢复）。
+watch(virtualMaxScrollTop, async () => {
+  if (!virtualEnabled.value) {
+    return;
+  }
+
+  const clampedScrollTop = clampScrollTopToRange();
+  if (clampedScrollTop === null) {
+    return;
+  }
+
+  virtualScrollCommandTop.value = clampedScrollTop;
+  // 指令用完即清，让 scroll-view 回到非受控状态；否则这个值会长期停在绑定上，
+  // 后续用户滚动会被反复吸附回该位置。
+  await nextTick();
+  virtualScrollCommandTop.value = undefined;
+});
 
 function getNodeDomId(node: TreeNode) {
   const cachedDomId = nodeDomIds.get(node.id);

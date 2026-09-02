@@ -47,6 +47,10 @@ dist-ssr
 *.sln
 *.sw?
 
+# 微信开发者工具在仓库根目录生成的本地工程配置（真正的小程序工程在 playground/dist 下）
+/project.config.json
+/project.private.config.json
+
 # 本地规划、调研与维护者手册
 .local/
 /RELEASE.md
