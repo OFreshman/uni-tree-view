@@ -139,6 +139,12 @@
         </view>
 
         <view v-if="showLargeTree" class="demo-tree-frame page__large-tree">
+          <wd-search
+            v-model="largeFilterValue"
+            custom-style="--wot-search-padding: 0 0 20rpx; --wot-search-bg: transparent;"
+            placeholder="在万级节点中筛选"
+            hide-cancel
+            placeholder-left></wd-search>
           <uni-tree-view
             ref="largeTreeRef"
             v-model="largeCheckedValue"
@@ -147,14 +153,17 @@
             check-on-click-node
             virtual
             default-expand-all
+            highlight-filter
             :theme-color="themeColor"
             :virtual-height="560"
             :virtual-item-height="36"
             :virtual-overscan="12"
             :data="largeTreeData"
             :tree-props="demoTreeProps"
+            :filter-value="largeFilterValue"
             @check-change="handleLargeChange"
-            @expand-change="handleLargeExpandChange"></uni-tree-view>
+            @expand-change="handleLargeExpandChange"
+            @filter-change="handleLargeFilterChange"></uni-tree-view>
         </view>
       </view>
 
@@ -300,6 +309,7 @@ const showLargeTree = shallowRef(false);
 const largeTreeRef = shallowRef<UniTreeViewExposed | null>(null);
 const largeTreeData = shallowRef<DemoTreeNode[]>([]);
 const largeCheckedValue = shallowRef<TreeKey[]>([]);
+const largeFilterValue = shallowRef("");
 const largeNodeCount = shallowRef(0);
 const largeTargetKey = shallowRef("");
 const largeTargetLabel = shallowRef("");
@@ -318,6 +328,7 @@ function toggleLargeTree() {
     showLargeTree.value = false;
     largeTreeData.value = [];
     largeCheckedValue.value = [];
+    largeFilterValue.value = "";
     largeNodeCount.value = 0;
     largeTargetKey.value = "";
     largeTargetLabel.value = "";
@@ -340,6 +351,12 @@ function handleLargeChange(payload: any) {
 
 function handleLargeExpandChange(payload: any) {
   largeLatestAction.value = `${payload.expanded ? "展开" : "收起"} ${payload.node.id}`;
+}
+
+function handleLargeFilterChange(payload: any) {
+  largeLatestAction.value = largeFilterValue.value
+    ? `筛选命中 ${payload.matchedKeys.length} 项`
+    : "已清空筛选";
 }
 
 async function locateLargeTarget() {
