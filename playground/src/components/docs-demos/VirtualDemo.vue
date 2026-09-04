@@ -25,7 +25,7 @@
     <wd-search
       v-model="keyword"
       custom-class="docs-demo-search"
-      placeholder="筛选区域（可先滚到底部再输入）"
+      placeholder="在万级节点中筛选"
       hide-cancel
       placeholder-left></wd-search>
 
