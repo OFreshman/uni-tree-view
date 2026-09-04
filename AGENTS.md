@@ -36,6 +36,7 @@
 - 修改公开能力时，同步检查 `defineProps`/`withDefaults`、`defineEmits`、`defineSlots`、`defineExpose`、`types.ts`、`.d.ts`、对应测试、API 文档和 playground 示例。不要只让运行时或类型中的一侧生效。
 - `treeProps` 只映射 `id`、`label`、`children`、`disabled`、`leaf`、`append`、`icon` 字段名；节点行外部样式类使用一级 `nodeClass` prop，不要把它塞入 `treeProps`。
 - 行为变更优先补测试。测试按展开、选中、半选、禁用、受控值、默认值、公开方法和事件 payload 等行为组织；优先纯逻辑或最小组件场景，不为单个逻辑引入沉重的跨平台 E2E 依赖。
+- `tsconfig.test.json` 只启用 `lib: ES2020` 和 `types: node`，测试里没有 DOM 全局（`MutationObserver`、`Element` 等）也没有 ES2022 方法（如 `Array.prototype.at`）。断言 DOM 行为请使用 `@vue/test-utils` 的 API，不要为个别用例放宽该配置。
 
 ## 文档约束
 
@@ -52,6 +53,7 @@
 - 修改文档部署路径时，同时检查 `DOCS_BASE`、`PLAYGROUND_DOCS_BASE`、带 `index.html` 的静态入口及 Netlify/GitHub Pages 两种部署形态。
 - 不要手动编辑生成物，包括 `dist`、`dist-resolver`、`docs/public/ui`、`docs/.vitepress/dist`、`artifacts`、`coverage`、`playground/src/uni_modules` 和 playground 生成的类型文件。
 - 变更日志只维护根目录 `CHANGELOG.md`；`packages/core/CHANGELOG.md` 在 npm 打包前生成，不要手动编辑。
+- 根目录 `CHANGELOG.md` 的 `Unreleased` 段落由 `pnpm changelog:generate` 从提交标题生成。该段落一旦有内容，生成器会判定为 `keep` 并跳过本次全部提交（见 `scripts/changelog-utils.ts`），因此普通任务不要手写条目——把信息写进提交标题即可。
 
 ## Git 与发布约束
 
