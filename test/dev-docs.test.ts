@@ -28,7 +28,7 @@ describe("resolvePlaygroundPort", () => {
 });
 
 describe("dev docs process", () => {
-  it("preserves a child failure when the sibling exits immediately", () => {
+  it.each(["npm_execpath", "NPM_EXECPATH", "Npm_ExecPath"])("preserves a child failure with inherited %s", (execPathKey) => {
     const fakeBinDir = mkdtempSync(path.join(tmpdir(), "uni-tree-view-dev-docs-"));
     const fakePnpmScript = path.join(fakeBinDir, "fake-pnpm.mjs");
     const callsFile = path.join(fakeBinDir, "calls.txt");
@@ -45,17 +45,25 @@ if (args.includes("playground")) {
 `;
     writeFileSync(fakePnpmScript, fakePnpmSource);
 
+    // Windows treats environment keys case-insensitively, but this object does not.
+    // Seed each casing so the normalization is also covered on Linux and macOS.
+    const env: NodeJS.ProcessEnv = { ...process.env, [execPathKey]: "must-be-replaced.cjs" };
+    for (const key of Object.keys(env)) {
+      if (key.toLowerCase() === "npm_execpath") {
+        delete env[key];
+      }
+    }
+    env.npm_execpath = fakePnpmScript;
+    env.PNPM_CALLS_FILE = callsFile;
+
     try {
+      expect(Object.keys(env).filter((key) => key.toLowerCase() === "npm_execpath")).toEqual(["npm_execpath"]);
       const result = spawnSync(
         process.execPath,
         ["--import", "tsx", path.resolve("scripts/dev-docs.ts")],
         {
           cwd: process.cwd(),
-          env: {
-            ...process.env,
-            npm_execpath: fakePnpmScript,
-            PNPM_CALLS_FILE: callsFile
-          },
+          env,
           encoding: "utf8",
           timeout: 5000
         }
