@@ -3,6 +3,7 @@
     class="uni-tree-view-container"
     :style="{ '--theme-color': props.themeColor }">
     <scroll-view
+      :id="scrollViewId"
       class="scroll-view-container"
       :scroll-y="true"
       :scroll-top="virtualEnabled ? virtualScrollCommandTop : undefined"
@@ -278,12 +279,15 @@ const {
 // 滚动事件短暂停止后读取真实偏移，补齐节流上报可能遗漏的最终位置。
 let scrollSettleTimer: ReturnType<typeof setTimeout> | undefined;
 let scrollMeasurementVersion = 0;
+let scrollCommandVersion = 0;
 let isUnmounted = false;
 const SCROLL_SETTLE_DELAY = 120;
 
 // 选择器查询必须带上组件实例：小程序的自定义组件内部节点对页面级查询不可见。实例只能在
 // setup 期间取到，定时器回调里 getCurrentInstance() 已经是 null，所以在这里先存下来。
 const instance = getCurrentInstance();
+// 支付宝的 in(component) 可能不生效，查询还需使用实例唯一的节点 id。
+const scrollViewId = `utv-scroll-${instance?.uid ?? 0}`;
 
 function reconcileScrollTop() {
   if (isUnmounted || !virtualEnabled.value || !instance || typeof uni === "undefined") {
@@ -293,7 +297,7 @@ function reconcileScrollTop() {
   const measurementVersion = scrollMeasurementVersion;
   uni.createSelectorQuery()
     .in(instance.proxy)
-    .select(".scroll-view-container")
+    .select(`#${scrollViewId}`)
     .fields({ scrollOffset: true }, () => {})
     .exec(([node]) => {
       // 新滚动、定位或窗口变化后，旧查询不能再覆盖当前状态。
@@ -334,7 +338,14 @@ function handleVirtualScroll(event: UniTreeVirtualScrollEvent) {
 // 窗口变化后丢弃旧测量并重新校正，避免没有后续滚动事件时停留在旧偏移。
 watch(
   [virtualEnabled, visibleTreeList, () => props.virtualHeight, () => props.virtualItemHeight],
-  scheduleScrollSettleCheck,
+  () => {
+    if (!virtualEnabled.value) {
+      scrollCommandVersion += 1;
+      // 非虚拟模式已解除此绑定，清除旧指令，避免重新开启时重放。
+      virtualScrollCommandTop.value = undefined;
+    }
+    scheduleScrollSettleCheck();
+  },
   { flush: "sync" }
 );
 
@@ -434,6 +445,27 @@ async function retryLoadSafely(node: TreeNode) {
   }
 }
 
+async function applyVirtualScrollCommand(top: number) {
+  cancelScrollSettleCheck();
+  const commandVersion = ++scrollCommandVersion;
+  // 先等待绑定落地，仅让最新请求继续，避免并发指令被同一轮渲染合并而丢失。
+  await nextTick();
+  if (isUnmounted || !virtualEnabled.value || commandVersion !== scrollCommandVersion) {
+    return;
+  }
+  // undefined 会恢复 scroll-view 的默认值 0，并非解除控制。保留上次指令，手势和测量
+  // 不更新此绑定；重复定位时只用邻近数值重新触发指令，避免先跳回顶部。
+  if ((virtualScrollCommandTop.value ?? 0) === top) {
+    virtualScrollCommandTop.value = top > 0 ? Math.max(0, top - 1) : 1;
+    await nextTick();
+    if (isUnmounted || !virtualEnabled.value || commandVersion !== scrollCommandVersion) {
+      return;
+    }
+  }
+  virtualScrollCommandTop.value = top;
+  scheduleScrollSettleCheck();
+}
+
 async function scrollToKey(key: TreeKey, options: TreeScrollToOptions = {}) {
   const node = getNode(key);
   if (!node) {
@@ -451,17 +483,10 @@ async function scrollToKey(key: TreeKey, options: TreeScrollToOptions = {}) {
   }
 
   if (virtualEnabled.value) {
-    cancelScrollSettleCheck();
-    virtualScrollCommandTop.value = undefined;
-    await nextTick();
     if (!scrollToIndex(visibleIndex)) {
       return false;
     }
-    virtualScrollCommandTop.value = virtualScrollTop.value;
-    // 与下方 watch 同理，指令用完即清，避免这个值长期停在绑定上把后续滚动吸附回来。
-    await nextTick();
-    virtualScrollCommandTop.value = undefined;
-    scheduleScrollSettleCheck();
+    await applyVirtualScrollCommand(virtualScrollTop.value);
     return true;
   }
 
@@ -473,7 +498,7 @@ async function scrollToKey(key: TreeKey, options: TreeScrollToOptions = {}) {
 
 // 可滚动范围变化时才将越界位置写回 scroll-view，不侦听滚动位置本身，
 // 避免节流上报期间把用户手势拉回旧偏移。筛选恢复后也不会重新使用已失效的位置。
-watch(virtualMaxScrollTop, async () => {
+watch(virtualMaxScrollTop, () => {
   if (!virtualEnabled.value) {
     return;
   }
@@ -483,11 +508,7 @@ watch(virtualMaxScrollTop, async () => {
     return;
   }
 
-  virtualScrollCommandTop.value = clampedScrollTop;
-  // 指令用完即清，让 scroll-view 回到非受控状态；否则这个值会长期停在绑定上，
-  // 后续用户滚动会被反复吸附回该位置。
-  await nextTick();
-  virtualScrollCommandTop.value = undefined;
+  void applyVirtualScrollCommand(clampedScrollTop);
 });
 
 function getNodeDomId(node: TreeNode) {

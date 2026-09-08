@@ -118,7 +118,7 @@ export function useVirtualTreeList<T>(options: UseVirtualTreeListOptions<T>) {
     }
 
     const normalizedIndex = Math.min(Math.max(0, Math.floor(index)), totalCount.value - 1);
-    scrollTop.value = normalizedIndex * itemHeight.value;
+    scrollTop.value = Math.min(normalizedIndex * itemHeight.value, maxScrollTop.value);
     return true;
   }
 

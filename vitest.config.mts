@@ -6,7 +6,7 @@ export default defineConfig({
     vue({
       template: {
         compilerOptions: {
-          isCustomElement: (tag) => ["scroll-view", "text", "view"].includes(tag)
+          isCustomElement: (tag) => ["text", "view"].includes(tag)
         }
       }
     })
@@ -20,6 +20,7 @@ export default defineConfig({
     }
   },
   test: {
+    setupFiles: ["./test/setup-scroll-view.ts"],
     coverage: {
       provider: "v8",
       reporter: ["text", "html"],

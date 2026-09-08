@@ -232,7 +232,7 @@ describe("useVirtualTreeList", () => {
     expect(result!.scrollTop.value).toBe(500);
     expect(result!.renderedItems.value).toContain(25);
     expect(result!.scrollToIndex(1_000)).toBe(true);
-    expect(result!.scrollTop.value).toBe(1_980);
+    expect(result!.scrollTop.value).toBe(1_900);
 
     scope.stop();
   });
@@ -252,7 +252,7 @@ describe("useVirtualTreeList", () => {
 
     expect(result).toBeTruthy();
     result!.scrollToIndex(99);
-    expect(result!.scrollTop.value).toBe(1_980);
+    expect(result!.scrollTop.value).toBe(1_900);
 
     // 列表缩短到 3 项后，可滚动范围只剩 0：夹紧必须把 scrollTop 真的写回，否则范围恢复
     // 后旧偏移会重新生效，而真实滚动位置早已被命令到别处。
