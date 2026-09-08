@@ -16,7 +16,8 @@
 - 启动 H5 playground：`pnpm play`。
 - 同时启动文档站和 playground：`pnpm docs`。
 - 构建组件包：`pnpm build`。
-- 常规代码全量检查：`pnpm check`。
+- 常规代码全量检查：`pnpm check`（包含覆盖率下限及 npm 分发内容检查）。
+- 最终组件体积检查：`pnpm check:size`，使用无组件/有组件的最小工程进行三端生产构建对照。
 - 完整构建并校验文档站：`pnpm docs:build`。
 - 构建微信和支付宝小程序：`pnpm check:platforms`。
 - 构建 DCloud 发布产物：`pnpm build:uni`。
@@ -25,7 +26,7 @@
 
 - 文本文件保持 LF；优先使用 Node/pnpm 脚本和 `node:path`，不要新增依赖特定操作系统 shell 或写死 Windows、macOS 路径的实现。
 - `playground/src/pages.json` 和 `playground/src/manifest.json` 是当前实际使用的静态 uni-app 配置来源。
-- 仓库虽保留 `playground/pages.config.ts`、`manifest.config.ts`、`uno.config.ts` 及相关依赖，但对应 Pages、Manifest、UnoCSS 插件当前未接入 `playground/vite.config.ts`。不要仅凭配置文件或依赖存在就认为功能已启用。
+- `playground/vite.config.ts` 只接入 uni-app 插件；Pages/Manifest 配置生成、UnoCSS 和自动导入插件未启用，不要新增未接入的同名配置文件。演示工程不初始化全局 store，业务状态由各示例自行管理。
 - 不要新增 `<route>` 自定义块或导入 `virtual:uno.css`。确需恢复相关插件时，应完成 Vite 接入，并至少验证 H5、微信小程序、支付宝小程序和 Windows 构建。
 - 不要根据依赖列表推断平台兼容性。支持范围和结论只以当前实现、实际构建验证及 `docs/guide/platforms.md` 为准。
 
@@ -69,6 +70,7 @@
 按变更范围执行，不为纯文案改动无意义地运行所有构建：
 
 - 组件、脚本或配置代码：`pnpm check`。
+- 组件逻辑、样式、依赖或构建设置可能影响产物体积时：`pnpm check:size`；不要用 playground、文档站或 npm 压缩包的大小代替实际引入增量。
 - 文档结构、示例、部署路径或在线演示：`pnpm docs:build`。
 - 跨端模板、样式、事件或平台相关改动：在常规检查外运行 `pnpm check:platforms`。
 - DCloud 打包逻辑或发布内容：运行 `pnpm build:uni`。

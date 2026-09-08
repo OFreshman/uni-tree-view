@@ -16,7 +16,7 @@
 
 > 使用 AI Coding 工具时，可将 [llms.txt](https://ofreshman.github.io/uni-tree-view/llms.txt) 作为精简的文档导航入口。
 
-> **项目状态：** 当前处于 `0.x` 早期阶段。核心能力已有自动化测试，并完成 H5 交互验证及微信/支付宝小程序构建验证；但在 `1.0.0` 前公开 API 和边界行为仍可能调整，升级前请查阅 [CHANGELOG](https://github.com/OFreshman/uni-tree-view/blob/main/CHANGELOG.md)。
+> **版本与兼容性：** 当前发布版本以 npm 和 [CHANGELOG](https://github.com/OFreshman/uni-tree-view/blob/main/CHANGELOG.md) 为准。`1.0.0` 起按语义化版本维护公开 API；兼容性边界及最终组件体积的测量方式见[版本兼容性与组件体积](https://ofreshman.github.io/uni-tree-view/guide/versioning)。H5 已有构建和交互验证，微信/支付宝目前主要是构建验证，不代表所有真机都已验证。
 
 ## 特性
 

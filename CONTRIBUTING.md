@@ -7,13 +7,13 @@
 在动手前请了解本项目的两条设计约束：
 
 1. **移动端体积与性能敏感**——核心包保持零运行时依赖，不内置搜索框、弹窗等可由业务组合实现的能力。
-2. **跨端一致**——所有能力必须在微信小程序、支付宝小程序和 H5 上行为一致，不使用单端专属 API。
+2. **跨端一致**——优先使用 uni-app 标准组件和 API，避免引入只适用于单端的实现。支持范围与实际验证程度以 `docs/guide/platforms.md` 为准，不能把构建成功等同于真机交互通过。
 
 超出树组件核心职责的功能建议先开 issue 讨论。
 
 ## 开发环境
 
-- Node.js LTS + pnpm 10.11.0（仓库已声明 `packageManager`）
+- Node.js 版本以 `.nvmrc` 为准，pnpm 版本以根目录 `packageManager` 为准
 - 文本文件使用 LF 行尾
 
 ```bash
@@ -34,20 +34,29 @@ scripts         构建脚本（build:uni 生成 DCloud 发布文件）
 artifacts       本地产物（HBuilderX 发布用工程、npm 包 tgz）
 ```
 
+## 实现边界
+
+- 主组件负责渲染、事件和滚动容器交互；树结构、选中与懒加载状态由 `useTreeViewState` 管理，虚拟列表下标与占位计算由 `useVirtualTreeList` 管理。不要为了拆文件引入第二份状态来源。
+- 演示工程使用 `src/pages.json`、`src/manifest.json` 和普通组件样式，不接入 Pages/Manifest 配置生成、UnoCSS 或自动导入插件，也不初始化未使用的全局 store（跨组件共享状态容器）。
+- 主组件不依赖 `/shared` 工具集合或构建时 resolver（供自动导入工具识别组件入口的解析器），新增辅助代码应继续保持这个边界。
+
 ## 提交前检查
 
 ```bash
-pnpm lint       # ESLint
-pnpm lint:type  # tsc --noEmit
-pnpm test       # Vitest
-pnpm build      # 构建组件包
+pnpm check           # lint、类型、测试覆盖率、构建及 npm/DCloud 分发内容检查
+pnpm check:platforms # 修改跨端模板、样式或事件后，构建微信和支付宝小程序
+pnpm check:size      # 检查最小应用引入组件后的实际产物增量
+pnpm docs:build      # 修改文档、示例或部署路径后，构建并校验文档站
 ```
+
+日常调试可单独运行 `pnpm test`；`pnpm check` 使用带覆盖率下限的测试，防止已经覆盖的核心行为明显退步。`pnpm check:size` 会额外执行最小工程的三端构建，不拿整个演示站的大小代替组件大小。
 
 修改组件能力时请注意：
 
 - 运行时 props/emits 与 `types.ts`、`uni-tree-view.vue.d.ts` 保持同步
 - 补充对应的单元测试（按展开/选中/禁用/事件 payload 等行为分组）
-- 更新 `docs/` 对应 API 文档；需要人工整理发布说明时再填写根目录 `CHANGELOG.md` 的 Unreleased 段落
+- 更新 `docs/` 对应 API 文档；公开约定和体积检查口径见 `docs/guide/versioning.md`
+- 默认通过提交标题生成发布说明，不在普通功能提交中手写 `Unreleased`。该段一旦有内容，生成器会保留它并跳过本次全部提交，不能期待自动合并
 
 修改 `playground/` 示例时请注意：这份工程会被打包成插件市场的示例工程，而那份工程里没有 npm 版组件，`<uni-tree-view>` 只能由 easycom 从 `uni_modules` 解析。构建脚本会自动删除运行时 `import`、把纯类型导入改指向插件目录；其余导入形态（默认导入混具名等）会直接报错，需要手工拆成这两种。`pnpm check` 会断言生成工程不再引用 `uni-tree-view`，CI 还会把它装到仓库外独立构建一次。
 
@@ -67,6 +76,6 @@ docs: 补充 xxx 示例
 
 贡献者只需按功能边界提交代码、测试和文档。版本号、release commit、tag、npm 发布和 DCloud 插件市场发布由项目维护者统一处理，请不要在功能提交中修改版本号。
 
-变更日志只维护仓库根目录 `CHANGELOG.md`；npm 包内的 `CHANGELOG.md` 会在打包前自动生成。提交类型会用于整理发布说明，需要补充迁移步骤、兼容性变化或其他无法从提交标题表达的信息时，请更新根目录 `CHANGELOG.md` 的 `Unreleased` 段落。
+变更日志只维护仓库根目录 `CHANGELOG.md`；npm 包内的 `CHANGELOG.md` 会在打包前自动生成。迁移步骤优先写入对应指南或 FAQ。维护者确需手工填写 `Unreleased` 时，应整理完整的发布说明，因为后续生成不会再补入遗漏提交。
 
 npm 发布由 tag 触发的 release 工作流自动完成；DCloud 插件市场按 `uni_modules` 规范发布，必须由维护者在 HBuilderX 中手动操作，贡献者无需关心。

@@ -76,6 +76,7 @@ export default defineConfig({
           text: "进阶",
           items: [
             { text: "平台兼容性", link: "/guide/platforms" },
+            { text: "版本兼容性与体积", link: "/guide/versioning" },
             { text: "常见问题", link: "/guide/faq" },
             { text: "许可证与署名", link: "/guide/license" }
           ]
