@@ -77,6 +77,52 @@ describe("useVirtualTreeList", () => {
     scope.stop();
   });
 
+  it.each([
+    { scrollTop: 1, height: 100, overscan: 0, start: 0, end: 6 },
+    { scrollTop: 19, height: 100, overscan: 0, start: 0, end: 6 },
+    { scrollTop: 21, height: 100, overscan: 0, start: 1, end: 7 },
+    { scrollTop: 9, height: 95, overscan: 0, start: 0, end: 6 },
+    { scrollTop: 241, height: 100, overscan: 2, start: 10, end: 20 }
+  ])("covers partially visible rows at offset $scrollTop with overscan $overscan", ({ scrollTop, height, overscan, start, end }) => {
+    const scope = effectScope();
+    const result = scope.run(() => useVirtualTreeList({
+      items: Array.from({ length: 100 }, (_, index) => index),
+      virtual: true,
+      itemHeight: 20,
+      height,
+      overscan
+    }))!;
+
+    result.handleScroll({ detail: { scrollTop } });
+
+    expect(result.startIndex.value).toBe(start);
+    expect(result.endIndex.value).toBe(end);
+    expect(result.renderedItems.value).toContain(Math.floor(scrollTop / 20));
+    expect(result.renderedItems.value).toContain(Math.ceil((scrollTop + height) / 20) - 1);
+    expect(result.topPadding.value + result.renderedItems.value.length * 20 + result.bottomPadding.value).toBe(2_000);
+    scope.stop();
+  });
+
+  it("reconciles sub-row offsets when they cross a row boundary in either direction", () => {
+    const scope = effectScope();
+    const result = scope.run(() => useVirtualTreeList({
+      items: Array.from({ length: 100 }, (_, index) => index),
+      virtual: true,
+      itemHeight: 20,
+      height: 100,
+      overscan: 0
+    }))!;
+
+    result.handleScroll({ detail: { scrollTop: 119 } });
+    expect(result.syncScrollTop(120)).toBe(true);
+    expect(result.startIndex.value).toBe(6);
+    expect(result.syncScrollTop(119)).toBe(true);
+    expect(result.startIndex.value).toBe(5);
+    expect(result.renderedItems.value).toContain(10);
+    expect(result.syncScrollTop(119)).toBe(false);
+    scope.stop();
+  });
+
   it("clamps invalid scroll positions and reacts to list size changes", () => {
     const scope = effectScope();
     const items = shallowRef(Array.from({ length: 10 }, (_, index) => index));
@@ -248,11 +294,13 @@ describe("useVirtualTreeList", () => {
     expect(result!.renderedItems.value).toContain(40);
     expect(result!.renderedItems.value).not.toContain(5);
 
-    // 不足半行的偏差不会改变任何渲染下标，重算只是白费一次 setData。
+    // 同一行内的小偏移也可能让底部多露出一行，不能按半行阈值忽略。
+    expect(result!.syncScrollTop(809)).toBe(true);
+    expect(result!.scrollTop.value).toBe(809);
+    expect(result!.renderedItems.value).toContain(45);
     expect(result!.syncScrollTop(809)).toBe(false);
-    expect(result!.scrollTop.value).toBe(800);
 
-    // 超出可滚动范围的实测值要夹紧，负值与非法值一律忽略。
+    // 越界实测值夹紧到有效范围，非有限值忽略。
     expect(result!.syncScrollTop(99_999)).toBe(true);
     expect(result!.scrollTop.value).toBe(1_900);
     expect(result!.syncScrollTop(-50)).toBe(true);

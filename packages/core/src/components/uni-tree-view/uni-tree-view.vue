@@ -275,17 +275,10 @@ const {
   overscan: () => props.virtualOverscan
 });
 
-// 滚动停稳后校正一次 JS 侧的滚动位置。
-//
-// 小程序的 @scroll 是节流上报的，快速甩动时逻辑层收到的位置严重滞后，而惯性停下的那一刻
-// 不保证还有事件到达。最后一个位置一旦没上报，JS 侧就永久停在滞后值上，渲染窗口落在真实
-// 视口之外，可视区只剩占位块——即「连续快滑几下后虚拟区域一直空白，重新触一下才渲染」。
-// 这里在滚动事件停止后主动读一次真实偏移补上那个丢失的位置。
+// 滚动事件短暂停止后读取真实偏移，补齐节流上报可能遗漏的最终位置。
 let scrollSettleTimer: ReturnType<typeof setTimeout> | undefined;
+let scrollMeasurementVersion = 0;
 let isUnmounted = false;
-
-// 略大于微信 @scroll 的上报间隔：滑动过程中会被后续事件不断重置，只有真正停下才会执行，
-// 因此每次手势最多触发一次查询。
 const SCROLL_SETTLE_DELAY = 120;
 
 // 选择器查询必须带上组件实例：小程序的自定义组件内部节点对页面级查询不可见。实例只能在
@@ -297,13 +290,14 @@ function reconcileScrollTop() {
     return;
   }
 
+  const measurementVersion = scrollMeasurementVersion;
   uni.createSelectorQuery()
     .in(instance.proxy)
     .select(".scroll-view-container")
     .fields({ scrollOffset: true }, () => {})
     .exec(([node]) => {
-      // 查询是异步的，回调到达时组件可能已经卸载。
-      if (isUnmounted) {
+      // 新滚动、定位或窗口变化后，旧查询不能再覆盖当前状态。
+      if (isUnmounted || measurementVersion !== scrollMeasurementVersion) {
         return;
       }
 
@@ -312,29 +306,41 @@ function reconcileScrollTop() {
         return;
       }
 
-      // 校正真的改变了位置，说明查询时列表还在动（甩动中途逻辑层被饿死也会走到这里），
-      // 再排一次检查；直到某次偏差小于半行才收敛，避免停在中途的滞后值上。
+      // 位置仍有变化时继续测量，直到读数稳定；不向原生视图下发滚动指令。
       if (syncScrollTop(measuredScrollTop)) {
         scheduleScrollSettleCheck();
       }
     });
 }
 
-function scheduleScrollSettleCheck() {
+function cancelScrollSettleCheck() {
   clearTimeout(scrollSettleTimer);
-  scrollSettleTimer = setTimeout(reconcileScrollTop, SCROLL_SETTLE_DELAY);
+  scrollSettleTimer = undefined;
+  scrollMeasurementVersion += 1;
+}
+
+function scheduleScrollSettleCheck() {
+  cancelScrollSettleCheck();
+  if (!isUnmounted && virtualEnabled.value) {
+    scrollSettleTimer = setTimeout(reconcileScrollTop, SCROLL_SETTLE_DELAY);
+  }
 }
 
 function handleVirtualScroll(event: UniTreeVirtualScrollEvent) {
   updateVirtualWindow(event);
-  if (virtualEnabled.value) {
-    scheduleScrollSettleCheck();
-  }
+  scheduleScrollSettleCheck();
 }
+
+// 窗口变化后丢弃旧测量并重新校正，避免没有后续滚动事件时停留在旧偏移。
+watch(
+  [virtualEnabled, visibleTreeList, () => props.virtualHeight, () => props.virtualItemHeight],
+  scheduleScrollSettleCheck,
+  { flush: "sync" }
+);
 
 onBeforeUnmount(() => {
   isUnmounted = true;
-  clearTimeout(scrollSettleTimer);
+  cancelScrollSettleCheck();
 });
 
 interface RenderedTreeItem {
@@ -445,6 +451,7 @@ async function scrollToKey(key: TreeKey, options: TreeScrollToOptions = {}) {
   }
 
   if (virtualEnabled.value) {
+    cancelScrollSettleCheck();
     virtualScrollCommandTop.value = undefined;
     await nextTick();
     if (!scrollToIndex(visibleIndex)) {
@@ -454,6 +461,7 @@ async function scrollToKey(key: TreeKey, options: TreeScrollToOptions = {}) {
     // 与下方 watch 同理，指令用完即清，避免这个值长期停在绑定上把后续滚动吸附回来。
     await nextTick();
     virtualScrollCommandTop.value = undefined;
+    scheduleScrollSettleCheck();
     return true;
   }
 
@@ -463,13 +471,8 @@ async function scrollToKey(key: TreeKey, options: TreeScrollToOptions = {}) {
   return true;
 }
 
-// H5 的 scroll-view 会自行收敛超出范围的滚动位置，小程序端不会，需要显式把夹紧后的
-// 位置写回 :scroll-top，否则筛选后视图仍停在旧偏移上，只是内容被换成了末尾几行。
-//
-// 触发源必须是 maxScrollTop（仅在可滚动范围本身变化时才变），不能是「JS 侧滚动位置越界」
-// 这类派生比较：小程序的 @scroll 是节流上报的，快速滑动时 JS 侧位置天然落后于真实位置，
-// 那种条件会在正常滑动中反复成立，把视图不断拽回旧位置，最终使渲染窗口与真实偏移错位、
-// 可视区只剩占位块（表现为滑动后永久空白，需触摸才恢复）。
+// 可滚动范围变化时才将越界位置写回 scroll-view，不侦听滚动位置本身，
+// 避免节流上报期间把用户手势拉回旧偏移。筛选恢复后也不会重新使用已失效的位置。
 watch(virtualMaxScrollTop, async () => {
   if (!virtualEnabled.value) {
     return;

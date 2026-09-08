@@ -65,7 +65,9 @@ export function useVirtualTreeList<T>(options: UseVirtualTreeListOptions<T>) {
       return totalCount.value;
     }
 
-    const visibleCount = Math.ceil(height.value / itemHeight.value) + overscan.value * 2;
+    // 首行可能已滚出一部分；这段偏移也占用窗口，需补齐底部部分可见的行。
+    const rowOffset = effectiveScrollTop.value % itemHeight.value;
+    const visibleCount = Math.ceil((height.value + rowOffset) / itemHeight.value) + overscan.value * 2;
     return Math.min(totalCount.value, startIndex.value + visibleCount);
   });
 
@@ -135,22 +137,15 @@ export function useVirtualTreeList<T>(options: UseVirtualTreeListOptions<T>) {
     return maxScrollTop.value;
   }
 
-  // 用实测滚动位置校正 JS 侧的 scrollTop。
-  //
-  // 小程序的 @scroll 是节流上报的：快速甩动时逻辑层拿到的位置严重滞后，而惯性停下的那一刻
-  // 不保证还有事件到达。一旦最后一个位置没能上报，JS 侧就永久停在滞后值上，渲染窗口落在
-  // 真实视口之外，可视区只剩占位块——表现为「滑动后一直空白，重新触一下才渲染」（触摸会
-  // 产生新的滚动事件，把窗口重新算对，所以看起来是碰一下就自愈）。
-  //
-  // 这里只读真实位置并更新 JS 状态，不回写 scroll-top，因此不会与用户滚动互相拉扯。
-  // 阈值取半行：不足半行的偏差不会改变任何渲染下标，重算只是白费一次 setData。
+  // 用实测偏移补齐滞后的滚动事件，只更新窗口状态，不回写 scroll-top。
+  // 即使不足半行的偏差也可能跨越行边界，因此仅在位置相同时跳过。
   function syncScrollTop(measuredScrollTop: number) {
     if (!virtualEnabled.value || !Number.isFinite(measuredScrollTop)) {
       return false;
     }
 
     const nextScrollTop = Math.min(Math.max(0, measuredScrollTop), maxScrollTop.value);
-    if (Math.abs(nextScrollTop - scrollTop.value) < itemHeight.value / 2) {
+    if (nextScrollTop === scrollTop.value) {
       return false;
     }
 
