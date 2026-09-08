@@ -9,9 +9,6 @@
     ]
   },
   "include": [
-    "manifest.config.ts",
-    "pages.config.ts",
-    "uno.config.ts",
     "vite.config.ts"
   ]
 }

@@ -4,8 +4,8 @@ import { spawn } from "node:child_process";
 import type { ChildProcess } from "node:child_process";
 import process from "node:process";
 import { resolvePlaygroundPort } from "./dev-docs-utils";
+import { getPnpmCommand } from "./pnpm-utils";
 
-const pnpmCommand = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
 const forwardedArgs = process.argv.slice(2).filter((argument) => argument !== "--");
 const docsArgs = ["-C", "docs", "dev", ...forwardedArgs];
 const children: ChildProcess[] = [];
@@ -35,7 +35,8 @@ function shutdown(exitCode: number): void {
 }
 
 function start(args: string[], env: NodeJS.ProcessEnv): ChildProcess {
-  const child = spawn(pnpmCommand, args, {
+  const pnpm = getPnpmCommand(args);
+  const child = spawn(pnpm.command, pnpm.args, {
     env,
     stdio: "inherit"
   });

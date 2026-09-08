@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { chmodSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import process from "node:process";
@@ -31,10 +31,11 @@ describe("dev docs process", () => {
   it("preserves a child failure when the sibling exits immediately", () => {
     const fakeBinDir = mkdtempSync(path.join(tmpdir(), "uni-tree-view-dev-docs-"));
     const fakePnpmScript = path.join(fakeBinDir, "fake-pnpm.mjs");
-    const fakePnpm = path.join(fakeBinDir, "pnpm");
-    const fakePnpmCommand = path.join(fakeBinDir, "pnpm.cmd");
+    const callsFile = path.join(fakeBinDir, "calls.txt");
 
-    const fakePnpmSource = `const args = process.argv.slice(2);
+    const fakePnpmSource = `import { appendFileSync } from "node:fs";
+const args = process.argv.slice(2);
+appendFileSync(process.env.PNPM_CALLS_FILE, args.join(" ") + "\\n");
 if (args.includes("playground")) {
   setTimeout(() => process.exit(1), 50);
 } else {
@@ -43,9 +44,6 @@ if (args.includes("playground")) {
 }
 `;
     writeFileSync(fakePnpmScript, fakePnpmSource);
-    writeFileSync(fakePnpm, `#!/usr/bin/env node\n${fakePnpmSource}`);
-    chmodSync(fakePnpm, 0o755);
-    writeFileSync(fakePnpmCommand, `@echo off\r\n"${process.execPath}" "${fakePnpmScript}" %*\r\n`);
 
     try {
       const result = spawnSync(
@@ -55,7 +53,8 @@ if (args.includes("playground")) {
           cwd: process.cwd(),
           env: {
             ...process.env,
-            PATH: `${fakeBinDir}${path.delimiter}${process.env.PATH ?? ""}`
+            npm_execpath: fakePnpmScript,
+            PNPM_CALLS_FILE: callsFile
           },
           encoding: "utf8",
           timeout: 5000
@@ -64,6 +63,10 @@ if (args.includes("playground")) {
 
       expect(result.error).toBeUndefined();
       expect(result.status, result.stderr).toBe(1);
+      const calls = readFileSync(callsFile, "utf8");
+      expect(calls).toContain("-C playground exec uni");
+      expect(calls).toContain("-C docs dev");
+      expect(result.stderr).not.toContain("spawn");
     } finally {
       rmSync(fakeBinDir, { force: true, recursive: true });
     }

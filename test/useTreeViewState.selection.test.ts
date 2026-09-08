@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { nextTick, watch } from "vue";
 import { CHECK_STATUS_MAP } from "../packages/core/src/components/uni-tree-view/constants";
+import type { TreeKey } from "../packages/core/src/components/uni-tree-view/types";
 import {
   checkedKeys,
   cleanupTreeViewStateScopes,
@@ -334,6 +335,31 @@ describe("useTreeViewState: selection", () => {
 
     expect(checkedKeys(state)).toEqual(["floor-b-1"]);
     stop();
+  });
+
+  it.each(["modelValue", "defaultCheckedKeys"] as const)("tracks in-place %s changes even when joined key signatures collide", async (prop) => {
+    const keys: TreeKey[] = [1, "1", "a,b", "c", "a", "b,c"];
+    const { props, state } = createState({
+      data: keys.map((id) => ({ id, label: String(id) })),
+      multiple: true,
+      checkStrictly: true,
+      [prop]: [1, "a,b", "c"]
+    });
+    const configuredKeys = props[prop] as TreeKey[];
+
+    expect(checkedKeys(state)).toEqual([1, "a,b", "c"]);
+
+    configuredKeys[0] = "1";
+    await nextTick();
+    expect(checkedKeys(state)).toEqual(["1", "a,b", "c"]);
+
+    configuredKeys.splice(1, 2, "a", "b,c");
+    await nextTick();
+    expect(checkedKeys(state)).toEqual(["1", "a", "b,c"]);
+
+    configuredKeys.length = 0;
+    await nextTick();
+    expect(checkedKeys(state)).toEqual([]);
   });
 
   it("resolves packDisabledKey with a packing default", () => {

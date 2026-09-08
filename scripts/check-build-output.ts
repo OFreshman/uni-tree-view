@@ -4,6 +4,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import { getPnpmCommand } from "./pnpm-utils";
 
 const root = process.cwd();
 const generatedTargets = [
@@ -45,15 +46,7 @@ function changedPaths(before: OutputSnapshot, after: OutputSnapshot): string[] {
 }
 
 function runBuild(): void {
-  const pnpmCli = process.env.npm_execpath;
-  const command = pnpmCli
-    ? process.execPath
-    : process.platform === "win32"
-      ? "pnpm.cmd"
-      : "pnpm";
-  const args = pnpmCli
-    ? [pnpmCli, "run", "build:play"]
-    : ["run", "build:play"];
+  const { command, args } = getPnpmCommand(["run", "build:play"]);
   const result = spawnSync(command, args, {
     cwd: root,
     env: process.env,

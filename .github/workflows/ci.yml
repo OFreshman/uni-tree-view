@@ -62,14 +62,23 @@ jobs:
       - name: Check
         run: pnpm check
 
+      - name: Check final component size
+        run: pnpm check:size
+
+      - name: Upload component size report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: component-size-report
+          path: artifacts/component-size/report.json
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: Build docs
         run: pnpm docs:build
 
-      - name: Build WeChat mini program
-        run: pnpm -C playground build:mp-weixin
-
-      - name: Build Alipay mini program
-        run: pnpm -C playground build:mp-alipay
+      - name: Build mini programs
+        run: pnpm check:platforms
 
   standalone-example:
     runs-on: ubuntu-latest
@@ -139,8 +148,8 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Build
-        run: pnpm build
+      - name: Build and inspect npm package
+        run: pnpm pack:npm
 
       - name: Test
         run: pnpm test

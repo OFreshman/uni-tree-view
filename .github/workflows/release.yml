@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Existing release tag to publish, for example v0.0.9
+        description: Existing release tag to publish, for example v1.0.0
         required: true
         type: string
 
@@ -20,7 +20,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: release-${{ inputs.tag || github.ref }}
+  group: release-${{ inputs.tag || github.ref_name }}
   cancel-in-progress: false
 
 jobs:
@@ -50,19 +50,9 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Verify release tag
-        shell: bash
-        run: |
-          if [[ "$RELEASE_TAG" != v* ]]; then
-            echo "::error::Release tag must start with v, received $RELEASE_TAG"
-            exit 1
-          fi
-          version="$(node -p 'require("./packages/core/package.json").version')"
-          expected="v${version}"
-          if [[ "$RELEASE_TAG" != "$expected" ]]; then
-            echo "::error::Expected tag $expected, received $RELEASE_TAG"
-            exit 1
-          fi
+      - name: Verify release tag and workspace versions
+        id: release-info
+        run: pnpm release:check "$RELEASE_TAG"
 
       - name: Extract release notes
         run: pnpm changelog:notes "$RELEASE_TAG" "$RUNNER_TEMP/release-notes.md"
@@ -70,16 +60,17 @@ jobs:
       - name: Check
         run: pnpm check
 
-      - name: Build WeChat mini program
-        run: pnpm -C playground build:mp-weixin
+      - name: Build mini programs
+        run: pnpm check:platforms
 
-      - name: Build Alipay mini program
-        run: pnpm -C playground build:mp-alipay
+      - name: Check final component size
+        run: pnpm check:size
 
-      # DCloud 插件只能由 HBuilderX 手动发布，这里不产出 release 资产；插件形态的断言
-      # （easycom 目录约定、可移植导入、示例工程不引用 npm 包）已包含在上面的 pnpm check 里。
-      - name: Build release artifacts
-        run: pnpm pack:npm
+      - name: Build and validate docs
+        run: pnpm docs:build
+
+      # pnpm check 已生成并校验 npm tarball（npm 打包得到的 .tgz 压缩包）及 DCloud 工程。
+      # 发布和 GitHub release 上传使用同一份已校验的压缩包，不再重新打包。
 
       - name: Check npm version
         id: npm-version
@@ -96,23 +87,28 @@ jobs:
 
       - name: Publish npm package
         if: steps.npm-version.outputs.published != 'true'
-        working-directory: packages/core
-        run: npm publish --access public --provenance
+        run: npm publish "$PACKAGE_TARBALL" --access public --provenance --tag "$NPM_DIST_TAG"
+        env:
+          PACKAGE_TARBALL: ${{ steps.release-info.outputs.artifact }}
+          NPM_DIST_TAG: ${{ steps.release-info.outputs.npm_tag }}
 
       - name: Create or update GitHub release
         shell: bash
         run: |
-          assets=(artifacts/npm/*)
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
-            gh release upload "$RELEASE_TAG" "${assets[@]}" --clobber
+            gh release upload "$RELEASE_TAG" "$PACKAGE_TARBALL" --clobber
             gh release edit "$RELEASE_TAG" \
               --notes-file "$RUNNER_TEMP/release-notes.md" \
-              --title "$RELEASE_TAG"
+              --title "$RELEASE_TAG" \
+              --prerelease="$IS_PRERELEASE"
           else
-            gh release create "$RELEASE_TAG" "${assets[@]}" \
+            gh release create "$RELEASE_TAG" "$PACKAGE_TARBALL" \
               --notes-file "$RUNNER_TEMP/release-notes.md" \
               --title "$RELEASE_TAG" \
-              --verify-tag
+              --verify-tag \
+              --prerelease="$IS_PRERELEASE"
           fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PACKAGE_TARBALL: ${{ steps.release-info.outputs.artifact }}
+          IS_PRERELEASE: ${{ steps.release-info.outputs.prerelease }}

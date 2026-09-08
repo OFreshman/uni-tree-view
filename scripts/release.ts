@@ -1,14 +1,79 @@
 // @env node
 
 import { execFileSync, spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { appendFileSync, readFileSync } from "node:fs";
+import path from "node:path";
 import process from "node:process";
+import { pathToFileURL } from "node:url";
 import chalk from "chalk";
 import { readReleaseCommits } from "./changelog-git";
 import {
   assertChangelogCanBePrepared,
   createChangelogPreparation
 } from "./changelog-utils";
+import { getPnpmCommand } from "./pnpm-utils";
+
+export function getReleaseInfo(tag: string, versions: Record<string, string>) {
+  const version = versions["packages/core"];
+  if (!version || !/^\d+\.\d+\.\d+(?:-[0-9A-Z.-]+)?(?:\+[0-9A-Z.-]+)?$/i.test(version)) {
+    throw new Error(`Invalid component release version: ${version}`);
+  }
+  for (const [name, candidate] of Object.entries(versions)) {
+    if (candidate !== version) {
+      throw new Error(`${name} version ${candidate} does not match the component version ${version}.`);
+    }
+  }
+  if (tag !== `v${version}`) {
+    throw new Error(`Expected release tag v${version}, received ${tag}.`);
+  }
+  // npm dist-tag 是安装通道标签：latest 用于正式版，next 用于预发布版。
+  const prerelease = version.split("+", 1)[0].includes("-");
+  return {
+    version,
+    prerelease,
+    npmTag: prerelease ? "next" : "latest",
+    artifact: `artifacts/npm/uni-tree-view-${version}.tgz`
+  };
+}
+
+export function assertReleaseCommit(head: string, taggedCommit: string, onMain: boolean): void {
+  if (head !== taggedCommit) {
+    throw new Error("The checked-out commit must match the release tag, not a same-named branch.");
+  }
+  if (!onMain) {
+    throw new Error("The release tag must be reachable from origin/main.");
+  }
+}
+
+function checkTaggedRelease(tag: string): void {
+  const packages = [".", "packages/core", "playground", "docs"];
+  const versions = Object.fromEntries(packages.map((directory) => {
+    const manifest = JSON.parse(readFileSync(path.join(directory, "package.json"), "utf8")) as { version: string };
+    return [directory, manifest.version];
+  }));
+  const info = getReleaseInfo(tag, versions);
+  const git = (args: string[]) => execFileSync("git", args, { encoding: "utf8" }).trim();
+  // 明确读取 Git 标签（refs/tags/...）指向的提交，避免把同名分支误当作版本标签。
+  const taggedCommit = git(["rev-parse", "--verify", `refs/tags/${tag}^{commit}`]);
+  const head = getCurrentHead();
+  const ancestry = spawnSync("git", ["merge-base", "--is-ancestor", taggedCommit, "refs/remotes/origin/main"]);
+  if (ancestry.error) {
+    throw ancestry.error;
+  }
+  assertReleaseCommit(head, taggedCommit, ancestry.status === 0);
+
+  if (process.env.GITHUB_OUTPUT) {
+    appendFileSync(process.env.GITHUB_OUTPUT, [
+      `version=${info.version}`,
+      `artifact=${info.artifact}`,
+      `npm_tag=${info.npmTag}`,
+      `prerelease=${info.prerelease}`,
+      ""
+    ].join("\n"));
+  }
+  console.log(`Release tag verified: ${tag}; npm dist-tag: ${info.npmTag}.`);
+}
+
 
 function getCurrentHead(): string {
   return execFileSync("git", ["rev-parse", "HEAD"], {
@@ -73,7 +138,6 @@ function main(): void {
   assertReleaseNotesCanBePrepared();
   const originalHead = getCurrentHead();
 
-  const pnpmCommand = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
   const releaseArgs = process.argv.slice(2);
   const bumppArgs = ["exec", "bumpp", ...(releaseArgs.length ? releaseArgs : ["prompt"])];
 
@@ -86,7 +150,8 @@ function main(): void {
   }
   console.log();
 
-  const result = spawnSync(pnpmCommand, bumppArgs, {
+  const pnpm = getPnpmCommand(bumppArgs);
+  const result = spawnSync(pnpm.command, pnpm.args, {
     env: {
       ...process.env,
       GIT_PAGER: "cat"
@@ -105,10 +170,17 @@ function main(): void {
   }
 }
 
-try {
-  main();
-} catch (error) {
-  const message = error instanceof Error ? error.message : String(error);
-  console.error(`\n${chalk.red.bold("Release failed:")} ${chalk.red(message)}`);
-  process.exitCode = 1;
+// 导入测试时不执行命令。--check-tag 只读校验标签；其他参数进入原有的版本提升、提交和打标签流程。
+if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
+  try {
+    if (process.argv[2] === "--check-tag") {
+      checkTaggedRelease(process.argv[3] ?? "");
+    } else {
+      main();
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`\n${chalk.red.bold("Release failed:")} ${chalk.red(message)}`);
+    process.exitCode = 1;
+  }
 }

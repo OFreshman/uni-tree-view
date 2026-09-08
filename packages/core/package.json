@@ -69,12 +69,11 @@
     "prepack": "pnpm -w changelog:package"
   },
   "peerDependencies": {
-    "vue": ">=3.3.0"
+    "vue": ">=3.3.0 <4"
   },
   "devDependencies": {
     "@types/node": "catalog:types",
     "@uni-helper/vite-plugin-uni-components": "catalog:build",
-    "@uni-helper/vite-plugin-uni-pages": "catalog:build",
     "@vue/runtime-core": "catalog:dev",
     "tsx": "catalog:script",
     "typescript": "catalog:dev",

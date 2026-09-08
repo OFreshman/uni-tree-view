@@ -24,6 +24,19 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       reportsDirectory: "coverage",
+      // 基于现有基线设置回归下限，不以 100% 代替行为验证。
+      thresholds: {
+        statements: 80,
+        branches: 85,
+        functions: 90,
+        lines: 80,
+        "packages/core/src/components/uni-tree-view/**": {
+          statements: 90,
+          branches: 90,
+          functions: 95,
+          lines: 90
+        }
+      },
       // 只统计随包发布的源码。默认的 all: false 会让没被任何测试碰到的文件
       // 完全不出现在报告里，那种「100%」看不出漏测的模块。
       all: true,
