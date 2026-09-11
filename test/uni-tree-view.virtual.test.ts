@@ -172,6 +172,67 @@ describe("uni-tree-view: virtual scrolling", () => {
     expect(renderedLabels(second)[0]).toBe("Node 40");
   });
 
+  it.each([3, 5])("skips measurement for %s rows that cannot scroll and resets stale event offsets", async (count) => {
+    vi.useFakeTimers();
+    const { createSelectorQuery } = mockScrollMeasurements();
+    const wrapper = mountVirtualTree({
+      data: Array.from({ length: count }, (_, id) => ({ id, label: `Node ${id}` }))
+    });
+    await wrapper.find("scroll-view").trigger("scroll", { detail: { scrollTop: 40 } });
+    await vi.advanceTimersByTimeAsync(240);
+    expect(createSelectorQuery).not.toHaveBeenCalled();
+
+    await wrapper.setProps({
+      data: Array.from({ length: 100 }, (_, id) => ({ id, label: `Node ${id}` }))
+    });
+    expect(renderedLabels(wrapper)[0]).toBe("Node 0");
+    await vi.advanceTimersByTimeAsync(120);
+    expect(createSelectorQuery).toHaveBeenCalledTimes(1);
+  });
+
+  it("clears stale offsets when virtual mode is re-enabled with a non-scrollable list", async () => {
+    vi.useFakeTimers();
+    const { createSelectorQuery } = mockScrollMeasurements();
+    const wrapper = mountVirtualTree();
+    const tree = wrapper.vm as unknown as UniTreeViewExposed;
+    await tree.scrollToKey(40);
+    await wrapper.setProps({ virtual: false });
+    await wrapper.setProps({ data: [{ id: 0, label: "Node 0" }] });
+    await wrapper.setProps({ virtual: true });
+    await vi.advanceTimersByTimeAsync(240);
+    expect(createSelectorQuery).not.toHaveBeenCalled();
+
+    await wrapper.setProps({
+      data: Array.from({ length: 100 }, (_, id) => ({ id, label: `Node ${id}` }))
+    });
+    expect(renderedLabels(wrapper)[0]).toBe("Node 0");
+    expect(nativeScroll(wrapper).getScrollTop()).toBe(0);
+  });
+
+  it.each(["filter", "viewport"] as const)("cancels measurements at zero scroll range after a %s change and resumes on growth", async (change) => {
+    vi.useFakeTimers();
+    const { callbacks, createSelectorQuery } = mockScrollMeasurements();
+    const wrapper = mountVirtualTree({ filterMethod: (_value, node) => Number(node.id) < 3 });
+    const tree = wrapper.vm as unknown as UniTreeViewExposed;
+    expect(await tree.scrollToKey(40)).toBe(true);
+    await vi.advanceTimersByTimeAsync(120);
+    expect(createSelectorQuery).toHaveBeenCalledTimes(1);
+
+    await wrapper.setProps(change === "filter" ? { filterValue: "keep" } : { virtualHeight: 2_000 });
+    await flushPromises();
+    expect(nativeScroll(wrapper).getScrollTop()).toBe(0);
+    callbacks[0]([{ scrollTop: 800 }]);
+    await vi.advanceTimersByTimeAsync(240);
+    expect(createSelectorQuery).toHaveBeenCalledTimes(1);
+    expect(renderedLabels(wrapper)[0]).toBe("Node 0");
+
+    await wrapper.setProps(change === "filter" ? { filterValue: "" } : { virtualHeight: 100 });
+    expect(nativeScroll(wrapper).getScrollTop()).toBe(0);
+    expect(renderedLabels(wrapper)[0]).toBe("Node 0");
+    await vi.advanceTimersByTimeAsync(120);
+    expect(createSelectorQuery).toHaveBeenCalledTimes(2);
+  });
+
   it("renders the row partially visible at the bottom without overscan", async () => {
     const wrapper = mountVirtualTree();
     await wrapper.find("scroll-view").trigger("scroll", { detail: { scrollTop: 19 } });

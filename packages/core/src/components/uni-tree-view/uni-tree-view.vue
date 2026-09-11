@@ -325,24 +325,32 @@ function cancelScrollSettleCheck() {
 
 function scheduleScrollSettleCheck() {
   cancelScrollSettleCheck();
-  if (!isUnmounted && virtualEnabled.value) {
+  if (!isUnmounted && virtualEnabled.value && virtualMaxScrollTop.value > 0) {
     scrollSettleTimer = setTimeout(reconcileScrollTop, SCROLL_SETTLE_DELAY);
   }
 }
 
 function handleVirtualScroll(event: UniTreeVirtualScrollEvent) {
-  updateVirtualWindow(event);
+  // 无可滚动范围时不保留滞后的事件偏移；列表变短的原生归位仍由范围侦听器下发。
+  if (virtualMaxScrollTop.value === 0) {
+    syncScrollTop(0);
+  } else {
+    updateVirtualWindow(event);
+  }
   scheduleScrollSettleCheck();
 }
 
 // 窗口变化后丢弃旧测量并重新校正，避免没有后续滚动事件时停留在旧偏移。
 watch(
   [virtualEnabled, visibleTreeList, () => props.virtualHeight, () => props.virtualItemHeight],
-  () => {
-    if (!virtualEnabled.value) {
+  ([enabled], [wasEnabled]) => {
+    if (!enabled) {
       scrollCommandVersion += 1;
       // 非虚拟模式已解除此绑定，清除旧指令，避免重新开启时重放。
       virtualScrollCommandTop.value = undefined;
+    } else if (!wasEnabled && virtualMaxScrollTop.value === 0) {
+      // 重新开启时若没有可滚动范围，不会安排测量，也不能保留关闭前的偏移。
+      syncScrollTop(0);
     }
     scheduleScrollSettleCheck();
   },
