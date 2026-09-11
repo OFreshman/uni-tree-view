@@ -14,8 +14,9 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-function mountVirtualTree(props: UniTreeViewProps = {}) {
+function mountVirtualTree(props: UniTreeViewProps = {}, globalProperties: Record<string, unknown> = {}) {
   return mount(UniTreeView, {
+    global: { config: { globalProperties } },
     props: {
       data: Array.from({ length: 100 }, (_, id) => ({ id, label: `Node ${id}` })),
       virtual: true,
@@ -172,6 +173,16 @@ describe("uni-tree-view: virtual scrolling", () => {
     expect(renderedLabels(second)[0]).toBe("Node 40");
   });
 
+  it("passes the native component scope to an Alipay query when available", async () => {
+    vi.useFakeTimers();
+    const { query } = mockScrollMeasurements();
+    const nativeScope = { nativeComponent: true };
+    const wrapper = mountVirtualTree({}, { $scope: nativeScope });
+    nativeScroll(wrapper).moveTo(100);
+    await vi.advanceTimersByTimeAsync(120);
+    expect(query.in.mock.calls[0][0]).toBe(nativeScope);
+  });
+
   it.each([3, 5])("skips measurement for %s rows that cannot scroll and resets stale event offsets", async (count) => {
     vi.useFakeTimers();
     const { createSelectorQuery } = mockScrollMeasurements();
@@ -253,7 +264,7 @@ describe("uni-tree-view: virtual scrolling", () => {
     expect(createSelectorQuery).not.toHaveBeenCalled();
     await vi.advanceTimersByTimeAsync(1);
     expect(createSelectorQuery).toHaveBeenCalledTimes(1);
-    expect(query.in).toHaveBeenCalledWith(expect.any(Object));
+    expect(query.in.mock.calls[0][0]).toBe(wrapper.vm.$.proxy);
     expect(query.select).toHaveBeenCalledWith(`#${scrollView.attributes("id")}`);
 
     callbacks[0]([{ scrollTop: 800 }]);

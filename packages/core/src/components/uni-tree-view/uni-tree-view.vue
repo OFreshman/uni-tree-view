@@ -295,8 +295,13 @@ function reconcileScrollTop() {
   }
 
   const measurementVersion = scrollMeasurementVersion;
+  let queryScope: unknown = instance.proxy;
+  // #ifdef MP-ALIPAY
+  // 支付宝保留原生 in 时不解包 Vue 实例；微信已有含 Skyline 的适配，H5 也继续传 Vue 实例。
+  queryScope = (instance.proxy as { $scope?: unknown } | null)?.$scope ?? queryScope;
+  // #endif
   uni.createSelectorQuery()
-    .in(instance.proxy)
+    .in(queryScope)
     .select(`#${scrollViewId}`)
     .fields({ scrollOffset: true }, () => {})
     .exec(([node]) => {
