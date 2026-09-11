@@ -438,7 +438,7 @@ async function loadNodeSafely(node: TreeNode) {
   try {
     await loadNode(node);
   } catch {
-    // The load-error event carries the failure and the node remains retryable.
+    // load-error 事件已携带失败信息，节点保持可重试。
   }
 }
 
@@ -454,7 +454,7 @@ async function retryLoadSafely(node: TreeNode) {
   try {
     await retryLoad(node);
   } catch {
-    // The load-error event carries the failure and another retry remains possible.
+    // load-error 事件已携带失败信息，后续仍可再次重试。
   }
 }
 
@@ -464,7 +464,7 @@ async function applyVirtualScrollCommand(top: number) {
   // 先等待绑定落地，仅让最新请求继续，避免并发指令被同一轮渲染合并而丢失。
   await nextTick();
   if (isUnmounted || !virtualEnabled.value || commandVersion !== scrollCommandVersion) {
-    return;
+    return false;
   }
   // undefined 会恢复 scroll-view 的默认值 0，并非解除控制。保留上次指令，手势和测量
   // 不更新此绑定；重复定位时只用邻近数值重新触发指令，避免先跳回顶部。
@@ -472,11 +472,12 @@ async function applyVirtualScrollCommand(top: number) {
     virtualScrollCommandTop.value = top > 0 ? Math.max(0, top - 1) : 1;
     await nextTick();
     if (isUnmounted || !virtualEnabled.value || commandVersion !== scrollCommandVersion) {
-      return;
+      return false;
     }
   }
   virtualScrollCommandTop.value = top;
   scheduleScrollSettleCheck();
+  return true;
 }
 
 async function scrollToKey(key: TreeKey, options: TreeScrollToOptions = {}) {
@@ -499,8 +500,7 @@ async function scrollToKey(key: TreeKey, options: TreeScrollToOptions = {}) {
     if (!scrollToIndex(visibleIndex)) {
       return false;
     }
-    await applyVirtualScrollCommand(virtualScrollTop.value);
-    return true;
+    return applyVirtualScrollCommand(virtualScrollTop.value);
   }
 
   scrollIntoView.value = "";

@@ -91,21 +91,21 @@ const { data, count } = createLargeTreeData({
 
 ## 滚动到指定节点
 
-生成器会返回一个稳定存在的 6 级节点 `targetKey`（即实时预览状态栏中显示的「可定位目标」）。实时预览和 playground 都使用同一个目标执行定位：
+生成器会返回一个稳定存在的 6 级节点 `targetKey`（即实时预览状态栏中显示的「可定位目标」）。实时预览和 playground 都使用同一个目标执行定位。下面的处理函数沿用上方完整示例中的 `treeRef` 和 `largeTree`：
 
 ```ts
-const largeTree = createLargeTreeData();
-
 async function locateTarget() {
   const located = await treeRef.value?.scrollToKey(largeTree.targetKey, {
     expandParents: true
   });
 
   if (!located) {
-    uni.showToast({ title: "节点不存在", icon: "none" });
+    uni.showToast({ title: "当前无法定位该节点", icon: "none" });
   }
 }
 ```
+
+`true` 表示定位指令已提交，不等待原生滚动停稳。`false` 也可能表示目标当前不可见，或虚拟定位请求已被取代/取消；完整约定见 [scrollToKey](/apis/methods#懒加载-滚动)。
 
 ## 注意事项
 

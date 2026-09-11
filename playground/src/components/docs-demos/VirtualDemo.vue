@@ -138,11 +138,11 @@ const lazyMessage = shallowRef("展开任一异步区域，仅加载该节点的
 async function locateTarget() {
   const located = await treeRef.value?.scrollToKey(largeTree.targetKey, { expandParents: true });
   locateMessage.value = located
-    ? `已定位：第 6 层「${largeTree.targetLabel}」`
+    ? `已请求定位：第 6 层「${largeTree.targetLabel}」`
     : "目标节点定位失败";
   locateDetail.value = located
     ? "序号路径逐层对应「第 1 个区域 → 第 1 个城市 → …」，因此该节点稳定存在"
-    : "目标 key 不在当前状态树中，scrollToKey 返回 false";
+    : "目标尚未加载、被筛选隐藏，或本次虚拟定位请求已取消";
 }
 
 function handleLazyLoad(payload: TreeLoadPayload) {

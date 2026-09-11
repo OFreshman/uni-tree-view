@@ -211,6 +211,7 @@ export interface UniTreeViewExposed {
   collapseAll: () => void;
   loadNode: (node: TreeNode) => Promise<TreeDataItem[]>;
   retryLoad: (keyOrNode: TreeKey | TreeNode) => Promise<TreeDataItem[]>;
+  /** 返回是否已提交定位指令，不等待原生滚动停稳；不可见目标或被取消的虚拟定位返回 false。 */
   scrollToKey: (key: TreeKey, options?: TreeScrollToOptions) => Promise<boolean>;
 }
 

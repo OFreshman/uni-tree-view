@@ -361,7 +361,7 @@ function handleLargeFilterChange(payload: any) {
 
 async function locateLargeTarget() {
   const located = await largeTreeRef.value?.scrollToKey(largeTargetKey.value, { expandParents: true });
-  largeLatestAction.value = located ? `已定位 ${largeTargetLabel.value}` : "目标节点定位失败";
+  largeLatestAction.value = located ? `已请求定位 ${largeTargetLabel.value}` : "目标节点定位失败";
 }
 
 // ==================== 虚拟渲染 + 懒加载 ====================

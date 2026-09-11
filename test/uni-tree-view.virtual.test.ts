@@ -98,7 +98,7 @@ describe("uni-tree-view: virtual scrolling", () => {
     const tree = wrapper.vm as unknown as UniTreeViewExposed;
     await tree.scrollToKey(40);
     nativeScroll(wrapper).moveTo(600, false);
-    await Promise.all([tree.scrollToKey(40), tree.scrollToKey(key)]);
+    expect(await Promise.all([tree.scrollToKey(40), tree.scrollToKey(key)])).toEqual([false, true]);
     await nextTick();
     expect(nativeScroll(wrapper).getScrollTop()).toBe(key * 20);
     expect(renderedLabels(wrapper)[0]).toBe(`Node ${key}`);
@@ -119,7 +119,7 @@ describe("uni-tree-view: virtual scrolling", () => {
     const pending = tree.scrollToKey(40);
     await nextTick();
     await wrapper.setProps({ virtual: false });
-    await pending;
+    expect(await pending).toBe(false);
     await flushPromises();
     expect(nativeScroll(wrapper).getScrollTop()).toBe(0);
     expect(renderedLabels(wrapper)).toHaveLength(100);
@@ -141,16 +141,18 @@ describe("uni-tree-view: virtual scrolling", () => {
     expect(native.getScrollTop()).toBe(800);
   });
 
-  it("abandons an in-flight repeated command on unmount", async () => {
+  it.each([1, 2])("abandons an in-flight repeated command on unmount after %s ticks", async (ticks) => {
     const wrapper = mountVirtualTree();
     const tree = wrapper.vm as unknown as UniTreeViewExposed;
     const native = nativeScroll(wrapper);
     await tree.scrollToKey(40);
     const pending = tree.scrollToKey(40);
-    await nextTick();
+    for (let index = 0; index < ticks; index += 1) {
+      await nextTick();
+    }
     wrapper.unmount();
     const commands = native.getCommands();
-    await pending;
+    expect(await pending).toBe(false);
     expect(native.getCommands()).toEqual(commands);
   });
 
@@ -388,7 +390,7 @@ describe("uni-tree-view: virtual scrolling", () => {
     expect(nativeScroll(wrapper).getScrollTop()).toBe(300);
     expect(renderedLabels(wrapper)[0]).toBe("Node 15");
 
-    // A second shrink must reissue 300 even though the previous command is unchanged.
+    // 再次缩短列表时，即使上一条指令仍是 300，也必须重新下发。
     nativeScroll(wrapper).moveTo(1_800);
     await wrapper.setProps({ filterValue: "keep" });
     await flushPromises();

@@ -76,4 +76,6 @@ function selectAll() {
 | `retryLoad` | `(keyOrNode) => Promise<TreeDataItem[]>` | 重试加载失败的节点 |
 | `scrollToKey` | `(key, options?: { expandParents? }) => Promise<boolean>` | 滚动到指定节点（虚拟与普通模式均可用），`expandParents` 默认 `true`，先展开已加载的祖先链后定位 |
 
-`scrollToKey` 只能定位当前已经进入状态树的节点；目标 key 尚未通过懒加载创建时返回 `false`，且不会为了查找目标而自动加载后代。
+`scrollToKey` 只能定位当前已经进入状态树的节点；目标 key 尚未通过懒加载创建时返回 `false`，且不会为了查找目标而自动加载后代。目标被筛选隐藏，或设置 `expandParents: false` 后仍不可见时，也返回 `false`。
+
+返回 `true` 表示已提交定位指令，不表示原生滚动已经停稳。虚拟模式下，若请求在提交前被更新的定位/范围校正指令取代，或因关闭虚拟模式、组件卸载而取消，会返回 `false`。调用方不应把所有 `false` 都解释为“节点不存在”。
