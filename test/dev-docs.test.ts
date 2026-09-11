@@ -28,7 +28,7 @@ describe("resolvePlaygroundPort", () => {
 });
 
 describe("dev docs process", () => {
-  it.each(["npm_execpath", "NPM_EXECPATH", "Npm_ExecPath"])("preserves a child failure with inherited %s", (execPathKey) => {
+  it("preserves a child failure after normalizing inherited npm_execpath casing", () => {
     const fakeBinDir = mkdtempSync(path.join(tmpdir(), "uni-tree-view-dev-docs-"));
     const fakePnpmScript = path.join(fakeBinDir, "fake-pnpm.mjs");
     const callsFile = path.join(fakeBinDir, "calls.txt");
@@ -45,9 +45,13 @@ if (args.includes("playground")) {
 `;
     writeFileSync(fakePnpmScript, fakePnpmSource);
 
-    // Windows treats environment keys case-insensitively, but this object does not.
-    // Seed each casing so the normalization is also covered on Linux and macOS.
-    const env: NodeJS.ProcessEnv = { ...process.env, [execPathKey]: "must-be-replaced.cjs" };
+    // Windows 的环境变量名不区分大小写，普通对象则区分；一次覆盖所有大小写，只启动一次子进程。
+    const env: NodeJS.ProcessEnv = {
+      ...process.env,
+      npm_execpath: "must-be-replaced.cjs",
+      NPM_EXECPATH: "must-be-replaced.cjs",
+      Npm_ExecPath: "must-be-replaced.cjs"
+    };
     for (const key of Object.keys(env)) {
       if (key.toLowerCase() === "npm_execpath") {
         delete env[key];
