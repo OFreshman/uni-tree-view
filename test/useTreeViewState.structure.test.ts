@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { isReactive, nextTick, watch } from "vue";
 import { CHECK_STATUS_MAP } from "../packages/core/src/components/uni-tree-view/constants";
+import type { TreeKey, TreeNode } from "../packages/core/src/components/uni-tree-view/types";
 import {
   checkedKeys,
   cleanupTreeViewStateScopes,
@@ -214,6 +215,37 @@ describe("useTreeViewState: structure, expansion and filtering", () => {
     await nextTick();
     expect(visibleKeys(state)).toEqual(["building-a", "floor-a-1", "floor-a-2", "building-b"]);
     expect(state.getMatchedKeys()).toEqual([]);
+  });
+
+  it("still matches descendants when a matched ancestor already exposes the whole branch", async () => {
+    const matches = new Set<TreeKey>(["building-a", "floor-a-1", "room-a-101", "floor-b-1"]);
+    const filterMethod = vi.fn((_value: string, targetNode: TreeNode) => matches.has(targetNode.id));
+    const { props, state } = createState({ filterMethod });
+    props.filterValue = "match";
+    await nextTick();
+
+    expect(filterMethod).toHaveBeenCalledTimes(10);
+    expect(state.getMatchedKeys()).toEqual([...matches]);
+    expect(state.getVisibleKeys()).toEqual([
+      "building-a",
+      "floor-a-1",
+      "room-a-101",
+      "room-a-102",
+      "floor-a-2",
+      "room-a-201",
+      "room-a-202",
+      "building-b",
+      "floor-b-1"
+    ]);
+    for (const target of state.getMatchedNodes()) {
+      expect(target).toBe(state.getNode(target.id));
+    }
+    expect(state.getExpandedKeys()).toEqual([]);
+
+    props.filterValue = "";
+    await nextTick();
+    expect(state.getMatchedKeys()).toEqual([]);
+    expect(state.getVisibleKeys()).toEqual(["building-a", "building-b"]);
   });
 
   it("supports custom filter matching", async () => {

@@ -496,6 +496,10 @@ export function useTreeViewState(props: TreeViewStateProps) {
         }
 
         matchedNodes.push(node);
+        // 前序遍历中，已可见的当前节点只能被先前命中的祖先整支覆盖；仍须登记自身匹配。
+        if (visibleKeySet.has(node.id)) {
+          continue;
+        }
         visibleKeySet.add(node.id);
         for (const parentId of node.parentIds) {
           visibleKeySet.add(parentId);
