@@ -523,14 +523,18 @@ export function useTreeViewState(props: TreeViewStateProps) {
     // 「父级是否展开且可见」即可，无需为每个节点回查 nodeMap（那是这里最大的一笔开销）。
     // 栈内存布尔值而非节点，父级不可见时整棵子树都会被判为不可见，与原先的逐级回查等价。
     const parentVisibleStack: boolean[] = [];
-    for (const node of treeList.value) {
+    const nodes = treeList.value;
+    const rawNodes = toRaw(nodes);
+    for (let index = 0; index < rawNodes.length; index += 1) {
+      // 重建或懒加载后数组可能混有代理节点；只读时解包，写入与对外返回仍使用原代理。
+      const node = toRaw(rawNodes[index]);
       const level = node.level;
       const visible = level === 0 || parentVisibleStack[level - 1] === true;
       if (node.visible !== visible) {
-        node.visible = visible;
+        nodes[index].visible = visible;
       }
       if (visible) {
-        visibleNodes.push(node);
+        visibleNodes.push(nodes[index]);
       }
       parentVisibleStack[level] = visible && node.expanded === true;
     }

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { nextTick } from "vue";
+import { isReactive, nextTick, watch } from "vue";
 import { CHECK_STATUS_MAP } from "../packages/core/src/components/uni-tree-view/constants";
 import {
   checkedKeys,
@@ -28,6 +28,22 @@ describe("useTreeViewState: structure, expansion and filtering", () => {
       parentIds: ["building-a", "floor-a-2"],
       isLeaf: true
     });
+  });
+
+  it("keeps visible nodes reactive and preserves their identity across expansion changes", () => {
+    const { state } = createState();
+    const target = node(state, "room-a-101");
+    const changes: boolean[] = [];
+    const stop = watch(() => target.visible, (visible) => changes.push(visible), { flush: "sync" });
+    state.setExpandedKeys(["building-a", "floor-a-1"]);
+    const visible = state.getVisibleNodes().find((item) => item.id === target.id);
+    expect(visible).toBe(target);
+    expect(isReactive(visible)).toBe(true);
+    state.setExpandedKeys(["building-a"], false);
+    state.setExpandedKeys(["building-a"]);
+    expect(state.getVisibleNodes().find((item) => item.id === target.id)).toBe(target);
+    expect(changes).toEqual([true, false, true]);
+    stop();
   });
 
   it("supports custom treeProps mapping", () => {
