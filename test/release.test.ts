@@ -1,9 +1,26 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { assertReleaseCommit, getReleaseInfo } from "../scripts/release";
 
 function versions(version = "1.0.0") {
   return { ".": version, "packages/core": version, playground: version, docs: version };
 }
+
+describe("release validation", () => {
+  it("shares the complete non-releasing checks with release preparation", () => {
+    const { scripts } = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")) as {
+      scripts: Record<string, string>;
+    };
+    expect(scripts["check:all"].split(" && ")).toEqual([
+      "pnpm check",
+      "pnpm check:platforms",
+      "pnpm check:size",
+      "pnpm docs:build"
+    ]);
+    expect(scripts["release:prepare"])
+      .toBe("pnpm changelog:generate && pnpm changelog:promote && pnpm check:all");
+  });
+});
 
 describe("release identity", () => {
   it("pins the stable release to one versioned artifact", () => {

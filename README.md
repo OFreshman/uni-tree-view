@@ -153,11 +153,12 @@ function handleCheckChange({ keys }) {
 pnpm install
 pnpm play        # H5 playground
 pnpm test        # 单元测试
+pnpm check:all   # 完整本地校验，不升版本、不发布
 pnpm build       # 构建组件包
 pnpm docs        # 本地文档站
 ```
 
-贡献前请阅读 [CONTRIBUTING.md](./CONTRIBUTING.md)。
+提交前按变更范围选择检查，不需要每次提交都发布；需要完整校验时只运行一次 `pnpm check:all`。详细流程见 [CONTRIBUTING.md](./CONTRIBUTING.md)。
 
 ## License
 

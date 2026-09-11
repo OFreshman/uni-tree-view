@@ -17,6 +17,7 @@
 - 同时启动文档站和 playground：`pnpm docs`。
 - 构建组件包：`pnpm build`。
 - 常规代码全量检查：`pnpm check`（包含覆盖率下限及 npm 分发内容检查）。
+- 完整本地校验：`pnpm check:all`（依次运行 `check`、`check:platforms`、`check:size`、`docs:build`，不提升版本、不发布）。
 - 最终组件体积检查：`pnpm check:size`，使用无组件/有组件的最小工程进行三端生产构建对照。
 - 完整构建并校验文档站：`pnpm docs:build`。
 - 构建微信和支付宝小程序：`pnpm check:platforms`。
@@ -75,6 +76,8 @@
 - 跨端模板、样式、事件或平台相关改动：在常规检查外运行 `pnpm check:platforms`。
 - DCloud 打包逻辑或发布内容：运行 `pnpm build:uni`。
 - 任何文本改动至少运行 `git diff --check`。
+
+上述检查按变更范围叠加；需要全部执行时可用 `pnpm check:all`，无需再分别重复运行。同一批最终改动拆分为多个提交，不要求为每个提交重复全量构建；新增或调整代码后应重跑受影响检查。日常提交不包含发布；`pnpm release` 已通过 `release:prepare` 调用完整校验，不要把 `release:prepare` 当作提交前检查单独执行。
 
 交付时说明实际运行的命令和结果。Browserslist 的 `caniuse-lite` 提示，以及 unbuild 在 post-build 前报告 resolver 临时入口缺失，可以是非阻断输出；仍须以退出码和最终产物为准。
 

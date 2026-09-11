@@ -42,14 +42,28 @@ artifacts       本地产物（HBuilderX 发布用工程、npm 包 tgz）
 
 ## 提交前检查
 
+检查按变更范围选择，不是每次提交都按顺序运行所有命令。命中多种变更时，叠加对应检查：
+
+| 变更范围 | 检查命令 |
+| --- | --- |
+| 任何文本改动 | `git diff --check` |
+| 组件、脚本、配置或测试代码 | `pnpm check` |
+| 组件逻辑、样式、依赖或构建设置可能影响运行产物体积 | 额外运行 `pnpm check:size` |
+| 跨端模板、样式、事件或平台适配 | 额外运行 `pnpm check:platforms` |
+| 文档结构、示例、部署路径或在线演示 | `pnpm docs:build` |
+| DCloud 打包逻辑或发布内容 | `pnpm build:uni` |
+
+纯文案勘误不需要所有构建。日常调试可先运行 `pnpm test` 或指定测试文件，准备提交时再完成对应范围的检查。同一批最终改动按功能拆成多个提交，不需要为每个提交重复全量构建；代码再次调整后，应重跑受影响检查。
+
+需要完整本地校验时，只运行：
+
 ```bash
-pnpm check           # lint、类型、测试覆盖率、构建及 npm/DCloud 分发内容检查
-pnpm check:platforms # 修改跨端模板、样式或事件后，构建微信和支付宝小程序
-pnpm check:size      # 检查最小应用引入组件后的实际产物增量
-pnpm docs:build      # 修改文档、示例或部署路径后，构建并校验文档站
+pnpm check:all
 ```
 
-日常调试可单独运行 `pnpm test`；`pnpm check` 使用带覆盖率下限的测试，防止已经覆盖的核心行为明显退步。`pnpm check:size` 会额外执行最小工程的三端构建，不拿整个演示站的大小代替组件大小。
+它依次运行 `check`、`check:platforms`、`check:size`、`docs:build`，不会提升版本、创建 tag 或发布。无需在它之前或之后再重复执行这四项。
+
+`pnpm check` 包含 lint、类型、带覆盖率下限的测试、组件构建及 npm/DCloud 分发内容检查。`pnpm check:size` 使用最小工程的三端生产构建，不拿整个演示站的大小代替组件大小；`check:platforms` 则构建实际 playground，检查目标不同，不能互相替代。
 
 修改组件能力时请注意：
 
@@ -75,6 +89,8 @@ docs: 补充 xxx 示例
 ## 版本与发布说明
 
 贡献者只需按功能边界提交代码、测试和文档。版本号、release commit、tag、npm 发布和 DCloud 插件市场发布由项目维护者统一处理，请不要在功能提交中修改版本号。
+
+日常 `git commit` 与发布是两条流程；提交后可以继续开发，不必运行 `release` 或 `release:push`。维护者准备发布新版本时，在已合入功能改动且工作区干净的 `main` 上运行 `pnpm release`，它会自动执行完整校验，通过后才创建版本提交和 tag；不需要先手工重复四项检查。确认产物后再执行 `pnpm release:push` 推送版本提交与 tag。`release:prepare` 会更新变更日志，只供发布脚本调用，不是日常检查命令。
 
 变更日志只维护仓库根目录 `CHANGELOG.md`；npm 包内的 `CHANGELOG.md` 会在打包前自动生成。迁移步骤优先写入对应指南或 FAQ。维护者确需手工填写 `Unreleased` 时，应整理完整的发布说明，因为后续生成不会再补入遗漏提交。
 
