@@ -110,8 +110,12 @@ export function assertPackedPackage(
   }
 }
 
-function collectSourceFiles(directory: string, prefix = "src"): string[] {
+export function collectSourceFiles(directory: string, prefix = "src"): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    // pnpm pack 固定忽略 Finder 元数据；其余文件仍须经过完整的分发校验。
+    if (entry.name === ".DS_Store") {
+      return [];
+    }
     const file = `${prefix}/${entry.name}`;
     return entry.isDirectory()
       ? collectSourceFiles(path.join(directory, entry.name), file)

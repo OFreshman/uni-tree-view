@@ -1,5 +1,8 @@
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { assertPackedPackage, MaxPackedBytes, parsePackReport } from "../scripts/check-package";
+import { assertPackedPackage, collectSourceFiles, MaxPackedBytes, parsePackReport } from "../scripts/check-package";
 import type { PackageManifest, PackReport } from "../scripts/check-package";
 
 function fixture() {
@@ -43,6 +46,28 @@ function fixture() {
 }
 
 describe("npm distribution checks", () => {
+  it("ignores nested Finder metadata without weakening required source checks", () => {
+    const directory = mkdtempSync(path.join(tmpdir(), "uni-tree-view-package-"));
+    try {
+      mkdirSync(path.join(directory, "style"));
+      for (const file of [".DS_Store", "style/.DS_Store", "style/index.scss"]) {
+        writeFileSync(path.join(directory, file), "fixture\n");
+      }
+      const sourceFiles = collectSourceFiles(directory);
+      expect(sourceFiles).toEqual(["src/style/index.scss"]);
+      const { manifest, report } = fixture();
+      expect(() => assertPackedPackage(manifest, report, 35_000, sourceFiles)).not.toThrow();
+      report.files = report.files.filter((file) => file.path !== "src/style/index.scss");
+      expect(() => assertPackedPackage(manifest, report, 35_000, sourceFiles))
+        .toThrow("Required file is missing");
+
+      writeFileSync(path.join(directory, ".hidden.ts"), "export {};\n");
+      expect(collectSourceFiles(directory)).toContain("src/.hidden.ts");
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
   it("reads pnpm JSON with or without prepack logs", () => {
     const { report } = fixture();
     const json = JSON.stringify(report, null, 2);
@@ -78,6 +103,8 @@ describe("npm distribution checks", () => {
     "src/__tests__/core.ts",
     "src/style/font.ttf",
     "src/.env",
+    "src/.DS_Store",
+    "src/.hidden.ts",
     "src/../private.ts",
     "src\\private.ts",
     "dist/index.mjs",
