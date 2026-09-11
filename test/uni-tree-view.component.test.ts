@@ -459,7 +459,8 @@ describe("uni-tree-view component", () => {
     expect(attempts).toBe(2);
     expect(wrapper.emitted("load-error")).toHaveLength(1);
     expect(wrapper.emitted("load")).toHaveLength(1);
-    expect(wrapper.findAll(".utv-tree-item")).toHaveLength(2);
+    // 两行视口加一行部分可见缓冲；懒加载节点仍参与虚拟窗口。
+    expect(wrapper.findAll(".utv-tree-item")).toHaveLength(3);
     expect(wrapper.text()).toContain("Lazy child 0");
 
     expect(await exposed(wrapper).scrollToKey("lazy-child-5")).toBe(true);

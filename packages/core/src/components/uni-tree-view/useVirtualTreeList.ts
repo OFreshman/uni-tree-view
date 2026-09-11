@@ -65,9 +65,8 @@ export function useVirtualTreeList<T>(options: UseVirtualTreeListOptions<T>) {
       return totalCount.value;
     }
 
-    // 首行可能已滚出一部分；这段偏移也占用窗口，需补齐底部部分可见的行。
-    const rowOffset = effectiveScrollTop.value % itemHeight.value;
-    const visibleCount = Math.ceil((height.value + rowOffset) / itemHeight.value) + overscan.value * 2;
+    // 固定多覆盖一行，补齐部分可见节点；同一行内滚动时不因余数变化重建渲染窗口。
+    const visibleCount = Math.ceil(height.value / itemHeight.value) + 1 + overscan.value * 2;
     return Math.min(totalCount.value, startIndex.value + visibleCount);
   });
 

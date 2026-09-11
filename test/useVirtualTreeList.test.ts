@@ -60,19 +60,19 @@ describe("useVirtualTreeList", () => {
     expect(result).toBeTruthy();
     expect(result!.virtualEnabled.value).toBe(true);
     expect(result!.startIndex.value).toBe(0);
-    expect(result!.endIndex.value).toBe(9);
-    expect(result!.renderedItems.value).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8]);
+    expect(result!.endIndex.value).toBe(10);
+    expect(result!.renderedItems.value).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
     expect(result!.topPadding.value).toBe(0);
-    expect(result!.bottomPadding.value).toBe(1820);
+    expect(result!.bottomPadding.value).toBe(1800);
     expect(result!.scrollViewStyle.value).toEqual({ height: "100px" });
 
     result!.handleScroll({ detail: { scrollTop: 240 } });
 
     expect(result!.startIndex.value).toBe(10);
-    expect(result!.endIndex.value).toBe(19);
-    expect(result!.renderedItems.value).toEqual([10, 11, 12, 13, 14, 15, 16, 17, 18]);
+    expect(result!.endIndex.value).toBe(20);
+    expect(result!.renderedItems.value).toEqual([10, 11, 12, 13, 14, 15, 16, 17, 18, 19]);
     expect(result!.topPadding.value).toBe(200);
-    expect(result!.bottomPadding.value).toBe(1620);
+    expect(result!.bottomPadding.value).toBe(1600);
 
     scope.stop();
   });
@@ -101,6 +101,46 @@ describe("useVirtualTreeList", () => {
     expect(result.renderedItems.value).toContain(Math.ceil((scrollTop + height) / 20) - 1);
     expect(result.topPadding.value + result.renderedItems.value.length * 20 + result.bottomPadding.value).toBe(2_000);
     scope.stop();
+  });
+
+  it("reuses the same rendered window while scrolling within one row", () => {
+    const result = useVirtualTreeList({
+      items: Array.from({ length: 100 }, (_, index) => index),
+      virtual: true,
+      itemHeight: 20,
+      height: 100,
+      overscan: 0
+    });
+    const initialWindow = result.renderedItems.value;
+    expect(initialWindow).toEqual([0, 1, 2, 3, 4, 5]);
+    for (const scrollTop of [1, 10, 19, 0]) {
+      result.handleScroll({ detail: { scrollTop } });
+      expect(result.renderedItems.value).toBe(initialWindow);
+    }
+    result.handleScroll({ detail: { scrollTop: 20 } });
+    expect(result.renderedItems.value).toEqual([1, 2, 3, 4, 5, 6]);
+  });
+
+  it.each([
+    { height: 95.5, itemHeight: 20.25, overscan: 0 },
+    { height: 7.5, itemHeight: 20, overscan: 0 },
+    { height: 95.5, itemHeight: 20.25, overscan: 2 }
+  ])("covers fractional dimensions with height $height and overscan $overscan", ({ height, itemHeight, overscan }) => {
+    const items = Array.from({ length: 40 }, (_, index) => index);
+    const result = useVirtualTreeList({ items, virtual: true, height, itemHeight, overscan });
+    const offsets = [0, result.maxScrollTop.value];
+    for (let top = itemHeight / 4; top < result.maxScrollTop.value; top += itemHeight / 4) {
+      offsets.push(top);
+    }
+    for (const scrollTop of offsets) {
+      result.handleScroll({ detail: { scrollTop } });
+      const firstVisible = Math.floor(scrollTop / itemHeight);
+      const lastVisible = Math.min(items.length - 1, Math.ceil((scrollTop + height) / itemHeight) - 1);
+      expect(result.renderedItems.value).toContain(firstVisible);
+      expect(result.renderedItems.value).toContain(lastVisible);
+      expect(result.topPadding.value + result.renderedItems.value.length * itemHeight + result.bottomPadding.value)
+        .toBeCloseTo(items.length * itemHeight, 8);
+    }
   });
 
   it("reconciles sub-row offsets when they cross a row boundary in either direction", () => {
