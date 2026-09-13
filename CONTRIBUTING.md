@@ -84,7 +84,16 @@ fix: 修复 xxx 在支付宝小程序下的表现
 docs: 补充 xxx 示例
 ```
 
-提交标题会由本地 `commit-msg` hook 校验，CI 还会检查 PR 标题以及变更范围内的全部非 merge 提交，格式为 `<type>(<scope>)!: <description>`。允许的类型包括 `build`、`chore`、`ci`、`docs`、`feat`、`fix`、`perf`、`refactor`、`revert`、`style` 和 `test`；其中 `feat`、`fix`、`perf`、`refactor` 以及带破坏性标记的提交会进入自动发布说明。使用 squash merge 时，PR 标题也必须遵循同一格式。
+提交标题会由本地 `commit-msg` hook 校验，CI 还会检查 PR 标题以及变更范围内的全部非 merge 提交，格式为 `<type>(<scope>)!: <description>`。允许的类型包括 `build`、`chore`、`ci`、`docs`、`feat`、`fix`、`perf`、`refactor`、`revert`、`style` 和 `test`；其中 `feat`、`fix`、`perf`、`refactor` 以及带破坏性标记的提交会进入自动发布说明。
+
+### 避免重复提交
+
+在多设备协作或分支长期开发时，建议：
+
+- 尽早开 draft PR，即使功能未完成，这样 CI 会在每次推送时自动运行
+- 多设备同步时，使用 `git pull --rebase` 而不是 `git pull`，避免产生不必要的合并提交
+- 如果同一改动在不同设备上各自提交了，PR 前用 `git rebase -i` 整理历史，去掉重复的提交
+- 合并到 main 时使用快进合并或 rebase，不要使用 squash merge（发布说明按提交标题逐条生成，squash 会把整个分支压成一条）
 
 ## 版本与发布说明
 
