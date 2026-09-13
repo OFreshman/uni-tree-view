@@ -57,6 +57,12 @@
 - 变更日志只维护根目录 `CHANGELOG.md`；`packages/core/CHANGELOG.md` 在 npm 打包前生成，不要手动编辑。
 - 根目录 `CHANGELOG.md` 的 `Unreleased` 段落由 `pnpm changelog:generate` 从提交标题生成。该段落一旦有内容，生成器会判定为 `keep` 并跳过本次全部提交（见 `scripts/changelog-utils.ts`），因此普通任务不要手写条目——把信息写进提交标题即可。
 
+## 维护者本地文件
+
+- `.local/` 已被 `.gitignore` 忽略，是维护者的私有目录，内部是独立的 git 仓库，存放发布操作说明 `RELEASE.md` 和待办文档。不要把其中文件加入本仓库的暂存区或提交，也不要把其内容写进公开文档或提交信息。
+- 修改 `.local/` 内的文档后，运行 `git lsync`（本机别名，等价于 `sh .local/sync.sh`）提交并推送到私有远程；开始涉及这些文档的任务前先执行一次以拉取最新版本。
+- `.local/` 不存在时说明当前不是维护者机器，忽略本节。
+
 ## Git 与发布约束
 
 - 提交信息遵循仓库的 Conventional Commits 校验，使用中文简述；准确格式和允许的 type 以 `scripts/check-commit-message.ts`、`scripts/changelog-utils.ts` 为准。
